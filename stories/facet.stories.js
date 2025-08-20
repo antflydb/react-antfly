@@ -114,7 +114,7 @@ export const FacetWithCustomRenderItems = () => {
               onClick={() => handleChange(item, !isChecked(item))}
               key={item.key}
             >
-              -> {item.key}
+              -`{">"}` {item.key}
             </div>
           ));
         }}

@@ -19,5 +19,6 @@ yarn-error.log*
 # AI
 .aider*
 *aider*
+.claude
 
 debug-storybook.log
