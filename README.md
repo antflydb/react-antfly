@@ -1,8 +1,8 @@
 # React Antfly
 
-[![Version](https://img.shields.io/npm/v/react-antfly.svg)](https://npmjs.org/package/react-antfly)
-[![Downloads](https://img.shields.io/npm/dt/react-antfly.svg)](https://npmjs.org/package/react-antfly)
-[![License](https://img.shields.io/npm/l/react-antfly.svg)](https://github.com/antflydb/react-antfly/blob/master/package.json)
+[![Version](https://img.shields.io/npm/v/@antfly/react-antfly.svg)](https://npmjs.org/package/@antfly/react-antfly)
+[![Downloads](https://img.shields.io/npm/dt/@antfly/react-antfly.svg)](https://npmjs.org/package/@antfly/react-antfly)
+[![License](https://img.shields.io/npm/l/@antfly/react-antfly.svg)](https://github.com/antflydb/react-antfly/blob/master/package.json)
 
 UI components for React + Antfly. Create search applications using declarative components.
 ## Usage
