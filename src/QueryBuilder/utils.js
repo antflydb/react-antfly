@@ -33,7 +33,7 @@ export const defaultOperators = [
     value: "==",
     text: "equals",
     useInput: true,
-    query: (key, value) => value && query(key, value, (k, v) => ({ field: k, match: v })),
+    query: (key, value) => value && query(key, value, (k, v) => ({ field: k, match_phrase: v })),
   },
   {
     value: "!=",
@@ -123,7 +123,7 @@ export const defaultOperators = [
         (k, v) => ({
           must_not: { disjuncts: [{ field: k.replace(/\.keyword$/, ""), wildcard: `*${v}*` }] },
         }),
-        "must"
+        "must",
       ),
   },
   {

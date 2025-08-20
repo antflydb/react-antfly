@@ -1,6 +1,6 @@
 {
   "name": "@antfly/react-antfly",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "React components for Antfly search",
   "main": "dist/main.js",
   "scripts": {
@@ -36,8 +36,8 @@
     "react-dom": "^18.2.0",
     "sb": "^9.1.2",
     "unfetch": "^4.1.0",
-    "webpack": "^4.35.3",
-    "webpack-cli": "^3.3.5"
+    "webpack": "^5.101.3",
+    "webpack-cli": "^6.0.1"
   },
   "peerDependencies": {
     "react": "^16.0.0 || ^17.0 || ^18.0",

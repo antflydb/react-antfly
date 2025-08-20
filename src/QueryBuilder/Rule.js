@@ -54,21 +54,28 @@ export default function Rule({ fields, operators, combinators, ...props }) {
             } else {
               // const terms = { field, include: `.*${value}.*`, order: { _count: "desc" }, size: 10 };
               // query = { query: { match_all: {} }, aggs: { [field]: { terms } }, size: 0 };
+              const disjuncts = value
+                .toLowerCase()
+                .split(" ")
+                .map((v) => [
+                  { field, prefix: `${v}`, boost: 2 },
+                  { field, regexp: `.*${v}.*`, boost: 1.5 },
+                ])
+                .flat();
+              // const disjuncts = [
+              //   { field, prefix: `${value.toLowerCase()}`, boost: 2 },
+              //   { field, regexp: `.*${value.toLowerCase()}.*`, boost: 1.5 },
+              // ];
               query = {
                 // Bleve's default analyzer is case insensitive.
-                full_text_search: {
-                  conjuncts: [
-                    { field, prefix: `${value.toLowerCase()}`, boost: 2 },
-                    { field, regexp: `.*${value.toLowerCase()}.*`, boost: 1.5 },
-                  ],
-                },
+                full_text_search: { disjuncts },
                 limit: 10,
               };
             }
             const suggestions = await msearch(
               url,
               [{ query, id: "queryBuilder", fields: [field] }],
-              headers
+              headers,
             );
             const response = suggestions.responses[0];
             if (response.status !== 200) {
