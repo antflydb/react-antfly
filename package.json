@@ -4,6 +4,7 @@
   "description": "React components for Antfly search",
   "main": "dist/main.js",
   "scripts": {
+    "test": "",
     "build": "webpack --mode production",
     "storybook": "sb dev",
     "build-storybook": "sb build"
@@ -11,6 +12,14 @@
   "keywords": [],
   "author": "Antfly Contributors",
   "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/antflydb/react-antfly.git"
+  },
+  "bugs": {
+    "url": "https://github.com/antflydb/react-antfly/issues"
+  },
+  "homepage": "https://github.com/antflydb/react-antfly#readme",
   "prettier": {
     "printWidth": 100
   },
