@@ -2,7 +2,8 @@
   "name": "@antfly/react-antfly",
   "version": "0.0.3",
   "description": "React components for Antfly search",
-  "main": "dist/main.js",
+  "main": "src/index.js",
+  "module": "src/index.js",
   "scripts": {
     "test": "",
     "build": "webpack --mode production",
@@ -39,12 +40,10 @@
     "babel-loader": "^10.0.0",
     "core-js": "^3.45.1",
     "lodash": "^4.17.21",
-    "qs": "^6.14.0",
     "react": "^19.1.1",
     "react-autosuggest": "^10.1.0",
     "react-dom": "^19.1.1",
     "sb": "^9.1.8",
-    "unfetch": "^5.0.0",
     "webpack": "^5.101.3",
     "webpack-cli": "^6.0.1"
   },
@@ -53,6 +52,7 @@
     "react-dom": "^16.0 || ^17.0 || ^18.0 || ^19.0"
   },
   "dependencies": {
-    "@babel/runtime": "^7.28.4"
+    "@babel/runtime": "^7.28.4",
+    "qs": "^6.14.0"
   }
 }

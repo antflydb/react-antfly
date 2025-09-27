@@ -1,4 +1,4 @@
-import fetch from "unfetch";
+// Use native fetch API
 import qs from "qs";
 
 // Search with msearch to antfly instance
@@ -29,7 +29,7 @@ export function toTermQueries(fields = [], selectedValues = []) {
         return { field: field.replace(/\.keyword$/, ""), match: value };
       }
       return { field, match: value };
-    })
+    }),
   );
   if (queries.length === 0) return [{ match_all: {} }];
   return queries;
@@ -54,8 +54,8 @@ export function toUrlQueryString(params) {
     Object.fromEntries(
       Array.from(params)
         .filter(([, v]) => (Array.isArray(v) ? v.length : v))
-        .map(([k, v]) => [k, JSON.stringify(v)])
-    )
+        .map(([k, v]) => [k, JSON.stringify(v)]),
+    ),
   );
 }
 
