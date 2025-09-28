@@ -26,6 +26,9 @@ export default function Results({
         : widget.result.total
       : 0;
 
+  // Check if any search widgets have semantic search enabled
+  const isSemanticSearchActive = Array.from(widgets.values()).some((w) => w.isSemantic && w.query);
+
   useEffect(() => {
     // Create a hash of all search/filter widgets to detect query changes
     const queryWidgets = Array.from(widgets.values()).filter((w) => w.needsQuery);
@@ -72,9 +75,13 @@ export default function Results({
 
   return (
     <div className="react-af-results">
-      {stats ? stats(total) : <>{total} results</>}
+      {stats ? stats(total) : (
+        isSemanticSearchActive ?
+          <>{itemsPerPage} out of {total} results</> :
+          <>{total} results</>
+      )}
       <div className="react-af-results-items">{items(data)}</div>
-      {pagination ? pagination(total, itemsPerPage, page, setPage) : defaultPagination()}
+      {!isSemanticSearchActive && (pagination ? pagination(total, itemsPerPage, page, setPage) : defaultPagination())}
     </div>
   );
 }
