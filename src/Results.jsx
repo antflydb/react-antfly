@@ -27,7 +27,9 @@ export default function Results({
       : 0;
 
   // Check if any search widgets have semantic search enabled
-  const isSemanticSearchActive = Array.from(widgets.values()).some((w) => w.isSemantic && w.query);
+  console.log('All widgets:', Array.from(widgets.values()).map(w => ({ id: w.id, isSemantic: w.isSemantic, query: w.query, value: w.value })));
+  const isSemanticSearchActive = Array.from(widgets.values()).some((w) => w.isSemantic && w.query && w.query.trim().length > 0);
+  console.log('isSemanticSearchActive:', isSemanticSearchActive);
 
   useEffect(() => {
     // Create a hash of all search/filter widgets to detect query changes
@@ -54,12 +56,13 @@ export default function Results({
       needsConfiguration: true,
       isFacet: false,
       wantResults: true,
+      isSemantic: isSemanticSearchActive,
       query: null,
       value: null,
       configuration: { itemsPerPage, page, sort },
       result: data && total ? { data, total } : null,
     });
-  }, [page, sort]);
+  }, [page, sort, isSemanticSearchActive]);
 
   // Destroy widget from context (remove from the list to unapply its effects)
   useEffect(() => () => dispatch({ type: "deleteWidget", key: id }), []);
@@ -76,8 +79,8 @@ export default function Results({
   return (
     <div className="react-af-results">
       {stats ? stats(total) : (
-        isSemanticSearchActive ?
-          <>{itemsPerPage} out of {total} results</> :
+        (console.log('Rendering with isSemanticSearchActive:', isSemanticSearchActive), isSemanticSearchActive) ?
+          <>{data.length} out of {total} results</> :
           <>{total} results</>
       )}
       <div className="react-af-results-items">{items(data)}</div>

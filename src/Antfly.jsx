@@ -11,6 +11,7 @@ export default function Antfly({ children, url, onChange, headers }) {
     switch (action.type) {
       case "setWidget":
         const widget = {
+          id: action.key,
           needsQuery: action.needsQuery,
           needsConfiguration: action.needsConfiguration,
           isFacet: action.isFacet,
