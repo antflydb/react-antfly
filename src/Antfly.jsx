@@ -24,7 +24,7 @@ export default function Antfly({ children, url, onChange, headers }) {
         widgets.set(action.key, widget);
         return { ...state, widgets };
       case "deleteWidget":
-        widgets.delete(action.key, widget);
+        widgets.delete(action.key);
         return { ...state, widgets };
       case "setListenerEffect":
         return { ...state, listenerEffect: action.value };
