@@ -1,9 +1,9 @@
 import React from "react";
-import { SharedContextProvider } from "./SharedContextProvider";
-import Listener from "./Listener";
+import { SharedContextProvider } from "./SharedContextProvider.jsx";
+import Listener from "./Listener.jsx";
 
 // Main component. See storybook for usage.
-export default function ({ children, url, onChange, headers }) {
+export default function Antfly({ children, url, onChange, headers }) {
   const initialState = { url, listenerEffect: null, widgets: new Map(), headers };
 
   const reducer = (state, action) => {

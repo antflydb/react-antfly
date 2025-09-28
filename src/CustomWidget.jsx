@@ -1,5 +1,5 @@
 import React from "react";
-import { useSharedContext } from "./SharedContextProvider";
+import { useSharedContext } from "./SharedContextProvider.jsx";
 
 export default function({ children }) {
   const [ctx, dispatch] = useSharedContext();

@@ -1,7 +1,7 @@
 import React from "react";
-import { useSharedContext } from "./SharedContextProvider";
+import { useSharedContext } from "./SharedContextProvider.jsx";
 
-export default function ({ items }) {
+export default function ActiveFilters({ items }) {
   const [{ widgets }, dispatch] = useSharedContext();
   const activeFilters = [...widgets]
     .filter(([, v]) => (Array.isArray(v.value) ? v.value.length : v.value))

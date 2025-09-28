@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useSharedContext } from "../SharedContextProvider";
+import { useSharedContext } from "../SharedContextProvider.jsx";
 import {
   defaultOperators,
   defaultCombinators,
@@ -7,7 +7,7 @@ import {
   uuidv4,
   withUniqueKey,
 } from "./utils";
-import Rule from "./Rule";
+import Rule from "./Rule.jsx";
 
 export default function QueryBuilder({
   fields,
@@ -39,7 +39,7 @@ export default function QueryBuilder({
       rules.map((r) => ({
         ...r,
         query: operators.find((o) => o.value === r.operator).query(r.field, r.value),
-      }))
+      })),
     );
     dispatch({
       type: "setWidget",
@@ -86,7 +86,7 @@ export default function QueryBuilder({
               rules
                 .filter((e) => e.index !== index)
                 .filter((e) => e)
-                .map((v, k) => ({ ...v, index: k }))
+                .map((v, k) => ({ ...v, index: k })),
             );
           }}
           onChange={(r) => {

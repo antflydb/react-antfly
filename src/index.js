@@ -1,12 +1,12 @@
-import Antfly from "./Antfly";
-import Results from "./Results";
-import SearchBox from "./SearchBox";
-import Facet from "./Facet";
-import Pagination from "./Pagination";
-import Listener from "./Listener";
-import ActiveFilters from "./ActiveFilters";
-import QueryBuilder from "./QueryBuilder/QueryBuilder";
-import CustomWidget from "./CustomWidget";
+import Antfly from "./Antfly.jsx";
+import Results from "./Results.jsx";
+import SearchBox from "./SearchBox.jsx";
+import Facet from "./Facet.jsx";
+import Pagination from "./Pagination.jsx";
+import Listener from "./Listener.jsx";
+import ActiveFilters from "./ActiveFilters.jsx";
+import QueryBuilder from "./QueryBuilder/QueryBuilder.jsx";
+import CustomWidget from "./CustomWidget.jsx";
 import { fromUrlQueryString, toUrlQueryString, msearch } from "./utils";
 
 export {

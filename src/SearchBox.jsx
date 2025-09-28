@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { useSharedContext } from "./SharedContextProvider";
+import { useSharedContext } from "./SharedContextProvider.jsx";
 
-export default function ({
+export default function SearchBox({
   customQuery,
   fields,
   id,

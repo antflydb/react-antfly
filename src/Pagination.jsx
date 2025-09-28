@@ -21,7 +21,7 @@ function buttons(page, max) {
   return [1, "x", max - 4, max - 3, max - 2, max - 1, max];
 }
 
-export default function ({ onChange, total, itemsPerPage, page }) {
+export default function Pagination({ onChange, total, itemsPerPage, page }) {
   const max = Math.min(Math.ceil(total / itemsPerPage), 10000 / itemsPerPage);
 
   return (

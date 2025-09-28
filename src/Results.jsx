@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { useSharedContext } from "./SharedContextProvider";
-import Pagination from "./Pagination";
+import { useSharedContext } from "./SharedContextProvider.jsx";
+import Pagination from "./Pagination.jsx";
 
 // Pagination, informations about results (like "30 results")
 // and size (number items per page) are customizable.
-export default function ({
+export default function Results({
   itemsPerPage = 10,
   initialPage = 1,
   pagination,

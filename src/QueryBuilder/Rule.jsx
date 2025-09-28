@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Autosuggest from "react-autosuggest";
-import { useSharedContext } from "../SharedContextProvider";
+import { useSharedContext } from "../SharedContextProvider.jsx";
 import { msearch } from "../utils";
 
 export default function Rule({ fields, operators, combinators, ...props }) {

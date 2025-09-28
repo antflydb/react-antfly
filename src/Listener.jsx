@@ -1,9 +1,9 @@
 import React, { useEffect } from "react";
-import { useSharedContext } from "./SharedContextProvider";
+import { useSharedContext } from "./SharedContextProvider.jsx";
 import { msearch, queryFrom, defer } from "./utils";
 
 // This component needs to be cleaned.
-export default function ({ children, onChange }) {
+export default function Listener({ children, onChange }) {
   const [{ url, listenerEffect, widgets, headers }, dispatch] = useSharedContext();
 
   // We need to prepare some data in each render.
