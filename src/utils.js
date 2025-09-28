@@ -2,16 +2,35 @@
 import qs from "qs";
 
 // Search with msearch to antfly instance
-// Todo reject.
 export async function msearch(url, msearchData, headers = {}) {
-  headers = {
-    Accept: "application/json",
-    "Content-Type": "application/x-ndjson",
-    ...headers,
-  };
-  const body = msearchData.map((val) => JSON.stringify(val.query)).join("\n") + "\n";
-  const rawResponse = await fetch(`${url}/query`, { method: "POST", headers, body });
-  return rawResponse.json();
+  try {
+    headers = {
+      Accept: "application/json",
+      "Content-Type": "application/x-ndjson",
+      ...headers,
+    };
+    const body = msearchData.map((val) => JSON.stringify(val.query)).join("\n") + "\n";
+
+    const rawResponse = await fetch(`${url}/query`, { method: "POST", headers, body });
+
+    if (!rawResponse.ok) {
+      throw new Error(`HTTP error! status: ${rawResponse.status}`);
+    }
+
+    const result = await rawResponse.json();
+    return result;
+  } catch (error) {
+    console.error('Failed to connect to Antfly:', error);
+    // Return error structure that matches expected response format
+    return {
+      error: true,
+      message: error.message || 'Connection failed',
+      responses: msearchData.map(() => ({
+        status: 500,
+        error: { reason: error.message || 'Connection failed' }
+      }))
+    };
+  }
 }
 
 // Build a query from a Map of queries

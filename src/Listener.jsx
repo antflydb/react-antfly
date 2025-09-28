@@ -182,22 +182,56 @@ export default function Listener({ children, onChange }) {
             async function fetchData() {
               // Only if there is a query to run.
               if (msearchData.length) {
-                const result = await msearch(url, msearchData, headers);
-                result.responses.forEach((response, key) => {
-                  const widget = widgets.get(msearchData[key].id);
-                  if (response.status !== 200) {
-                    // console.error(response.error.reason);
-                    console.error(response.error);
+                try {
+                  const result = await msearch(url, msearchData, headers);
+
+                  // Handle connection error from msearch
+                  if (result.error) {
+                    console.error('Antfly connection error:', result.message);
+                    // Set error state for all widgets
+                    msearchData.forEach(({ id }) => {
+                      const widget = widgets.get(id);
+                      widget.result = {
+                        data: [],
+                        total: 0,
+                        error: result.message
+                      };
+                      dispatch({ type: "setWidget", key: id, ...widget });
+                    });
                     return;
                   }
 
-                  widget.result = {
-                    data: msearchData[key].data(response),
-                    total: msearchData[key].total(response),
-                  };
-                  // Update widget
-                  dispatch({ type: "setWidget", key: msearchData[key].id, ...widget });
-                });
+                  result.responses.forEach((response, key) => {
+                    const widget = widgets.get(msearchData[key].id);
+                    if (response.status !== 200) {
+                      console.error('Antfly response error:', response.error);
+                      widget.result = {
+                        data: [],
+                        total: 0,
+                        error: response.error?.reason || 'Query failed'
+                      };
+                    } else {
+                      widget.result = {
+                        data: msearchData[key].data(response),
+                        total: msearchData[key].total(response),
+                      };
+                    }
+                    // Update widget
+                    dispatch({ type: "setWidget", key: msearchData[key].id, ...widget });
+                  });
+                } catch (error) {
+                  console.error('Unexpected error during Antfly query:', error);
+                  // Set error state for all widgets
+                  msearchData.forEach(({ id }) => {
+                    const widget = widgets.get(id);
+                    widget.result = {
+                      data: [],
+                      total: 0,
+                      error: 'Unexpected error occurred'
+                    };
+                    dispatch({ type: "setWidget", key: id, ...widget });
+                  });
+                }
               }
             }
             fetchData();
