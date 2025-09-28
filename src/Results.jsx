@@ -28,7 +28,7 @@ export default function Results({
 
   // Check if any search widgets have semantic search enabled
   console.log('All widgets:', Array.from(widgets.values()).map(w => ({ id: w.id, isSemantic: w.isSemantic, query: w.query, value: w.value })));
-  const isSemanticSearchActive = Array.from(widgets.values()).some((w) => w.isSemantic && w.query && w.query.trim().length > 0);
+  const isSemanticSearchActive = Array.from(widgets.values()).some((w) => w.isSemantic && w.semanticQuery && typeof w.semanticQuery === 'string' && w.semanticQuery.trim().length > 0);
   console.log('isSemanticSearchActive:', isSemanticSearchActive);
 
   useEffect(() => {

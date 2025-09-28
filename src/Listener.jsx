@@ -18,16 +18,18 @@ export default function Listener({ children, onChange }) {
   const facetWidgets = widgetThat("isFacet");
   const searchWidgets = widgetThat("needsQuery");
   const resultWidgets = widgetThat("wantResults");
-  const queries = new Map(
-    [...widgets].filter(([, v]) => v.query && !v.isSemantic).map(([k, v]) => [k, v.query])
-  );
+  const queries = new Map([...widgets].filter(([, v]) => v.query).map(([k, v]) => [k, v.query]));
   const semanticQueries = new Map(
     [...widgets]
-      .filter(([, v]) => v.query && v.isSemantic)
+      .filter(([, v]) => v.semanticQuery && v.isSemantic)
       .map(([k, v]) => [
         k,
-        { query: v.query, indexes: v.configuration?.indexes, limit: v.configuration?.limit },
-      ])
+        {
+          query: v.semanticQuery,
+          indexes: v.configuration?.indexes,
+          limit: v.configuration?.limit,
+        },
+      ]),
   );
   const configurations = mapFrom("configuration");
   const values = mapFrom("value");
@@ -68,7 +70,7 @@ export default function Listener({ children, onChange }) {
               const semanticQuery = [...semanticQueries?.values().map((v) => v.query)].join(" ");
               // Get the first indexes configured for the widget
               const indexes = [...semanticQueries?.values().map((v) => v.indexes)].filter(
-                (i) => i && i.length
+                (i) => i && i.length,
               )[0];
               // If there is no indexes, use the default one.
               msearchData.push({
@@ -129,7 +131,7 @@ export default function Listener({ children, onChange }) {
                 const semanticQuery = [...semanticQueries?.values().map((v) => v.query)].join(" ");
                 // Get the first indexes configured for the widget
                 const indexes = [...semanticQueries?.values().map((v) => v.indexes)].filter(
-                  (i) => i && i.length
+                  (i) => i && i.length,
                 )[0];
                 const limit = [...semanticQueries?.values().map((v) => v.limit)][0] || 10;
                 return {
@@ -159,7 +161,7 @@ export default function Listener({ children, onChange }) {
                       // then skip it as well
                       if (filterValue) {
                         return result.facets[f].terms.filter((i) =>
-                          i.term.toLowerCase().includes(filterValue.toLowerCase())
+                          i.term.toLowerCase().includes(filterValue.toLowerCase()),
                         );
                       }
                       return result.facets[f].terms;
@@ -187,14 +189,14 @@ export default function Listener({ children, onChange }) {
 
                   // Handle connection error from msearch
                   if (result.error) {
-                    console.error('Antfly connection error:', result.message);
+                    console.error("Antfly connection error:", result.message);
                     // Set error state for all widgets
                     msearchData.forEach(({ id }) => {
                       const widget = widgets.get(id);
                       widget.result = {
                         data: [],
                         total: 0,
-                        error: result.message
+                        error: result.message,
                       };
                       dispatch({ type: "setWidget", key: id, ...widget });
                     });
@@ -204,11 +206,11 @@ export default function Listener({ children, onChange }) {
                   result.responses.forEach((response, key) => {
                     const widget = widgets.get(msearchData[key].id);
                     if (response.status !== 200) {
-                      console.error('Antfly response error:', response.error);
+                      console.error("Antfly response error:", response.error);
                       widget.result = {
                         data: [],
                         total: 0,
-                        error: response.error?.reason || 'Query failed'
+                        error: response.error?.reason || "Query failed",
                       };
                     } else {
                       widget.result = {
@@ -220,14 +222,14 @@ export default function Listener({ children, onChange }) {
                     dispatch({ type: "setWidget", key: msearchData[key].id, ...widget });
                   });
                 } catch (error) {
-                  console.error('Unexpected error during Antfly query:', error);
+                  console.error("Unexpected error during Antfly query:", error);
                   // Set error state for all widgets
                   msearchData.forEach(({ id }) => {
                     const widget = widgets.get(id);
                     widget.result = {
                       data: [],
                       total: 0,
-                      error: 'Unexpected error occurred'
+                      error: "Unexpected error occurred",
                     };
                     dispatch({ type: "setWidget", key: id, ...widget });
                   });

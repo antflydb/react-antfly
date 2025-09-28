@@ -7,7 +7,6 @@ export default function SearchBox({
   id,
   initialValue,
   placeholder,
-  isSemantic,
   semanticIndexes,
   limit,
 }) {
@@ -54,9 +53,12 @@ export default function SearchBox({
       isFacet: false,
       isSemantic: isSemanticEnabled,
       wantResults: false,
-      query: queryFromValue(v),
+      query: isSemanticEnabled ? (customQuery ? customQuery() : null) : queryFromValue(v),
+      semanticQuery: isSemanticEnabled ? v : null,
       value: v,
-      configuration: isSemanticEnabled ? { indexes: semanticIndexes || [], limit: limit || 10 } : null,
+      configuration: isSemanticEnabled
+        ? { indexes: semanticIndexes || [], limit: limit || 10 }
+        : null,
       result: null,
     });
   }

@@ -4,6 +4,7 @@
   "description": "React components for Antfly search",
   "main": "src/index.js",
   "module": "src/index.js",
+  "types": "types/index.d.ts",
   "scripts": {
     "test": "",
     "build": "webpack --mode production",
@@ -37,12 +38,14 @@
     "@storybook/addon-webpack5-compiler-babel": "^3.0.6",
     "@storybook/react": "^9.1.8",
     "@storybook/react-webpack5": "^9.1.8",
+    "@types/react": "^18.0.0",
     "babel-loader": "^10.0.0",
     "core-js": "^3.45.1",
     "lodash": "^4.17.21",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "sb": "^9.1.8",
+    "typescript": "^5.0.0",
     "webpack": "^5.101.3",
     "webpack-cli": "^6.0.1"
   },
