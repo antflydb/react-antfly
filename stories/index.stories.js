@@ -42,7 +42,7 @@ export const BasicUsage = () => {
 export const SemanticSearch = () => {
   return (
     <Antfly url={url}>
-      <SearchBox id="main" isSemantic={true} semanticIndexes={["full_nomic"]} limit={10} />
+      <SearchBox id="main" semanticIndexes={["full_nomic"]} limit={10} />
       <div style={{ display: "inline-block" }}>
         <Facet id="author" fields={["AUTR.keyword"]} />
       </div>
@@ -91,7 +91,7 @@ export const WithUrlParams = () => {
 export const Wikipedia = () => {
   return (
     <Antfly url={"http://localhost:8080/table/wikipedia"}>
-      <SearchBox id="main" isSemantic={true} semanticIndexes={["body_nomic"]} limit={10} />
+      <SearchBox id="main" semanticIndexes={["body_nomic"]} limit={10} />
       <ActiveFilters id="af" />
       <Results
         id="result"

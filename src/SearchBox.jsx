@@ -11,6 +11,7 @@ export default function SearchBox({
   semanticIndexes,
   limit,
 }) {
+  const isSemanticEnabled = semanticIndexes && semanticIndexes.length > 0;
   const [{ widgets }, dispatch] = useSharedContext();
   const [value, setValue] = useState(initialValue || "");
 
@@ -27,7 +28,7 @@ export default function SearchBox({
 
   // Build a query from a value.
   function queryFromValue(query) {
-    if (isSemantic) return query;
+    if (isSemanticEnabled) return query;
     if (customQuery) {
       return customQuery(query);
     } else if (fields) {
@@ -49,13 +50,13 @@ export default function SearchBox({
       type: "setWidget",
       key: id,
       needsQuery: true,
-      needsConfiguration: isSemantic,
+      needsConfiguration: isSemanticEnabled,
       isFacet: false,
-      isSemantic: isSemantic,
+      isSemantic: isSemanticEnabled,
       wantResults: false,
       query: queryFromValue(v),
       value: v,
-      configuration: isSemantic ? { indexes: semanticIndexes || [], limit: limit || 10 } : null,
+      configuration: isSemanticEnabled ? { indexes: semanticIndexes || [], limit: limit || 10 } : null,
       result: null,
     });
   }
