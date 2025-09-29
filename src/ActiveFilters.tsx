@@ -1,24 +1,35 @@
-import React from "react";
-import { useSharedContext } from "./SharedContextProvider.jsx";
+import React, { ReactNode } from "react";
+import { useSharedContext } from "./SharedContextProvider";
 
-export default function ActiveFilters({ items }) {
+export interface ActiveFilter {
+  key: string;
+  value: string;
+}
+
+export interface ActiveFiltersProps {
+  items?: (activeFilters: ActiveFilter[], removeFilter: (id: string) => void) => ReactNode;
+}
+
+export default function ActiveFilters({ items }: ActiveFiltersProps) {
   const [{ widgets }, dispatch] = useSharedContext();
-  const activeFilters = [...widgets]
+  const activeFilters: ActiveFilter[] = [...widgets]
     .filter(([, v]) => (Array.isArray(v.value) ? v.value.length : v.value))
     .map(([k, v]) => ({
       key: k,
-      value: Array.isArray(v.value) ? v.value.join(", ") : v.value,
+      value: Array.isArray(v.value) ? v.value.join(", ") : String(v.value),
     }));
 
   // On filter remove, update widget properties.
-  function removeFilter(id) {
+  function removeFilter(id: string) {
     const widget = widgets.get(id);
-    dispatch({
-      type: "setWidget",
-      key: id,
-      ...widget,
-      value: widget.isFacet ? [] : "",
-    });
+    if (widget) {
+      dispatch({
+        type: "setWidget",
+        key: id,
+        ...widget,
+        value: widget.isFacet ? [] : "",
+      });
+    }
   }
 
   return (

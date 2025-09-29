@@ -1,15 +1,32 @@
-import React from "react";
-import { SharedContextProvider } from "./SharedContextProvider.jsx";
-import Listener from "./Listener.jsx";
+import React, { ReactNode, useEffect } from "react";
+import { SharedContextProvider, SharedState, SharedAction } from "./SharedContextProvider";
+import { initializeAntflyClient } from "./utils";
+import Listener from "./Listener";
 
-// Main component. See storybook for usage.
-export default function Antfly({ children, url, onChange, headers }) {
-  const initialState = { url, listenerEffect: null, widgets: new Map(), headers };
+export interface AntflyProps {
+  children: ReactNode;
+  url: string;
+  onChange?: (params: Map<string, unknown>) => void;
+  headers?: Record<string, string>;
+}
 
-  const reducer = (state, action) => {
+export default function Antfly({ children, url, onChange, headers = {} }: AntflyProps) {
+  const initialState: SharedState = {
+    url,
+    listenerEffect: null,
+    widgets: new Map(),
+    headers,
+  };
+
+  useEffect(() => {
+    initializeAntflyClient(url, headers);
+  }, [url, headers]);
+
+  const reducer = (state: SharedState, action: SharedAction): SharedState => {
     const { widgets } = state;
+
     switch (action.type) {
-      case "setWidget":
+      case "setWidget": {
         const widget = {
           id: action.key,
           needsQuery: action.needsQuery,
@@ -25,6 +42,7 @@ export default function Antfly({ children, url, onChange, headers }) {
         };
         widgets.set(action.key, widget);
         return { ...state, widgets };
+      }
       case "deleteWidget":
         widgets.delete(action.key);
         return { ...state, widgets };
