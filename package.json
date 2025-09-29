@@ -10,7 +10,8 @@
     "build": "webpack --mode production",
     "typecheck": "tsc --noEmit",
     "storybook": "sb dev",
-    "build-storybook": "sb build"
+    "build-storybook": "sb build",
+    "postinstall": "[ -f dist/main.js ] || npm run build"
   },
   "keywords": [],
   "author": "Antfly Contributors",
