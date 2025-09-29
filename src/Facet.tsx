@@ -79,12 +79,12 @@ export default function Facet({
   // The new approach only syncs the local state when the widget's actual value
   // changes from external sources (like active filter removal), which is
   // what was intended.
+  const widgetValue = widgets.get(id)?.value;
   useEffect(() => {
-    const widget = widgets.get(id);
-    if (widget && Array.isArray(widget.value) && widget.value !== value) {
-      setValue(widget.value);
+    if (widgetValue && Array.isArray(widgetValue) && widgetValue !== value) {
+      setValue(widgetValue);
     }
-  }, [widgets.get(id)?.value, id, value]);
+  }, [widgetValue, id]); // Remove value from deps to prevent loops
 
   // Destroy widget from context (remove from the list to unapply its effects)
   useEffect(() => () => dispatch({ type: "deleteWidget", key: id }), [dispatch, id]);

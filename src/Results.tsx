@@ -82,12 +82,10 @@ export default function Results({
       isFacet: false,
       wantResults: true,
       isSemantic: isSemanticSearchActive,
-      query: null,
-      value: null,
       configuration: { itemsPerPage, page, sort },
-      result: data && total ? { data, total } : undefined,
+      // Don't pass result here - it should only be set by the Listener after fetching
     });
-  }, [dispatch, id, itemsPerPage, page, sort, isSemanticSearchActive, data, total]);
+  }, [dispatch, id, itemsPerPage, page, sort, isSemanticSearchActive]); // Remove data and total to prevent loops
 
   // Destroy widget from context (remove from the list to unapply its effects)
   useEffect(() => () => dispatch({ type: "deleteWidget", key: id }), [dispatch, id]);

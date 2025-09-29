@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useSharedContext } from "./SharedContextProvider";
 
 export interface SearchBoxProps {
@@ -23,23 +23,10 @@ export default function SearchBox({
   const isSemanticEnabled = semanticIndexes && semanticIndexes.length > 0;
   const [{ widgets }, dispatch] = useSharedContext();
   const [value, setValue] = useState(initialValue || "");
-
-  // Update external query on mount.
-  useEffect(() => {
-    update(value);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // If widget value was updated elsewhere (ex: from active filters deletion)
-  // We have to update and dispatch the component.
-  useEffect(() => {
-    const widget = widgets.get(id);
-    if (widget && widget.value !== value) {
-      update(String(widget.value || ''));
-    }
-  }, [widgets, id, value]);
+  const isExternalUpdate = useRef(false);
 
   // Build a query from a value.
-  function queryFromValue(query: string): unknown {
+  const queryFromValue = useCallback((query: string): unknown => {
     if (isSemanticEnabled) return query;
     if (customQuery) {
       return customQuery(query);
@@ -51,13 +38,12 @@ export default function SearchBox({
       return query ? { disjuncts: termQueries } : { match_all: {} };
     }
     return { match_all: {} };
-  }
+  }, [isSemanticEnabled, customQuery, fields]);
 
   // This functions updates the current values, then dispatch
   // the new widget properties to context.
   // Called on mount and value change.
-  function update(v: string) {
-    setValue(v);
+  const update = useCallback((v: string) => {
     dispatch({
       type: "setWidget",
       key: id,
@@ -74,7 +60,35 @@ export default function SearchBox({
         : undefined,
       result: undefined,
     });
-  }
+  }, [dispatch, id, isSemanticEnabled, customQuery, queryFromValue, semanticIndexes, limit]);
+
+  // Update external query on mount - always initialize the widget
+  useEffect(() => {
+    const valueToSet = initialValue || '';
+    setValue(valueToSet);
+    update(valueToSet);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // If widget value was updated elsewhere (ex: from active filters deletion)
+  // We have to update and dispatch the component.
+  const widgetValue = widgets.get(id)?.value;
+  useEffect(() => {
+    // Only update if the widget value was changed externally
+    // and is actually different from our current value
+    if (widgetValue !== undefined && widgetValue !== value && !isExternalUpdate.current) {
+      isExternalUpdate.current = true;
+      setValue(String(widgetValue || ''));
+      isExternalUpdate.current = false;
+    }
+  }, [widgetValue, value, id]);
+
+  // Handle input changes
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value;
+    console.log('SearchBox handleChange:', newValue);
+    setValue(newValue);
+    update(newValue);
+  }, [update]);
 
   // Destroy widget from context (remove from the list to unapply its effects)
   useEffect(() => () => dispatch({ type: "deleteWidget", key: id }), [dispatch, id]);
@@ -84,7 +98,7 @@ export default function SearchBox({
       <input
         type="text"
         value={value}
-        onChange={(e) => update(e.target.value)}
+        onChange={handleChange}
         placeholder={placeholder || "search…"}
       />
     </div>

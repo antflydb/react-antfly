@@ -23,8 +23,6 @@ export default function Antfly({ children, url, onChange, headers = {} }: Antfly
   }, [url, headers]);
 
   const reducer = (state: SharedState, action: SharedAction): SharedState => {
-    const { widgets } = state;
-
     switch (action.type) {
       case "setWidget": {
         const widget = {
@@ -40,12 +38,17 @@ export default function Antfly({ children, url, onChange, headers = {} }: Antfly
           configuration: action.configuration,
           result: action.result,
         };
-        widgets.set(action.key, widget);
-        return { ...state, widgets };
+        // Create a new Map to maintain immutability
+        const newWidgets = new Map(state.widgets);
+        newWidgets.set(action.key, widget);
+        return { ...state, widgets: newWidgets };
       }
-      case "deleteWidget":
-        widgets.delete(action.key);
-        return { ...state, widgets };
+      case "deleteWidget": {
+        // Create a new Map to maintain immutability
+        const newWidgets = new Map(state.widgets);
+        newWidgets.delete(action.key);
+        return { ...state, widgets: newWidgets };
+      }
       case "setListenerEffect":
         return { ...state, listenerEffect: action.value };
       default:
