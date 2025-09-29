@@ -28,8 +28,8 @@ const MySearchComponent = () => (
 ## Install
 
 ```
-npm i react-antfly
-yarn add react-antfly
+npm i @antfly/components
+yarn add @antfly/components
 ```
 
 ## Develop
