@@ -1,4 +1,4 @@
-import React, { useEffect, ReactNode } from "react";
+import React, { useEffect, useRef, ReactNode } from "react";
 import { useSharedContext, SharedState, Widget } from "./SharedContextProvider";
 import { msearch, queryFrom, defer, MultiqueryRequest } from "./utils";
 
@@ -16,6 +16,7 @@ interface MSSearchItem {
 
 export default function Listener({ children, onChange }: ListenerProps) {
   const [{ url, listenerEffect, widgets, headers }, dispatch] = useSharedContext();
+  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // We need to prepare some data in each render.
   // This needs to be done out of the effect function.
@@ -68,6 +69,11 @@ export default function Listener({ children, onChange }: ListenerProps) {
 
   // Run effect on update for each change in queries or configuration.
   useEffect(() => {
+    // Clear any existing timeout to debounce multiple rapid updates
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
+    }
+
     // If you are debugging and your debug path leads you here, you might
     // check configurableWidgets and searchWidgets actually covers
     // the whole list of components that are configurables and queryable.
@@ -76,12 +82,14 @@ export default function Listener({ children, onChange }: ListenerProps) {
     const isAtLeastOneWidgetReady = searchWidgets.size + configurableWidgets.size > 0;
 
     if (queriesReady && configurationsReady && isAtLeastOneWidgetReady) {
-      // The actual query to Antfly is deffered, to wait for all effects
-      // and context operations before running.
-      defer(() => {
-        dispatch({
-          type: "setListenerEffect",
-          value: () => {
+      // Debounce to batch multiple widget updates into a single network call
+      debounceTimeoutRef.current = setTimeout(() => {
+        // The actual query to Antfly is deffered, to wait for all effects
+        // and context operations before running.
+        defer(() => {
+          dispatch({
+            type: "setListenerEffect",
+            value: () => {
             const multiqueryData: MSSearchItem[] = [];
             resultWidgets.forEach((r, id) => {
               const config = r.configuration as any;
@@ -94,12 +102,24 @@ export default function Listener({ children, onChange }: ListenerProps) {
               const indexes = Array.from(semanticQueries.values())
                 .map((v) => v.indexes)
                 .filter((i) => i && Array.isArray(i) && i.length > 0)[0];
+
+              // If this widget is a root query, filter out other root queries
+              const filteredQueries = r.rootQuery
+                ? new Map(
+                    [...queries].filter(([queryId]) => {
+                      const w = widgets.get(queryId);
+                      // Include this widget's own query and non-root queries (facets)
+                      return queryId === id || !w?.rootQuery;
+                    })
+                  )
+                : queries;
+
               // If there is no indexes, use the default one.
               multiqueryData.push({
                 query: {
                   semantic_search: semanticQuery,
                   indexes: semanticQuery ? indexes : undefined,
-                  full_text_search: queryFrom(queries),
+                  full_text_search: queryFrom(filteredQueries),
                   limit: itemsPerPage,
                   offset: (page - 1) * itemsPerPage,
                   order_by: sort,
@@ -280,7 +300,15 @@ export default function Listener({ children, onChange }: ListenerProps) {
           },
         });
       });
+      }, 15); // 15ms debounce delay to batch rapid updates
     }
+
+    // Cleanup timeout on unmount
+    return () => {
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+      }
+    };
   }, [
     queriesKey,
     semanticQueriesKey,

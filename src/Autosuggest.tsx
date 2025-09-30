@@ -73,6 +73,7 @@ export default function Autosuggest({
         needsQuery: true,
         needsConfiguration: true,
         isFacet: false,
+        rootQuery: true,
         wantResults: true,
         query: customQuery
           ? customQuery(searchValue, fields)
@@ -98,6 +99,7 @@ export default function Autosuggest({
         needsQuery: false,
         needsConfiguration: false,
         isFacet: false,
+        rootQuery: true,
         wantResults: false,
         result: { data: [], total: 0 },
       });
@@ -165,11 +167,8 @@ export default function Autosuggest({
   );
 
   // Default suggestion renderer
-  const defaultRenderSuggestion = (suggestion: string, count?: number) => (
-    <>
-      <span className="react-af-autosuggest-term">{suggestion}</span>
-      {count !== undefined && <span className="react-af-autosuggest-count">{count}</span>}
-    </>
+  const defaultRenderSuggestion = (suggestion: string) => (
+    <span className="react-af-autosuggest-term">{suggestion}</span>
   );
 
   if (!isOpen || suggestions.length === 0) {
@@ -189,7 +188,7 @@ export default function Autosuggest({
         >
           {renderSuggestion
             ? renderSuggestion(suggestion.key, suggestion.doc_count)
-            : defaultRenderSuggestion(suggestion.key, suggestion.doc_count)}
+            : defaultRenderSuggestion(suggestion.key)}
         </li>
       ))}
     </ul>

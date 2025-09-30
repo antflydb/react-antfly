@@ -52,6 +52,7 @@ export default function SearchBox({
       needsQuery: true,
       needsConfiguration: isSemanticEnabled,
       isFacet: false,
+      rootQuery: true,
       isSemantic: isSemanticEnabled,
       wantResults: false,
       query: isSemanticEnabled ? (customQuery ? customQuery() : null) : queryFromValue(v),

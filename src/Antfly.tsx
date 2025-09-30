@@ -32,6 +32,7 @@ export default function Antfly({ children, url, onChange, headers = {} }: Antfly
           isFacet: action.isFacet,
           wantResults: action.wantResults,
           query: action.query,
+          rootQuery: action.rootQuery,
           semanticQuery: action.semanticQuery,
           isSemantic: action.isSemantic,
           value: action.value,
