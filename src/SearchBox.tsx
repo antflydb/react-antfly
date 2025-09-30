@@ -85,7 +85,6 @@ export default function SearchBox({
   // Handle input changes
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
-    console.log('SearchBox handleChange:', newValue);
     setValue(newValue);
     update(newValue);
   }, [update]);

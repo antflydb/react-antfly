@@ -41,20 +41,12 @@ export default function Results({
       : 0;
 
   // Check if any search widgets have semantic search enabled
-  console.log('All widgets:', Array.from(widgets.values()).map(w => ({
-    id: w.id,
-    isSemantic: w.isSemantic,
-    query: w.query,
-    value: w.value
-  })));
-
   const isSemanticSearchActive = Array.from(widgets.values()).some((w) =>
     w.isSemantic &&
     w.semanticQuery &&
     typeof w.semanticQuery === 'string' &&
     w.semanticQuery.trim().length > 0
   );
-  console.log('isSemanticSearchActive:', isSemanticSearchActive);
 
   useEffect(() => {
     // Create a hash of all search/filter widgets to detect query changes
@@ -102,7 +94,7 @@ export default function Results({
   return (
     <div className="react-af-results">
       {stats ? stats(total) : (
-        (console.log('Rendering with isSemanticSearchActive:', isSemanticSearchActive), isSemanticSearchActive) ?
+        isSemanticSearchActive ?
           <>{data.length} out of {total} results</> :
           <>{total} results</>
       )}

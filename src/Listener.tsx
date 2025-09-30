@@ -16,7 +16,6 @@ interface MSSearchItem {
 
 export default function Listener({ children, onChange }: ListenerProps) {
   const [{ url, listenerEffect, widgets, headers }, dispatch] = useSharedContext();
-  console.log('Listener component rendered, widgets:', Array.from(widgets.entries()));
 
   // We need to prepare some data in each render.
   // This needs to be done out of the effect function.
@@ -53,9 +52,6 @@ export default function Listener({ children, onChange }: ListenerProps) {
   const semanticQueriesKey = JSON.stringify(Array.from(semanticQueries.entries()).sort());
   const configurationsKey = JSON.stringify(Array.from(configurations.entries()).sort());
 
-  console.log('Listener render - queriesKey:', queriesKey);
-  console.log('Listener render - queries size:', queries.size);
-
   useEffect(() => {
     // Apply custom callback effect on every change, useful for query params.
     if (onChange) {
@@ -78,23 +74,6 @@ export default function Listener({ children, onChange }: ListenerProps) {
     const queriesReady = queries.size + semanticQueries.size === searchWidgets.size;
     const configurationsReady = configurations.size === configurableWidgets.size;
     const isAtLeastOneWidgetReady = searchWidgets.size + configurableWidgets.size > 0;
-
-    // Debug logging to identify query triggering issues
-    console.log('Query trigger check:', {
-      queries: queries.size,
-      semanticQueries: semanticQueries.size,
-      searchWidgets: searchWidgets.size,
-      queriesReady,
-      configurations: configurations.size,
-      configurableWidgets: configurableWidgets.size,
-      configurationsReady,
-      isAtLeastOneWidgetReady,
-      willTrigger: queriesReady && configurationsReady && isAtLeastOneWidgetReady,
-      searchWidgetIds: Array.from(searchWidgets.keys()),
-      configurableWidgetIds: Array.from(configurableWidgets.keys()),
-      queryIds: Array.from(queries.keys()),
-      configIds: Array.from(configurations.keys())
-    });
 
     if (queriesReady && configurationsReady && isAtLeastOneWidgetReady) {
       // The actual query to Antfly is deffered, to wait for all effects
