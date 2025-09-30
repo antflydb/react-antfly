@@ -2,7 +2,8 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "noEmit": false,
-    "emitDeclarationOnly": false
+    "emitDeclarationOnly": true,
+    "declarationDir": "./types"
   },
   "include": [
     "src/**/*"

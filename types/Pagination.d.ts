@@ -1,11 +1,8 @@
-import * as React from 'react';
-
 export interface PaginationProps {
-  onChange: (page: number) => void;
-  total: number;
-  itemsPerPage: number;
-  page: number;
+    onChange: (page: number) => void;
+    total: number;
+    itemsPerPage: number;
+    page: number;
 }
-
-declare const Pagination: React.FC<PaginationProps>;
-export default Pagination;
+export default function Pagination({ onChange, total, itemsPerPage, page }: PaginationProps): import("react/jsx-runtime").JSX.Element;
+//# sourceMappingURL=Pagination.d.ts.map

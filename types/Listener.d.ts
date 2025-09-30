@@ -1,9 +1,8 @@
-import * as React from 'react';
-
-export interface ListenerProps {
-  children: React.ReactNode;
-  onChange?: (params: Map<string, any>) => void;
+import { ReactNode } from "react";
+interface ListenerProps {
+    children: ReactNode;
+    onChange?: (params: Map<string, unknown>) => void;
 }
-
-declare const Listener: React.FC<ListenerProps>;
-export default Listener;
+export default function Listener({ children, onChange }: ListenerProps): import("react/jsx-runtime").JSX.Element;
+export {};
+//# sourceMappingURL=Listener.d.ts.map
