@@ -61,9 +61,8 @@ export default function Facet({
       query: { disjuncts: toTermQueries(fields, value) },
       value,
       configuration: { size, filterValue, fields, filterValueModifier },
-      result: data && total ? { data, total } : undefined,
     });
-  }, [dispatch, id, size, filterValue, value, fields, filterValueModifier, data, total]);
+  }, [dispatch, id, size, filterValue, value, fields, filterValueModifier]);
 
   // If widget value was updated elsewhere (ex: from active filters deletion)
   // We have to update and dispatch the component.
