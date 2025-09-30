@@ -23,6 +23,7 @@ export interface Widget {
         };
         error?: string;
     };
+    excludeMainQuery?: boolean;
 }
 export interface SharedState {
     url?: string;
@@ -43,6 +44,7 @@ export type SharedAction = {
     value?: unknown;
     configuration?: Widget["configuration"];
     result?: Widget["result"];
+    excludeMainQuery?: boolean;
 } | {
     type: "deleteWidget";
     key: string;
@@ -57,6 +59,6 @@ export interface SharedContextProviderProps {
     initialState: SharedState;
     children: ReactNode;
 }
-export declare const SharedContextProvider: ({ reducer, initialState, children }: SharedContextProviderProps) => import("react/jsx-runtime").JSX.Element;
+export declare const SharedContextProvider: ({ reducer, initialState, children, }: SharedContextProviderProps) => import("react/jsx-runtime").JSX.Element;
 export declare const useSharedContext: () => [SharedState, Dispatch<SharedAction>];
 //# sourceMappingURL=SharedContextProvider.d.ts.map

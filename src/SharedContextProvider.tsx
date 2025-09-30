@@ -68,7 +68,7 @@ export interface SharedContextProviderProps {
 export const SharedContextProvider = ({
   reducer,
   initialState,
-  children
+  children,
 }: SharedContextProviderProps) => {
   return (
     <SharedContext.Provider value={useReducer(reducer, initialState)}>

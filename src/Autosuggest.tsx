@@ -34,7 +34,30 @@ export default function Autosuggest({
 
   // Get suggestions from widget result
   const widget = widgets.get(id);
-  const suggestions: Suggestion[] = (widget?.result?.data as Suggestion[]) || [];
+  const rawData = (widget?.result?.data as any[]) || [];
+
+  // Transform hits into suggestions by extracting field values and counting occurrences
+  const suggestions: Suggestion[] =
+    rawData.length > 0
+      ? (() => {
+          const suggestionMap = new Map<string, number>();
+
+          rawData.forEach((hit: any) => {
+            fields.forEach((field) => {
+              const value = hit._source?.[field];
+              if (value) {
+                const stringValue = String(value);
+                suggestionMap.set(stringValue, (suggestionMap.get(stringValue) || 0) + 1);
+              }
+            });
+          });
+
+          return Array.from(suggestionMap.entries())
+            .map(([key, doc_count]) => ({ key, doc_count }))
+            .sort((a, b) => b.doc_count - a.doc_count)
+            .slice(0, limit);
+        })()
+      : [];
 
   // Update widget configuration when searchValue changes
   useEffect(() => {
@@ -43,20 +66,27 @@ export default function Autosuggest({
     setSelectedIndex(-1);
 
     if (shouldShow) {
-      // Register widget to fetch facet suggestions
+      // Register widget to fetch its own query results
       dispatch({
         type: "setWidget",
         key: id,
-        needsQuery: customQuery ? true : false,
+        needsQuery: true,
         needsConfiguration: true,
-        isFacet: true,
-        wantResults: false,
-        query: customQuery ? customQuery(searchValue, fields) : undefined,
+        isFacet: false,
+        wantResults: true,
+        query: customQuery
+          ? customQuery(searchValue, fields)
+          : {
+              disjuncts: fields.map((field) => ({
+                match: searchValue,
+                field,
+              })),
+            },
         configuration: {
           fields,
           size: limit,
-          filterValue: customQuery ? undefined : searchValue,
-          useCustomQuery: !!customQuery,
+          itemsPerPage: limit,
+          page: 1,
         },
         result: undefined,
       });
@@ -105,7 +135,7 @@ export default function Autosuggest({
           break;
       }
     },
-    [isOpen, suggestions, selectedIndex, onSuggestionSelect]
+    [isOpen, suggestions, selectedIndex, onSuggestionSelect],
   );
 
   // Attach keyboard event listener
@@ -131,16 +161,14 @@ export default function Autosuggest({
       setIsOpen(false);
       setSelectedIndex(-1);
     },
-    [onSuggestionSelect]
+    [onSuggestionSelect],
   );
 
   // Default suggestion renderer
   const defaultRenderSuggestion = (suggestion: string, count?: number) => (
     <>
       <span className="react-af-autosuggest-term">{suggestion}</span>
-      {count !== undefined && (
-        <span className="react-af-autosuggest-count">{count}</span>
-      )}
+      {count !== undefined && <span className="react-af-autosuggest-count">{count}</span>}
     </>
   );
 
