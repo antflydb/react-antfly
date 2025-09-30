@@ -116,6 +116,7 @@ export default function Listener({ children, onChange }: ListenerProps) {
               const fields = config.fields;
               const size = config.size;
               const filterValue = config.filterValue;
+              const useCustomQuery = config.useCustomQuery;
 
               // Get the aggs (antfly queries) from fields
               // Dirtiest part, because we build a raw query from various params
@@ -145,11 +146,27 @@ export default function Listener({ children, onChange }: ListenerProps) {
                   .map((v) => v.indexes)
                   .filter((i) => i && Array.isArray(i) && i.length > 0)[0];
                 const limit = Array.from(semanticQueries.values()).map((v) => v.limit)[0] || 10;
+
+                // Build query with custom query support
+                const baseQueries = withoutOwnQueries();
+
+                // For custom queries, only include queries from other facets (exclude searchbox)
+                const facetOnlyQueries = new Map(
+                  [...baseQueries].filter(([queryId]) => {
+                    const w = widgets.get(queryId);
+                    return w?.isFacet === true;  // Only include facet filters
+                  })
+                );
+
+                const fullTextQuery = useCustomQuery && f.query
+                  ? queryFrom(new Map([...facetOnlyQueries, [id, f.query]]))
+                  : queryFrom(baseQueries);
+
                 return {
                   semantic_search: semanticQuery,
                   indexes: semanticQuery ? indexes : undefined,
                   limit: semanticQuery ? limit : 0,
-                  full_text_search: queryFrom(withoutOwnQueries()),
+                  full_text_search: fullTextQuery,
                   facets: result,
                 };
               }
@@ -165,9 +182,8 @@ export default function Listener({ children, onChange }: ListenerProps) {
                       if (!result.facets || !result.facets[f] || !result.facets[f].terms) {
                         return [];
                       }
-                      // If the terms doesn't match the filterValue
-                      // then skip it as well
-                      if (filterValue) {
+                      // Only use filterValue for legacy mode (non-custom queries)
+                      if (filterValue && !useCustomQuery) {
                         return result.facets[f].terms.filter((i: any) =>
                           i.term.toLowerCase().includes(filterValue.toLowerCase()),
                         );

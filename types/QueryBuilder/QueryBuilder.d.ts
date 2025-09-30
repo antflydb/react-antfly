@@ -3,7 +3,7 @@ export interface QueryBuilderRule {
     field: string;
     operator: string;
     value: string;
-    combinator: 'AND' | 'OR';
+    combinator: "AND" | "OR";
     index: number;
     key?: string;
 }

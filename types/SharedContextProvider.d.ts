@@ -9,7 +9,13 @@ export interface Widget {
     semanticQuery?: string;
     isSemantic?: boolean;
     value?: unknown;
-    configuration?: unknown;
+    configuration?: {
+        fields?: string[];
+        size?: number;
+        filterValue?: string;
+        useCustomQuery?: boolean;
+        [key: string]: unknown;
+    };
     result?: {
         data?: unknown[];
         total?: number | {
@@ -35,7 +41,7 @@ export type SharedAction = {
     semanticQuery?: string;
     isSemantic?: boolean;
     value?: unknown;
-    configuration?: unknown;
+    configuration?: Widget["configuration"];
     result?: Widget["result"];
 } | {
     type: "deleteWidget";

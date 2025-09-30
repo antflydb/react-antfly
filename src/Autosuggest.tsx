@@ -6,6 +6,7 @@ export interface AutosuggestProps {
   limit?: number;
   minChars?: number;
   renderSuggestion?: (suggestion: string, count?: number) => ReactNode;
+  customQuery?: (value: string, fields: string[]) => unknown;
   // Internal props passed from SearchBox
   searchValue?: string;
   onSuggestionSelect?: (value: string) => void;
@@ -21,6 +22,7 @@ export default function Autosuggest({
   limit = 10,
   minChars = 2,
   renderSuggestion,
+  customQuery,
   searchValue = "",
   onSuggestionSelect,
 }: AutosuggestProps) {
@@ -45,14 +47,16 @@ export default function Autosuggest({
       dispatch({
         type: "setWidget",
         key: id,
-        needsQuery: false,
+        needsQuery: customQuery ? true : false,
         needsConfiguration: true,
         isFacet: true,
         wantResults: false,
+        query: customQuery ? customQuery(searchValue, fields) : undefined,
         configuration: {
           fields,
           size: limit,
-          filterValue: searchValue,
+          filterValue: customQuery ? undefined : searchValue,
+          useCustomQuery: !!customQuery,
         },
         result: undefined,
       });
@@ -68,7 +72,7 @@ export default function Autosuggest({
         result: { data: [], total: 0 },
       });
     }
-  }, [searchValue, fields, limit, minChars, dispatch, id]);
+  }, [searchValue, fields, limit, minChars, customQuery, dispatch, id]);
 
   // Cleanup on unmount
   useEffect(() => () => dispatch({ type: "deleteWidget", key: id }), [dispatch, id]);

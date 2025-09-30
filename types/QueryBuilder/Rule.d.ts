@@ -4,7 +4,7 @@ export interface RuleProps {
     fields: (string | FieldOption)[];
     operators: Operator[];
     combinators: Combinator[];
-    combinator: 'AND' | 'OR';
+    combinator: "AND" | "OR";
     field: string;
     operator: string;
     value: string;

@@ -1,6 +1,6 @@
 export interface QueryItem {
     query?: unknown;
-    combinator?: 'AND' | 'OR';
+    combinator?: "AND" | "OR";
 }
 export interface Operator {
     value: string;
@@ -9,7 +9,7 @@ export interface Operator {
     query: (key: string | string[], value?: string) => unknown;
 }
 export interface Combinator {
-    value: 'AND' | 'OR';
+    value: "AND" | "OR";
     text: string;
 }
 export interface Rule {
