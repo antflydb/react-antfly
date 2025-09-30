@@ -37,7 +37,7 @@ export const Collapsable = () => {
   return (
     <Antfly url={url}>
       <SearchBox id="main" fields={["TICO"]} />
-      <CollapsableFacet id="autr" fields={["AUTR.keyword"]} />
+      <CollapsableFacet id="autr" fields={["AUTR"]} />
       <Results
         id="result"
         items={(data) =>
@@ -60,7 +60,7 @@ export const Customized = () => {
         seeMore="SEE MORE CUSTOM"
         placeholder="MY PLACEHOLDER"
         id="autr"
-        fields={["AUTR.keyword"]}
+        fields={["AUTR"]}
         itemsPerBlock={10}
       />
       <Results
@@ -84,7 +84,7 @@ export const ModifyFilterValue = () => {
         filterValueModifier={(v) => `${v}.*`}
         placeholder="type first letters"
         id="autr"
-        fields={["AUTR.keyword"]}
+        fields={["AUTR"]}
       />
       <Results
         id="result"
@@ -106,7 +106,7 @@ export const FacetWithCustomRenderItems = () => {
       <SearchBox id="main" fields={["TICO"]} />
       <Facet
         id="autr"
-        fields={["AUTR.keyword"]}
+        fields={["AUTR"]}
         items={(data, { handleChange, isChecked }) => {
           return data.map((item) => (
             <div

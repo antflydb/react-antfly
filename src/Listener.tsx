@@ -38,7 +38,7 @@ export default function Listener({ children, onChange }: ListenerProps) {
       .map(([k, v]) => [
         k,
         {
-          query: v.semanticQuery || '',
+          query: v.semanticQuery || "",
           indexes: (v.configuration as any)?.indexes,
           limit: (v.configuration as any)?.limit,
         },
@@ -82,18 +82,20 @@ export default function Listener({ children, onChange }: ListenerProps) {
         dispatch({
           type: "setListenerEffect",
           value: () => {
-            const msearchData: MSSearchItem[] = [];
+            const multiqueryData: MSSearchItem[] = [];
             resultWidgets.forEach((r, id) => {
               const config = r.configuration as any;
               const { itemsPerPage, page, sort } = config;
               // Join semanticQueries as a string
-              const semanticQuery = Array.from(semanticQueries.values()).map((v) => v.query).join(" ");
+              const semanticQuery = Array.from(semanticQueries.values())
+                .map((v) => v.query)
+                .join(" ");
               // Get the first indexes configured for the widget
-              const indexes = Array.from(semanticQueries.values()).map((v) => v.indexes).filter(
-                (i) => i && Array.isArray(i) && i.length > 0,
-              )[0];
+              const indexes = Array.from(semanticQueries.values())
+                .map((v) => v.indexes)
+                .filter((i) => i && Array.isArray(i) && i.length > 0)[0];
               // If there is no indexes, use the default one.
-              msearchData.push({
+              multiqueryData.push({
                 query: {
                   semantic_search: semanticQuery,
                   indexes: semanticQuery ? indexes : undefined,
@@ -126,9 +128,6 @@ export default function Listener({ children, onChange }: ListenerProps) {
                 }
                 // Transform a single field to agg query
                 function aggFromField(field: string) {
-                  if (field?.endsWith?.(".keyword")) {
-                    field = field.replace(/\.keyword$/, "");
-                  }
                   const t = { field, size };
                   return { [field]: t };
                 }
@@ -138,11 +137,13 @@ export default function Listener({ children, onChange }: ListenerProps) {
                   result = { ...result, ...aggFromField(f) };
                 });
                 // Join semanticQueries as a string
-                const semanticQuery = Array.from(semanticQueries.values()).map((v) => v.query).join(" ");
+                const semanticQuery = Array.from(semanticQueries.values())
+                  .map((v) => v.query)
+                  .join(" ");
                 // Get the first indexes configured for the widget
-                const indexes = Array.from(semanticQueries.values()).map((v) => v.indexes).filter(
-                  (i) => i && Array.isArray(i) && i.length > 0,
-                )[0];
+                const indexes = Array.from(semanticQueries.values())
+                  .map((v) => v.indexes)
+                  .filter((i) => i && Array.isArray(i) && i.length > 0)[0];
                 const limit = Array.from(semanticQueries.values()).map((v) => v.limit)[0] || 10;
                 return {
                   semantic_search: semanticQuery,
@@ -152,7 +153,7 @@ export default function Listener({ children, onChange }: ListenerProps) {
                   facets: result,
                 };
               }
-              msearchData.push({
+              multiqueryData.push({
                 query: aggsFromFields(),
                 data: (result: any) => {
                   // Merge aggs (if there is more than one for a facet),
@@ -161,9 +162,6 @@ export default function Listener({ children, onChange }: ListenerProps) {
                   const map = new Map();
                   fields
                     .map((f: string) => {
-                      if (f?.endsWith?.(".keyword")) {
-                        f = f.replace(/\.keyword$/, "");
-                      }
                       if (!result.facets || !result.facets[f] || !result.facets[f].terms) {
                         return [];
                       }
@@ -183,7 +181,9 @@ export default function Listener({ children, onChange }: ListenerProps) {
                         doc_count: map.has(i.term) ? i.count + map.get(i.term).doc_count : i.count,
                       });
                     });
-                  return [...map.values()].sort((x: any, y: any) => y.doc_count - x.doc_count).slice(0, size);
+                  return [...map.values()]
+                    .sort((x: any, y: any) => y.doc_count - x.doc_count)
+                    .slice(0, size);
                 },
                 total: (result: any) => result.hits.total,
                 id: id,
@@ -193,18 +193,18 @@ export default function Listener({ children, onChange }: ListenerProps) {
             // Fetch the data.
             async function fetchData() {
               // Only if there is a query to run.
-              if (msearchData.length) {
+              if (multiqueryData.length) {
                 try {
-                  const msearchRequests: MultiqueryRequest[] = msearchData.map((item) => ({
+                  const msearchRequests: MultiqueryRequest[] = multiqueryData.map((item) => ({
                     query: item.query as any,
                   }));
-                  const result = await msearch(url || '', msearchRequests, headers || {});
+                  const result = await msearch(url || "", msearchRequests, headers || {});
 
                   // Handle connection error from msearch
-                  if (result && typeof result === 'object' && 'error' in result && result.error) {
+                  if (result && typeof result === "object" && "error" in result && result.error) {
                     console.error("Antfly connection error:", (result as any).message);
                     // Set error state for all widgets
-                    msearchData.forEach(({ id }) => {
+                    multiqueryData.forEach(({ id }) => {
                       const widget = widgets.get(id);
                       if (widget) {
                         widget.result = {
@@ -221,7 +221,7 @@ export default function Listener({ children, onChange }: ListenerProps) {
                   const responses = (result as any)?.responses;
                   if (responses) {
                     responses.forEach((response: any, key: number) => {
-                      const widget = widgets.get(msearchData[key].id);
+                      const widget = widgets.get(multiqueryData[key].id);
                       if (widget) {
                         if (response.status !== 200) {
                           console.error("Antfly response error:", response.error);
@@ -232,19 +232,19 @@ export default function Listener({ children, onChange }: ListenerProps) {
                           };
                         } else {
                           widget.result = {
-                            data: msearchData[key].data(response),
-                            total: msearchData[key].total(response),
+                            data: multiqueryData[key].data(response),
+                            total: multiqueryData[key].total(response),
                           };
                         }
                         // Update widget
-                        dispatch({ type: "setWidget", key: msearchData[key].id, ...widget });
+                        dispatch({ type: "setWidget", key: multiqueryData[key].id, ...widget });
                       }
                     });
                   }
                 } catch (error) {
                   console.error("Unexpected error during Antfly query:", error);
                   // Set error state for all widgets
-                  msearchData.forEach(({ id }) => {
+                  multiqueryData.forEach(({ id }) => {
                     const widget = widgets.get(id);
                     if (widget) {
                       widget.result = {

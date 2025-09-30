@@ -16,7 +16,7 @@ export const Active = () => {
       Active Filters:
       <ActiveFilters id="af" />
       <SearchBox id="main" fields={["TICO"]} initialValue={"chemin"} />
-      <Facet id="autr" fields={["AUTR.keyword"]} initialValue={["auteur inconnu"]} />
+      <Facet id="autr" fields={["AUTR"]} initialValue={["auteur inconnu"]} />
       <Results
         id="result"
         items={(data) =>
@@ -36,7 +36,7 @@ export const ActiveFilterChangeComponentOrder = () => {
   return (
     <Antfly url={url}>
       <h1>Active filter (change component order)</h1>
-      <Facet id="autr" fields={["AUTR.keyword"]} />
+      <Facet id="autr" fields={["AUTR"]} />
       Recherche:
       <SearchBox id="main" fields={["TICO"]} initialValue={"chemin"} />
       Filtres:

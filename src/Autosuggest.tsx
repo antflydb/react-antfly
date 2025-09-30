@@ -28,7 +28,7 @@ export default function Autosuggest({
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [isOpen, setIsOpen] = useState(false);
   const suggestionsRef = useRef<HTMLUListElement>(null);
-  const id = useRef(`autosuggest-${Math.random().toString(36).substr(2, 9)}`).current;
+  const id = useRef(`autosuggest-${Math.random().toString(36).slice(2, 11)}`).current;
 
   // Get suggestions from widget result
   const widget = widgets.get(id);

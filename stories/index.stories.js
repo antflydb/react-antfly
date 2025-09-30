@@ -20,10 +20,10 @@ export const BasicUsage = () => {
     <Antfly url={url}>
       <SearchBox id="main" customQuery={customQuery} />
       <div style={{ display: "inline-block" }}>
-        <Facet id="author" fields={["AUTR.keyword"]} />
+        <Facet id="author" fields={["AUTR"]} />
       </div>
       <div style={{ display: "inline-block" }}>
-        <Facet id="domn" fields={["DOMN.keyword"]} />
+        <Facet id="domn" fields={["DOMN"]} />
       </div>
       <Results
         id="result"
@@ -44,10 +44,10 @@ export const SemanticSearch = () => {
     <Antfly url={url}>
       <SearchBox id="main" semanticIndexes={["full_nomic"]} limit={10} />
       <div style={{ display: "inline-block" }}>
-        <Facet id="author" fields={["AUTR.keyword"]} />
+        <Facet id="author" fields={["AUTR"]} />
       </div>
       <div style={{ display: "inline-block" }}>
-        <Facet id="domn" fields={["DOMN.keyword"]} />
+        <Facet id="domn" fields={["DOMN"]} />
       </div>
       <Results
         id="result"
@@ -77,7 +77,7 @@ export const WithUrlParams = () => {
       <div>Params: {queryString}</div>
       <SearchBox id="main" fields={["TICO"]} initialValue={initialValues.get("main")} />
       <hr />
-      <Facet id="author" fields={["AUTR.keyword"]} />
+      <Facet id="author" fields={["AUTR"]} />
       <ActiveFilters id="af" />
       <Results
         id="result"

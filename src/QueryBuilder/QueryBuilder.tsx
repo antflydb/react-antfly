@@ -15,7 +15,7 @@ export interface QueryBuilderRule {
   field: string;
   operator: string;
   value: string;
-  combinator: 'AND' | 'OR';
+  combinator: "AND" | "OR";
   index: number;
   key?: string;
 }
@@ -48,17 +48,16 @@ export default function QueryBuilder({
   const finalOperators = operators || defaultOperators;
   const finalCombinators = combinators || defaultCombinators;
   const processedFields = fields.map((f) => {
-    if (typeof f === 'string') {
-      let field = f;
-      if (field?.endsWith?.(".keyword")) field = field.replace(/\.keyword$/, "");
-      return field;
+    if (typeof f === "string") {
+      return f;
     }
     return f;
   });
 
   const finalTemplateRule: QueryBuilderRule = {
-    field: typeof processedFields[0] === 'string' ? processedFields[0] : processedFields[0]?.value || '',
-    operator: finalOperators[0]?.value || '==',
+    field:
+      typeof processedFields[0] === "string" ? processedFields[0] : processedFields[0]?.value || "",
+    operator: finalOperators[0]?.value || "==",
     value: "",
     combinator: "AND",
     index: 0,
@@ -66,7 +65,7 @@ export default function QueryBuilder({
   };
 
   const [rules, setRules] = useState<QueryBuilderRule[]>(
-    withUniqueKey(initialValue || [finalTemplateRule]) as QueryBuilderRule[]
+    withUniqueKey(initialValue || [finalTemplateRule]) as QueryBuilderRule[],
   );
 
   useEffect(() => {

@@ -1,6 +1,6 @@
 export interface QueryItem {
   query?: unknown;
-  combinator?: 'AND' | 'OR';
+  combinator?: "AND" | "OR";
 }
 
 export interface Operator {
@@ -11,7 +11,7 @@ export interface Operator {
 }
 
 export interface Combinator {
-  value: 'AND' | 'OR';
+  value: "AND" | "OR";
   text: string;
 }
 
@@ -33,7 +33,7 @@ export function mergedQueries(queries: QueryItem[]): Record<string, unknown> {
     });
   let ret: Record<string, unknown> = {
     must: { conjuncts: obj["must"] },
-    should: { disjuncts: obj["should"] }
+    should: { disjuncts: obj["should"] },
   };
   if (obj.must.length === 0) {
     delete ret.must;
@@ -48,7 +48,7 @@ function query(
   key: string | string[],
   value: string | null,
   cb: (k: string, v: string | null) => unknown,
-  shouldOrMust: "should" | "must" = "should"
+  shouldOrMust: "should" | "must" = "should",
 ): unknown {
   if (Array.isArray(key)) {
     const junct = shouldOrMust === "should" ? "disjuncts" : "conjuncts";
@@ -140,8 +140,7 @@ export const defaultOperators: Operator[] = [
     text: "contains",
     useInput: true,
     query: (key: string | string[], value?: string) =>
-      value &&
-      query(key, value, (k, v) => ({ field: k.replace(/\.keyword$/, ""), wildcard: `*${v}*` })),
+      value && query(key, value, (k, v) => ({ field: k, wildcard: `*${v}*` })),
   },
   {
     value: "!*",
@@ -153,7 +152,7 @@ export const defaultOperators: Operator[] = [
         key,
         value,
         (k, v) => ({
-          must_not: { disjuncts: [{ field: k.replace(/\.keyword$/, ""), wildcard: `*${v}*` }] },
+          must_not: { disjuncts: [{ field: k, wildcard: `*${v}*` }] },
         }),
         "must",
       ),
@@ -163,8 +162,7 @@ export const defaultOperators: Operator[] = [
     text: "start with",
     useInput: true,
     query: (key: string | string[], value?: string) =>
-      value &&
-      query(key, value, (k, v) => ({ field: k.replace(/\.keyword$/, ""), wildcard: `${v}*` })),
+      value && query(key, value, (k, v) => ({ field: k, wildcard: `${v}*` })),
   },
 ];
 

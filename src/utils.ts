@@ -65,9 +65,6 @@ export function toTermQueries(
 ): Array<Record<string, unknown>> {
   const queries = fields.flatMap((field) =>
     selectedValues.map((value) => {
-      if (field?.endsWith?.(".keyword")) {
-        return { field: field.replace(/\.keyword$/, ""), match: value };
-      }
       return { field, match: value };
     }),
   );

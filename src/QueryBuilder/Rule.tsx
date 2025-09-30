@@ -9,7 +9,7 @@ export interface RuleProps {
   fields: (string | FieldOption)[];
   operators: Operator[];
   combinators: Combinator[];
-  combinator: 'AND' | 'OR';
+  combinator: "AND" | "OR";
   field: string;
   operator: string;
   value: string;
@@ -35,9 +35,8 @@ export default function Rule({
   onChange,
 }: RuleProps) {
   const processedFields = fields.map((f) => {
-    if (typeof f === 'string') {
+    if (typeof f === "string") {
       let field = f;
-      if (field?.endsWith?.(".keyword")) field = field.replace(/\.keyword$/, "");
       return { value: field, text: field };
     }
     return f;
@@ -54,25 +53,27 @@ export default function Rule({
     onChange({ field, operator, value, combinator, index });
   }, [field, operator, value, combinator, onChange, index]);
 
-  const combinatorElement = index > 0 ? (
-    <select
-      className="react-af-rule-combinator"
-      value={combinator}
-      onChange={(e) => setCombinator(e.target.value as 'AND' | 'OR')}
-    >
-      {combinators.map((c) => (
-        <option key={c.value} value={c.value}>
-          {c.text}
-        </option>
-      ))}
-    </select>
-  ) : null;
+  const combinatorElement =
+    index > 0 ? (
+      <select
+        className="react-af-rule-combinator"
+        value={combinator}
+        onChange={(e) => setCombinator(e.target.value as "AND" | "OR")}
+      >
+        {combinators.map((c) => (
+          <option key={c.value} value={c.value}>
+            {c.text}
+          </option>
+        ))}
+      </select>
+    ) : null;
 
-  const deleteButton = index > 0 ? (
-    <button className="react-af-rule-delete" onClick={() => onDelete(index)}>
-      x
-    </button>
-  ) : null;
+  const deleteButton =
+    index > 0 ? (
+      <button className="react-af-rule-delete" onClick={() => onDelete(index)}>
+        x
+      </button>
+    ) : null;
 
   let input = null;
   const currentOperator = operators.find((o) => o.value === operator);
@@ -103,15 +104,13 @@ export default function Rule({
               };
             }
 
-            const msearchRequest: MultiqueryRequest[] = [{
-              query
-            }];
+            const msearchRequest: MultiqueryRequest[] = [
+              {
+                query,
+              },
+            ];
 
-            const suggestions = await msearch(
-              url || '',
-              msearchRequest,
-              headers || {},
-            );
+            const suggestions = await msearch(url || "", msearchRequest, headers || {});
 
             const responses = (suggestions as any)?.responses;
             if (responses && responses[0]) {
@@ -152,7 +151,7 @@ export default function Rule({
       <select
         className="react-af-rule-field"
         value={processedFields.findIndex((e) => String(e.value) === String(field))}
-        onChange={(e) => setField(processedFields[parseInt(e.target.value)]?.value || '')}
+        onChange={(e) => setField(processedFields[parseInt(e.target.value)]?.value || "")}
       >
         {processedFields.map((f, k) => {
           return (
