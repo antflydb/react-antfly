@@ -32,6 +32,7 @@ export default function Autosuggest({
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [isOpen, setIsOpen] = useState(false);
   const suggestionsRef = useRef<HTMLUListElement>(null);
+  const justSelectedRef = useRef(false);
   const id = useRef(`autosuggest-${Math.random().toString(36).slice(2, 11)}`).current;
 
   // Get suggestions from widget result
@@ -64,7 +65,13 @@ export default function Autosuggest({
   // Update widget configuration when searchValue changes
   useEffect(() => {
     const shouldShow = searchValue.length >= minChars;
-    setIsOpen(shouldShow);
+
+    // Don't reopen if user just selected a suggestion
+    if (!justSelectedRef.current) {
+      setIsOpen(shouldShow);
+    }
+    justSelectedRef.current = false;
+
     setSelectedIndex(-1);
 
     if (shouldShow) {
@@ -128,6 +135,7 @@ export default function Autosuggest({
         case "Enter":
           e.preventDefault();
           if (selectedIndex >= 0 && selectedIndex < suggestions.length) {
+            justSelectedRef.current = true;
             onSuggestionSelect?.(suggestions[selectedIndex].key);
             setIsOpen(false);
           }
@@ -176,6 +184,7 @@ export default function Autosuggest({
   // Handle suggestion click
   const handleSuggestionClick = useCallback(
     (suggestion: string) => {
+      justSelectedRef.current = true;
       onSuggestionSelect?.(suggestion);
       setIsOpen(false);
       setSelectedIndex(-1);
