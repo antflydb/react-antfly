@@ -10,6 +10,7 @@ export interface AutosuggestProps {
   // Internal props passed from SearchBox
   searchValue?: string;
   onSuggestionSelect?: (value: string) => void;
+  containerRef?: React.RefObject<HTMLDivElement>;
 }
 
 interface Suggestion {
@@ -25,6 +26,7 @@ export default function Autosuggest({
   customQuery,
   searchValue = "",
   onSuggestionSelect,
+  containerRef,
 }: AutosuggestProps) {
   const [{ widgets }, dispatch] = useSharedContext();
   const [selectedIndex, setSelectedIndex] = useState(-1);
@@ -147,6 +149,21 @@ export default function Autosuggest({
       return () => document.removeEventListener("keydown", handleKeyDown);
     }
   }, [isOpen, handleKeyDown]);
+
+  // Handle click outside to close autosuggest
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef?.current && !containerRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+        setSelectedIndex(-1);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isOpen, containerRef]);
 
   // Scroll selected item into view
   useEffect(() => {

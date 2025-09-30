@@ -26,6 +26,7 @@ export default function SearchBox({
   const [{ widgets }, dispatch] = useSharedContext();
   const [value, setValue] = useState(initialValue || "");
   const isExternalUpdate = useRef(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // Build a query from a value.
   const queryFromValue = useCallback((query: string): unknown => {
@@ -102,7 +103,7 @@ export default function SearchBox({
   useEffect(() => () => dispatch({ type: "deleteWidget", key: id }), [dispatch, id]);
 
   return (
-    <div className="react-af-searchbox">
+    <div className="react-af-searchbox" ref={containerRef}>
       <input
         type="text"
         value={value}
@@ -114,6 +115,7 @@ export default function SearchBox({
           return React.cloneElement(child as React.ReactElement<any>, {
             searchValue: value,
             onSuggestionSelect: handleSuggestionSelect,
+            containerRef,
           });
         }
         return child;
