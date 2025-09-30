@@ -47,7 +47,9 @@ export default function Autosuggest({
 
           rawData.forEach((hit: any) => {
             fields.forEach((field) => {
-              const value = hit._source?.[field];
+              // Strip ._2gram and .keyword suffixes to get the actual field name in _source
+              const sourceField = field.replace(/\.(\_2gram|keyword)$/, '');
+              const value = hit._source?.[sourceField];
               if (value) {
                 const stringValue = String(value);
                 suggestionMap.set(stringValue, (suggestionMap.get(stringValue) || 0) + 1);
@@ -83,6 +85,7 @@ export default function Autosuggest({
         needsConfiguration: true,
         isFacet: false,
         rootQuery: true,
+        isAutosuggest: true,
         wantResults: true,
         query: customQuery
           ? customQuery(searchValue, fields)
@@ -109,6 +112,7 @@ export default function Autosuggest({
         needsConfiguration: false,
         isFacet: false,
         rootQuery: true,
+        isAutosuggest: true,
         wantResults: false,
         result: { data: [], total: 0 },
       });

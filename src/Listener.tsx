@@ -108,11 +108,19 @@ export default function Listener({ children, onChange }: ListenerProps) {
                 ? new Map(
                     [...queries].filter(([queryId]) => {
                       const w = widgets.get(queryId);
-                      // Include this widget's own query and non-root queries (facets)
-                      return queryId === id || !w?.rootQuery;
+                      // Always include this widget's own query
+                      if (queryId === id) return true;
+                      // Include non-root queries (facets), but exclude autosuggest widgets
+                      return !w?.rootQuery && !w?.isAutosuggest;
                     })
                   )
-                : queries;
+                : new Map(
+                    [...queries].filter(([queryId]) => {
+                      const w = widgets.get(queryId);
+                      // For non-root query widgets, exclude only autosuggest widgets
+                      return !w?.isAutosuggest;
+                    })
+                  );
 
               // If there is no indexes, use the default one.
               multiqueryData.push({

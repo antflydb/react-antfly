@@ -6,6 +6,7 @@ export interface Widget {
   needsConfiguration?: boolean;
   isFacet?: boolean;
   rootQuery?: boolean;
+  isAutosuggest?: boolean;
   wantResults?: boolean;
   query?: unknown;
   semanticQuery?: string;
@@ -40,6 +41,7 @@ export type SharedAction =
       needsConfiguration?: boolean;
       isFacet?: boolean;
       rootQuery?: boolean;
+      isAutosuggest?: boolean;
       wantResults?: boolean;
       query?: unknown;
       semanticQuery?: string;
