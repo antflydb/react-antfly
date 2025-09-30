@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef, ReactNode } from "react";
 import { useSharedContext } from "./SharedContextProvider";
 
 export interface SearchBoxProps {
@@ -9,6 +9,7 @@ export interface SearchBoxProps {
   placeholder?: string;
   semanticIndexes?: string[];
   limit?: number;
+  children?: ReactNode;
 }
 
 export default function SearchBox({
@@ -19,6 +20,7 @@ export default function SearchBox({
   placeholder,
   semanticIndexes,
   limit,
+  children,
 }: SearchBoxProps) {
   const isSemanticEnabled = semanticIndexes && semanticIndexes.length > 0;
   const [{ widgets }, dispatch] = useSharedContext();
@@ -89,6 +91,12 @@ export default function SearchBox({
     update(newValue);
   }, [update]);
 
+  // Handle suggestion selection from Autosuggest
+  const handleSuggestionSelect = useCallback((suggestion: string) => {
+    setValue(suggestion);
+    update(suggestion);
+  }, [update]);
+
   // Destroy widget from context (remove from the list to unapply its effects)
   useEffect(() => () => dispatch({ type: "deleteWidget", key: id }), [dispatch, id]);
 
@@ -100,6 +108,15 @@ export default function SearchBox({
         onChange={handleChange}
         placeholder={placeholder || "search…"}
       />
+      {children && React.Children.map(children, (child) => {
+        if (React.isValidElement(child)) {
+          return React.cloneElement(child as React.ReactElement<any>, {
+            searchValue: value,
+            onSuggestionSelect: handleSuggestionSelect,
+          });
+        }
+        return child;
+      })}
     </div>
   );
 }

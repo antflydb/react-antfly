@@ -7,6 +7,7 @@ import Listener from "./Listener";
 import ActiveFilters from "./ActiveFilters";
 import QueryBuilder from "./QueryBuilder/QueryBuilder";
 import CustomWidget from "./CustomWidget";
+import Autosuggest from "./Autosuggest";
 import { fromUrlQueryString, toUrlQueryString, msearch, initializeAntflyClient, getAntflyClient } from "./utils";
 
 export {
@@ -21,6 +22,7 @@ export {
   ActiveFilters,
   QueryBuilder,
   CustomWidget,
+  Autosuggest,
   msearch,
   initializeAntflyClient,
   getAntflyClient,
@@ -34,6 +36,7 @@ export type { FacetProps, FacetItem } from "./Facet";
 export type { PaginationProps } from "./Pagination";
 export type { ActiveFiltersProps, ActiveFilter } from "./ActiveFilters";
 export type { CustomWidgetProps } from "./CustomWidget";
+export type { AutosuggestProps } from "./Autosuggest";
 export type { QueryBuilderProps, QueryBuilderRule, FieldOption } from "./QueryBuilder/QueryBuilder";
 export type { RuleProps } from "./QueryBuilder/Rule";
 export type { Operator, Combinator } from "./QueryBuilder/utils";
