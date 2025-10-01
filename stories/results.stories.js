@@ -79,7 +79,7 @@ export const SortableDmisDesc = () => {
       <select onChange={(e) => setSortKey(e.target.value)} value={sortKey}>
         {["AUTR", "DMIS", "DMAJ", "TICO"].map((e) => (
           <option key={e} value={e}>
-            {e.replace(".keyword", "")}
+            {e.replace("__keyword", "")}
           </option>
         ))}
       </select>

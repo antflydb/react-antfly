@@ -13,7 +13,7 @@ export { Antfly, Results, SearchBox, Facet, Pagination, Listener, fromUrlQuerySt
 export type { AntflyProps } from "./Antfly";
 export type { ResultsProps } from "./Results";
 export type { SearchBoxProps } from "./SearchBox";
-export type { FacetProps, FacetItem } from "./Facet";
+export type { FacetProps } from "./Facet";
 export type { PaginationProps } from "./Pagination";
 export type { ActiveFiltersProps, ActiveFilter } from "./ActiveFilters";
 export type { CustomWidgetProps } from "./CustomWidget";

@@ -1,3 +1,4 @@
+import { QueryHit, TermFacetResult } from "@antfly/sdk";
 import React, { createContext, useContext, useReducer, ReactNode, Dispatch } from "react";
 
 export interface Widget {
@@ -20,7 +21,8 @@ export interface Widget {
     [key: string]: unknown;
   };
   result?: {
-    data?: unknown[];
+    data?: QueryHit[];
+    facetData?: TermFacetResult[];
     total?: number | { value: number };
     error?: string;
   };

@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import React, { ReactNode } from "react";
 export interface AutosuggestProps {
     fields: string[];
     limit?: number;
@@ -7,6 +7,7 @@ export interface AutosuggestProps {
     customQuery?: (value: string, fields: string[]) => unknown;
     searchValue?: string;
     onSuggestionSelect?: (value: string) => void;
+    containerRef?: React.RefObject<HTMLDivElement>;
 }
-export default function Autosuggest({ fields, limit, minChars, renderSuggestion, customQuery, searchValue, onSuggestionSelect, }: AutosuggestProps): import("react/jsx-runtime").JSX.Element | null;
+export default function Autosuggest({ fields, limit, minChars, renderSuggestion, customQuery, searchValue, onSuggestionSelect, containerRef, }: AutosuggestProps): import("react/jsx-runtime").JSX.Element | null;
 //# sourceMappingURL=Autosuggest.d.ts.map

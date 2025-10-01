@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef, ReactNode } from "react";
 import { useSharedContext } from "./SharedContextProvider";
+import { QueryHit, TermFacetResult } from "@antfly/sdk";
 
 export interface AutosuggestProps {
   fields: string[];
@@ -11,11 +12,6 @@ export interface AutosuggestProps {
   searchValue?: string;
   onSuggestionSelect?: (value: string) => void;
   containerRef?: React.RefObject<HTMLDivElement>;
-}
-
-interface Suggestion {
-  key: string;
-  doc_count: number;
 }
 
 export default function Autosuggest({
@@ -37,18 +33,18 @@ export default function Autosuggest({
 
   // Get suggestions from widget result
   const widget = widgets.get(id);
-  const rawData = (widget?.result?.data as any[]) || [];
+  const rawData = (widget?.result?.data as QueryHit[]) || [];
 
   // Transform hits into suggestions by extracting field values and counting occurrences
-  const suggestions: Suggestion[] =
+  const suggestions: TermFacetResult[] =
     rawData.length > 0
       ? (() => {
           const suggestionMap = new Map<string, number>();
 
-          rawData.forEach((hit: any) => {
+          rawData.forEach((hit: QueryHit) => {
             fields.forEach((field) => {
-              // Strip ._2gram and .keyword suffixes to get the actual field name in _source
-              const sourceField = field.replace(/\.(\_2gram|keyword)$/, '');
+              // Strip __2gram and __keyword suffixes to get the actual field name in _source
+              const sourceField = field.replace(/\_\_(2gram|keyword)$/, "");
               const value = hit._source?.[sourceField];
               if (value) {
                 const stringValue = String(value);
@@ -58,8 +54,8 @@ export default function Autosuggest({
           });
 
           return Array.from(suggestionMap.entries())
-            .map(([key, doc_count]) => ({ key, doc_count }))
-            .sort((a, b) => b.doc_count - a.doc_count)
+            .map(([term, count]) => ({ term, count }))
+            .sort((a, b) => b.count - a.count)
             .slice(0, limit);
         })()
       : [];
@@ -140,7 +136,7 @@ export default function Autosuggest({
           e.preventDefault();
           if (selectedIndex >= 0 && selectedIndex < suggestions.length) {
             justSelectedRef.current = true;
-            onSuggestionSelect?.(suggestions[selectedIndex].key);
+            onSuggestionSelect?.(suggestions[selectedIndex].term);
             setIsOpen(false);
           }
           break;
@@ -209,16 +205,16 @@ export default function Autosuggest({
     <ul className="react-af-autosuggest" ref={suggestionsRef}>
       {suggestions.map((suggestion, index) => (
         <li
-          key={suggestion.key}
+          key={suggestion.term}
           className={`react-af-autosuggest-item ${
             index === selectedIndex ? "react-af-autosuggest-item-selected" : ""
           }`}
-          onClick={() => handleSuggestionClick(suggestion.key)}
+          onClick={() => handleSuggestionClick(suggestion.term)}
           onMouseEnter={() => setSelectedIndex(index)}
         >
           {renderSuggestion
-            ? renderSuggestion(suggestion.key, suggestion.doc_count)
-            : defaultRenderSuggestion(suggestion.key)}
+            ? renderSuggestion(suggestion.term, suggestion.count)
+            : defaultRenderSuggestion(suggestion.term)}
         </li>
       ))}
     </ul>

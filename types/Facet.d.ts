@@ -1,8 +1,5 @@
 import { ReactNode } from "react";
-export interface FacetItem {
-    key: string;
-    doc_count: number;
-}
+import { TermFacetResult } from "@antfly/sdk";
 export interface FacetProps {
     fields: string[];
     id: string;
@@ -12,9 +9,9 @@ export interface FacetProps {
     showFilter?: boolean;
     filterValueModifier?: (value: string) => string;
     itemsPerBlock?: number;
-    items?: (data: FacetItem[], options: {
-        handleChange: (item: FacetItem, checked: boolean) => void;
-        isChecked: (item: FacetItem) => boolean;
+    items?: (data: TermFacetResult[], options: {
+        handleChange: (item: TermFacetResult, checked: boolean) => void;
+        isChecked: (item: TermFacetResult) => boolean;
     }) => ReactNode;
 }
 export default function Facet({ fields, id, initialValue, seeMore, placeholder, showFilter, filterValueModifier, itemsPerBlock, items, }: FacetProps): import("react/jsx-runtime").JSX.Element;

@@ -1,11 +1,7 @@
 import React, { useState, useEffect, ReactNode } from "react";
 import { toTermQueries } from "./utils";
 import { useSharedContext } from "./SharedContextProvider";
-
-export interface FacetItem {
-  key: string;
-  doc_count: number;
-}
+import { TermFacetResult } from "@antfly/sdk";
 
 export interface FacetProps {
   fields: string[];
@@ -17,11 +13,11 @@ export interface FacetProps {
   filterValueModifier?: (value: string) => string;
   itemsPerBlock?: number;
   items?: (
-    data: FacetItem[],
+    data: TermFacetResult[],
     options: {
-      handleChange: (item: FacetItem, checked: boolean) => void;
-      isChecked: (item: FacetItem) => boolean;
-    }
+      handleChange: (item: TermFacetResult, checked: boolean) => void;
+      isChecked: (item: TermFacetResult) => boolean;
+    },
   ) => ReactNode;
 }
 
@@ -46,7 +42,7 @@ export default function Facet({
   // Data from internal queries (Antfly queries are performed via Listener)
   const widget = widgets.get(id);
   const { result } = widget || {};
-  const data: FacetItem[] = (result && result.data as FacetItem[]) || [];
+  const data: TermFacetResult[] = (result && result.facetData) || [];
   const total = (result && result.total) || 0;
 
   // Update widgets properties on state change.
@@ -89,16 +85,16 @@ export default function Facet({
   useEffect(() => () => dispatch({ type: "deleteWidget", key: id }), [dispatch, id]);
 
   // On checkbox status change, add or remove current agg to selected
-  function handleChange(item: FacetItem, checked: boolean) {
+  function handleChange(item: TermFacetResult, checked: boolean) {
     const newValue = checked
-      ? [...new Set([...value, item.key])]
-      : value.filter((f) => f !== item.key);
+      ? [...new Set([...value, item.term])]
+      : value.filter((f) => f !== item.term);
     setValue(newValue);
   }
 
   // Is current item checked?
-  function isChecked(item: FacetItem): boolean {
-    return value.includes(item.key);
+  function isChecked(item: TermFacetResult): boolean {
+    return value.includes(item.term);
   }
 
   return (
@@ -116,13 +112,13 @@ export default function Facet({
       {items
         ? items(data, { handleChange, isChecked })
         : data.map((item) => (
-            <label key={item.key}>
+            <label key={item.term}>
               <input
                 type="checkbox"
                 checked={isChecked(item)}
                 onChange={(e) => handleChange(item, e.target.checked)}
               />
-              {item.key} ({item.doc_count})
+              {item.term} ({item.count})
             </label>
           ))}
       {data.length === size ? (

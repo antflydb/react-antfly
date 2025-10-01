@@ -1,9 +1,12 @@
+import { QueryHit, TermFacetResult } from "@antfly/sdk";
 import React, { ReactNode, Dispatch } from "react";
 export interface Widget {
     id: string;
     needsQuery?: boolean;
     needsConfiguration?: boolean;
     isFacet?: boolean;
+    rootQuery?: boolean;
+    isAutosuggest?: boolean;
     wantResults?: boolean;
     query?: unknown;
     semanticQuery?: string;
@@ -17,13 +20,13 @@ export interface Widget {
         [key: string]: unknown;
     };
     result?: {
-        data?: unknown[];
+        data?: QueryHit[];
+        facetData?: TermFacetResult[];
         total?: number | {
             value: number;
         };
         error?: string;
     };
-    excludeMainQuery?: boolean;
 }
 export interface SharedState {
     url?: string;
@@ -37,6 +40,8 @@ export type SharedAction = {
     needsQuery?: boolean;
     needsConfiguration?: boolean;
     isFacet?: boolean;
+    rootQuery?: boolean;
+    isAutosuggest?: boolean;
     wantResults?: boolean;
     query?: unknown;
     semanticQuery?: string;
@@ -44,7 +49,6 @@ export type SharedAction = {
     value?: unknown;
     configuration?: Widget["configuration"];
     result?: Widget["result"];
-    excludeMainQuery?: boolean;
 } | {
     type: "deleteWidget";
     key: string;
