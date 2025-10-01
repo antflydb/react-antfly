@@ -86,10 +86,16 @@ export default function Autosuggest({
         query: customQuery
           ? customQuery(searchValue, fields)
           : {
-              disjuncts: fields.map((field) => ({
-                match: searchValue,
-                field,
-              })),
+              disjuncts: fields.map((field) => {
+                if (field.endsWith("__keyword")) {
+                  return { match_prefix: searchValue, field };
+                }
+                return {
+                  // TODO (ajr) Do we want match_phrase or make a match_phrase_prefix?
+                  match: searchValue,
+                  field,
+                };
+              }),
             },
         configuration: {
           fields,
