@@ -1,6 +1,25 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, ReactNode } from "react";
 import { toTermQueries } from "./utils";
-import { useSharedContext } from "./SharedContextProvider.jsx";
+import { useSharedContext } from "./SharedContextProvider";
+import { TermFacetResult } from "@antfly/sdk";
+
+export interface FacetProps {
+  fields: string[];
+  id: string;
+  initialValue?: string[];
+  seeMore?: string;
+  placeholder?: string;
+  showFilter?: boolean;
+  filterValueModifier?: (value: string) => string;
+  itemsPerBlock?: number;
+  items?: (
+    data: TermFacetResult[],
+    options: {
+      handleChange: (item: TermFacetResult, checked: boolean) => void;
+      isChecked: (item: TermFacetResult) => boolean;
+    },
+  ) => ReactNode;
+}
 
 export default function Facet({
   fields,
@@ -12,17 +31,18 @@ export default function Facet({
   filterValueModifier,
   itemsPerBlock,
   items,
-}) {
+}: FacetProps) {
   const [{ widgets }, dispatch] = useSharedContext();
   // Current filter (search inside facet value).
   const [filterValue, setFilterValue] = useState("");
-  // Number of itemns displayed in facet.
+  // Number of items displayed in facet.
   const [size, setSize] = useState(itemsPerBlock || 5);
   // The actual selected items in facet.
-  const [value, setValue] = useState(initialValue || []);
+  const [value, setValue] = useState<string[]>(initialValue || []);
   // Data from internal queries (Antfly queries are performed via Listener)
-  const { result } = widgets.get(id) || {};
-  const data = (result && result.data) || [];
+  const widget = widgets.get(id);
+  const { result } = widget || {};
+  const data: TermFacetResult[] = (result && result.facetData) || [];
   const total = (result && result.total) || 0;
 
   // Update widgets properties on state change.
@@ -37,9 +57,8 @@ export default function Facet({
       query: { disjuncts: toTermQueries(fields, value) },
       value,
       configuration: { size, filterValue, fields, filterValueModifier },
-      result: data && total ? { data, total } : null,
     });
-  }, [size, filterValue, value]);
+  }, [dispatch, id, size, filterValue, value, fields, filterValueModifier]);
 
   // If widget value was updated elsewhere (ex: from active filters deletion)
   // We have to update and dispatch the component.
@@ -55,32 +74,27 @@ export default function Facet({
   // The new approach only syncs the local state when the widget's actual value
   // changes from external sources (like active filter removal), which is
   // what was intended.
+  const widgetValue = widgets.get(id)?.value;
   useEffect(() => {
-    const widget = widgets.get(id);
-    if (widget && widget.value !== value) {
-      setValue(widget.value);
+    if (widgetValue && Array.isArray(widgetValue) && widgetValue !== value) {
+      setValue(widgetValue);
     }
-  }, [widgets.get(id)?.value]);
+  }, [widgetValue, id]); // Remove value from deps to prevent loops
 
   // Destroy widget from context (remove from the list to unapply its effects)
-  useEffect(() => () => dispatch({ type: "deleteWidget", key: id }), []);
-
-  // Checks if widget value is the same as actual value.
-  //function isValueReady() {
-  //  return !widgets.get(id) || widgets.get(id).value === value;
-  //}
+  useEffect(() => () => dispatch({ type: "deleteWidget", key: id }), [dispatch, id]);
 
   // On checkbox status change, add or remove current agg to selected
-  function handleChange(item, checked) {
+  function handleChange(item: TermFacetResult, checked: boolean) {
     const newValue = checked
-      ? [...new Set([...value, item.key])]
-      : value.filter((f) => f !== item.key);
+      ? [...new Set([...value, item.term])]
+      : value.filter((f) => f !== item.term);
     setValue(newValue);
   }
 
   // Is current item checked?
-  function isChecked(item) {
-    return value.includes(item.key);
+  function isChecked(item: TermFacetResult): boolean {
+    return value.includes(item.term);
   }
 
   return (
@@ -98,13 +112,13 @@ export default function Facet({
       {items
         ? items(data, { handleChange, isChecked })
         : data.map((item) => (
-            <label key={item.key}>
+            <label key={item.term}>
               <input
                 type="checkbox"
                 checked={isChecked(item)}
                 onChange={(e) => handleChange(item, e.target.checked)}
               />
-              {item.key} ({item.doc_count})
+              {item.term} ({item.count})
             </label>
           ))}
       {data.length === size ? (

@@ -1,26 +1,13 @@
-import * as React from 'react';
-
-export interface SearchBoxField {
-  field: string;
-  match: string;
-}
-
-export interface SearchBoxQuery {
-  match?: string;
-  field?: string;
-  disjuncts?: SearchBoxField[];
-  match_all?: {};
-}
-
+import { ReactNode } from "react";
 export interface SearchBoxProps {
-  customQuery?: (query: string | null) => SearchBoxQuery;
-  fields?: string[];
-  id: string;
-  initialValue?: string;
-  placeholder?: string;
-  semanticIndexes?: string[];
-  limit?: number;
+    customQuery?: (query?: string) => unknown;
+    fields?: string[];
+    id: string;
+    initialValue?: string;
+    placeholder?: string;
+    semanticIndexes?: string[];
+    limit?: number;
+    children?: ReactNode;
 }
-
-declare const SearchBox: React.FC<SearchBoxProps>;
-export default SearchBox;
+export default function SearchBox({ customQuery, fields, id, initialValue, placeholder, semanticIndexes, limit, children, }: SearchBoxProps): import("react/jsx-runtime").JSX.Element;
+//# sourceMappingURL=SearchBox.d.ts.map

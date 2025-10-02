@@ -4,6 +4,19 @@ module.exports = {
   module: {
     rules: [
       {
+        test: /\.(ts|tsx)$/,
+        exclude: /node_modules/,
+        use: {
+          loader: "ts-loader",
+          options: {
+            configFile: "tsconfig.build.json",
+            compilerOptions: {
+              emitDeclarationOnly: false
+            }
+          }
+        }
+      },
+      {
         test: /\.(js|jsx)$/,
         exclude: /node_modules/,
         use: {
@@ -13,7 +26,11 @@ module.exports = {
     ]
   },
 
-  entry: "./src/index.js",
+  resolve: {
+    extensions: [".tsx", ".ts", ".jsx", ".js"]
+  },
+
+  entry: "./src/index.ts",
 
   output: {
     path: path.resolve(__dirname, "dist/"),

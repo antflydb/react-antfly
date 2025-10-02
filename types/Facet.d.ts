@@ -1,27 +1,18 @@
-import * as React from 'react';
-
-export interface FacetItem {
-  key: string;
-  doc_count: number;
-  [key: string]: any;
-}
-
-export interface FacetHandlers {
-  handleChange: (item: FacetItem, checked: boolean) => void;
-  isChecked: (item: FacetItem) => boolean;
-}
-
+import { ReactNode } from "react";
+import { TermFacetResult } from "@antfly/sdk";
 export interface FacetProps {
-  fields: string[];
-  id: string;
-  initialValue?: string[];
-  seeMore?: string;
-  placeholder?: string;
-  showFilter?: boolean;
-  filterValueModifier?: (value: string) => string;
-  itemsPerBlock?: number;
-  items?: (data: FacetItem[], handlers: FacetHandlers) => React.ReactNode;
+    fields: string[];
+    id: string;
+    initialValue?: string[];
+    seeMore?: string;
+    placeholder?: string;
+    showFilter?: boolean;
+    filterValueModifier?: (value: string) => string;
+    itemsPerBlock?: number;
+    items?: (data: TermFacetResult[], options: {
+        handleChange: (item: TermFacetResult, checked: boolean) => void;
+        isChecked: (item: TermFacetResult) => boolean;
+    }) => ReactNode;
 }
-
-declare const Facet: React.FC<FacetProps>;
-export default Facet;
+export default function Facet({ fields, id, initialValue, seeMore, placeholder, showFilter, filterValueModifier, itemsPerBlock, items, }: FacetProps): import("react/jsx-runtime").JSX.Element;
+//# sourceMappingURL=Facet.d.ts.map

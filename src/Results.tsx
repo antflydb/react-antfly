@@ -1,9 +1,22 @@
-import React, { useEffect, useState } from "react";
-import { useSharedContext } from "./SharedContextProvider.jsx";
-import Pagination from "./Pagination.jsx";
+import React, { useEffect, useState, ReactNode } from "react";
+import { useSharedContext } from "./SharedContextProvider";
+import Pagination from "./Pagination";
 
-// Pagination, informations about results (like "30 results")
-// and size (number items per page) are customizable.
+export interface ResultsProps {
+  itemsPerPage?: number;
+  initialPage?: number;
+  pagination?: (
+    total: number,
+    itemsPerPage: number,
+    page: number,
+    setPage: (page: number) => void
+  ) => ReactNode;
+  stats?: (total: number) => ReactNode;
+  items: (data: unknown[]) => ReactNode;
+  id: string;
+  sort?: unknown;
+}
+
 export default function Results({
   itemsPerPage = 10,
   initialPage = 1,
@@ -12,24 +25,28 @@ export default function Results({
   items,
   id,
   sort,
-}) {
+}: ResultsProps) {
   const [{ widgets }, dispatch] = useSharedContext();
   const [initialization, setInitialization] = useState(true);
   const [page, setPage] = useState(initialPage);
-  const [lastQueryHash, setLastQueryHash] = useState(null);
+  const [lastQueryHash, setLastQueryHash] = useState<string | null>(null);
+
   const widget = widgets.get(id);
   const data = widget && widget.result && widget.result.data ? widget.result.data : [];
   const total =
     widget && widget.result && widget.result.total
-      ? widget.result.total.hasOwnProperty("value")
-        ? widget.result.total.value
-        : widget.result.total
+      ? typeof widget.result.total === 'object' && widget.result.total !== null && 'value' in widget.result.total
+        ? (widget.result.total as { value: number }).value
+        : (widget.result.total as number)
       : 0;
 
   // Check if any search widgets have semantic search enabled
-  console.log('All widgets:', Array.from(widgets.values()).map(w => ({ id: w.id, isSemantic: w.isSemantic, query: w.query, value: w.value })));
-  const isSemanticSearchActive = Array.from(widgets.values()).some((w) => w.isSemantic && w.semanticQuery && typeof w.semanticQuery === 'string' && w.semanticQuery.trim().length > 0);
-  console.log('isSemanticSearchActive:', isSemanticSearchActive);
+  const isSemanticSearchActive = Array.from(widgets.values()).some((w) =>
+    w.isSemantic &&
+    w.semanticQuery &&
+    typeof w.semanticQuery === 'string' &&
+    w.semanticQuery.trim().length > 0
+  );
 
   useEffect(() => {
     // Create a hash of all search/filter widgets to detect query changes
@@ -45,7 +62,7 @@ export default function Results({
     }
 
     return () => setInitialization(false);
-  }, [widgets, total]);
+  }, [widgets, total, initialPage, lastQueryHash, initialization]);
 
   // Update context with page (and itemsPerPage)
   useEffect(() => {
@@ -57,19 +74,17 @@ export default function Results({
       isFacet: false,
       wantResults: true,
       isSemantic: isSemanticSearchActive,
-      query: null,
-      value: null,
       configuration: { itemsPerPage, page, sort },
-      result: data && total ? { data, total } : null,
+      // Don't pass result here - it should only be set by the Listener after fetching
     });
-  }, [page, sort, isSemanticSearchActive]);
+  }, [dispatch, id, itemsPerPage, page, sort, isSemanticSearchActive]); // Remove data and total to prevent loops
 
   // Destroy widget from context (remove from the list to unapply its effects)
-  useEffect(() => () => dispatch({ type: "deleteWidget", key: id }), []);
+  useEffect(() => () => dispatch({ type: "deleteWidget", key: id }), [dispatch, id]);
 
   const defaultPagination = () => (
     <Pagination
-      onChange={(p) => setPage(p)}
+      onChange={(p: number) => setPage(p)}
       total={total}
       itemsPerPage={itemsPerPage}
       page={page}
@@ -79,7 +94,7 @@ export default function Results({
   return (
     <div className="react-af-results">
       {stats ? stats(total) : (
-        (console.log('Rendering with isSemanticSearchActive:', isSemanticSearchActive), isSemanticSearchActive) ?
+        isSemanticSearchActive ?
           <>{data.length} out of {total} results</> :
           <>{total} results</>
       )}

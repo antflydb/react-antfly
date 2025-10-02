@@ -1,15 +1,17 @@
 {
-  "name": "@antfly/react-antfly",
-  "version": "0.0.3",
+  "name": "@antfly/components",
+  "version": "0.0.1",
   "description": "React components for Antfly search",
-  "main": "src/index.js",
-  "module": "src/index.js",
+  "main": "dist/main.js",
+  "module": "dist/main.js",
   "types": "types/index.d.ts",
   "scripts": {
     "test": "",
     "build": "webpack --mode production",
+    "typecheck": "tsc --noEmit",
     "storybook": "sb dev",
-    "build-storybook": "sb build"
+    "build-storybook": "sb build",
+    "postinstall": "[ -f dist/main.js ] || npm run build"
   },
   "keywords": [],
   "author": "Antfly Contributors",
@@ -38,15 +40,19 @@
     "@storybook/addon-webpack5-compiler-babel": "^3.0.6",
     "@storybook/react": "^9.1.8",
     "@storybook/react-webpack5": "^9.1.8",
-    "@types/react": "^18.0.0",
+    "@types/qs": "^6.14.0",
+    "@types/react": "^19.1.15",
+    "@types/react-autosuggest": "^10.1.11",
+    "@types/react-dom": "^19.1.9",
     "babel-loader": "^10.0.0",
     "core-js": "^3.45.1",
     "lodash": "^4.17.21",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "sb": "^9.1.8",
-    "typescript": "^5.0.0",
-    "webpack": "^5.101.3",
+    "ts-loader": "^9.5.4",
+    "typescript": "^5.9.2",
+    "webpack": "^5.102.0",
     "webpack-cli": "^6.0.1"
   },
   "peerDependencies": {
@@ -54,6 +60,7 @@
     "react-dom": "^16.0 || ^17.0 || ^18.0 || ^19.0"
   },
   "dependencies": {
+    "@antfly/sdk": "git+https://github.com/antflydb/antfly-ts.git",
     "@babel/runtime": "^7.28.4",
     "qs": "^6.14.0",
     "react-autosuggest": "^10.1.0"

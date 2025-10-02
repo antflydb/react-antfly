@@ -1,16 +1,10 @@
-import * as React from 'react';
-
+import { ReactNode } from "react";
 export interface ActiveFilter {
-  key: string;
-  value: string;
+    key: string;
+    value: string;
 }
-
 export interface ActiveFiltersProps {
-  items?: (
-    activeFilters: ActiveFilter[],
-    removeFilter: (id: string) => void
-  ) => React.ReactNode;
+    items?: (activeFilters: ActiveFilter[], removeFilter: (id: string) => void) => ReactNode;
 }
-
-declare const ActiveFilters: React.FC<ActiveFiltersProps>;
-export default ActiveFilters;
+export default function ActiveFilters({ items }: ActiveFiltersProps): import("react/jsx-runtime").JSX.Element;
+//# sourceMappingURL=ActiveFilters.d.ts.map

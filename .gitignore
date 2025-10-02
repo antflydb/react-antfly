@@ -5,6 +5,8 @@
 # production
 dist/
 /example/build
+*.d.ts.map
+
 
 # misc
 .DS_Store

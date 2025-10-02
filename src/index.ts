@@ -8,8 +8,33 @@ import ActiveFilters from "./ActiveFilters";
 import QueryBuilder from "./QueryBuilder/QueryBuilder";
 import CustomWidget from "./CustomWidget";
 import Autosuggest from "./Autosuggest";
-import { fromUrlQueryString, toUrlQueryString, msearch, initializeAntflyClient, getAntflyClient } from "./utils";
-export { Antfly, Results, SearchBox, Facet, Pagination, Listener, fromUrlQueryString, toUrlQueryString, ActiveFilters, QueryBuilder, CustomWidget, Autosuggest, msearch, initializeAntflyClient, getAntflyClient, };
+import {
+  fromUrlQueryString,
+  toUrlQueryString,
+  msearch,
+  initializeAntflyClient,
+  getAntflyClient,
+} from "./utils";
+
+export {
+  Antfly,
+  Results,
+  SearchBox,
+  Facet,
+  Pagination,
+  Listener,
+  fromUrlQueryString,
+  toUrlQueryString,
+  ActiveFilters,
+  QueryBuilder,
+  CustomWidget,
+  Autosuggest,
+  msearch,
+  initializeAntflyClient,
+  getAntflyClient,
+};
+
+// Export types for users of the library
 export type { AntflyProps } from "./Antfly";
 export type { ResultsProps } from "./Results";
 export type { SearchBoxProps } from "./SearchBox";
@@ -23,4 +48,3 @@ export type { RuleProps } from "./QueryBuilder/Rule";
 export type { Operator, Combinator } from "./QueryBuilder/utils";
 export type { SharedState, SharedAction, Widget } from "./SharedContextProvider";
 export type { MultiqueryRequest } from "./utils";
-//# sourceMappingURL=index.d.ts.map
