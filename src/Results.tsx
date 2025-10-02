@@ -1,6 +1,7 @@
 import React, { useEffect, useState, ReactNode } from "react";
 import { useSharedContext } from "./SharedContextProvider";
 import Pagination from "./Pagination";
+import { QueryHit } from "@antfly/sdk";
 
 export interface ResultsProps {
   itemsPerPage?: number;
@@ -9,10 +10,10 @@ export interface ResultsProps {
     total: number,
     itemsPerPage: number,
     page: number,
-    setPage: (page: number) => void
+    setPage: (page: number) => void,
   ) => ReactNode;
   stats?: (total: number) => ReactNode;
-  items: (data: unknown[]) => ReactNode;
+  items: (data: QueryHit[]) => ReactNode;
   id: string;
   sort?: unknown;
   fields?: string[];
@@ -37,24 +38,27 @@ export default function Results({
   const data = widget && widget.result && widget.result.data ? widget.result.data : [];
   const total =
     widget && widget.result && widget.result.total
-      ? typeof widget.result.total === 'object' && widget.result.total !== null && 'value' in widget.result.total
+      ? typeof widget.result.total === "object" &&
+        widget.result.total !== null &&
+        "value" in widget.result.total
         ? (widget.result.total as { value: number }).value
         : (widget.result.total as number)
       : 0;
 
   // Check if any search widgets have semantic search enabled
-  const isSemanticSearchActive = Array.from(widgets.values()).some((w) =>
-    w.isSemantic &&
-    w.semanticQuery &&
-    typeof w.semanticQuery === 'string' &&
-    w.semanticQuery.trim().length > 0
+  const isSemanticSearchActive = Array.from(widgets.values()).some(
+    (w) =>
+      w.isSemantic &&
+      w.semanticQuery &&
+      typeof w.semanticQuery === "string" &&
+      w.semanticQuery.trim().length > 0,
   );
 
   useEffect(() => {
     // Create a hash of all search/filter widgets to detect query changes
     const queryWidgets = Array.from(widgets.values()).filter((w) => w.needsQuery);
     const queryHash = JSON.stringify(
-      queryWidgets.map((w) => ({ id: w.id, value: w.value, query: w.query }))
+      queryWidgets.map((w) => ({ id: w.id, value: w.value, query: w.query })),
     );
 
     // Only reset to page 1 if the query actually changed (not just pagination)
@@ -95,13 +99,18 @@ export default function Results({
 
   return (
     <div className="react-af-results">
-      {stats ? stats(total) : (
-        isSemanticSearchActive ?
-          <>{data.length} out of {total} results</> :
-          <>{total} results</>
+      {stats ? (
+        stats(total)
+      ) : isSemanticSearchActive ? (
+        <>
+          {data.length} out of {total} results
+        </>
+      ) : (
+        <>{total} results</>
       )}
       <div className="react-af-results-items">{items(data)}</div>
-      {!isSemanticSearchActive && (pagination ? pagination(total, itemsPerPage, page, setPage) : defaultPagination())}
+      {!isSemanticSearchActive &&
+        (pagination ? pagination(total, itemsPerPage, page, setPage) : defaultPagination())}
     </div>
   );
 }
