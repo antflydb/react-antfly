@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback, useRef, ReactNode } from "react";
-import { useSharedContext } from "./SharedContextProvider";
+import React, { useState, useEffect, useCallback, useRef, ReactNode, useMemo } from "react";
+import { useSharedContext } from "./SharedContext";
 import { QueryHit, TermFacetResult } from "@antfly/sdk";
 import { disjunctsFrom } from "./utils";
 
@@ -34,32 +34,31 @@ export default function Autosuggest({
 
   // Get suggestions from widget result
   const widget = widgets.get(id);
-  const rawData = (widget?.result?.data as QueryHit[]) || [];
 
   // Transform hits into suggestions by extracting field values and counting occurrences
-  const suggestions: TermFacetResult[] =
-    rawData.length > 0
-      ? (() => {
-          const suggestionMap = new Map<string, number>();
+  const suggestions: TermFacetResult[] = useMemo(() => {
+    const rawData = (widget?.result?.data as QueryHit[]) || [];
+    if (rawData.length === 0) return [];
 
-          rawData.forEach((hit: QueryHit) => {
-            fields.forEach((field) => {
-              // Strip __2gram and __keyword suffixes to get the actual field name in _source
-              const sourceField = field.replace(/\_\_(2gram|keyword)$/, "");
-              const value = hit._source?.[sourceField];
-              if (value) {
-                const stringValue = String(value);
-                suggestionMap.set(stringValue, (suggestionMap.get(stringValue) || 0) + 1);
-              }
-            });
-          });
+    const suggestionMap = new Map<string, number>();
 
-          return Array.from(suggestionMap.entries())
-            .map(([term, count]) => ({ term, count }))
-            .sort((a, b) => b.count - a.count)
-            .slice(0, limit);
-        })()
-      : [];
+    rawData.forEach((hit: QueryHit) => {
+      fields.forEach((field) => {
+        // Strip __2gram and __keyword suffixes to get the actual field name in _source
+        const sourceField = field.replace(/__(2gram|keyword)$/, "");
+        const value = hit._source?.[sourceField];
+        if (value) {
+          const stringValue = String(value);
+          suggestionMap.set(stringValue, (suggestionMap.get(stringValue) || 0) + 1);
+        }
+      });
+    });
+
+    return Array.from(suggestionMap.entries())
+      .map(([term, count]) => ({ term, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, limit);
+  }, [widget?.result?.data, fields, limit]);
 
   // Update widget configuration when searchValue changes
   useEffect(() => {

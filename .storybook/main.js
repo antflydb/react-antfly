@@ -1,9 +1,8 @@
 module.exports = {
-  stories: ["../stories/**/*.stories.js"],
+  stories: ["../stories/**/*.stories.tsx"],
   addons: [
     "@storybook/addon-links",
     "@storybook/addon-docs",
-    "storybook/actions",
     "@storybook/addon-webpack5-compiler-babel",
   ],
   features: {
@@ -15,7 +14,7 @@ module.exports = {
   },
   webpackFinal: async (config) => {
     config.module.rules.push({
-      test: /\.(js|jsx)$/,
+      test: /\.(js|jsx|ts|tsx)$/,
       exclude: /node_modules/,
       use: [
         {
@@ -31,6 +30,7 @@ module.exports = {
                 },
               ],
               "@babel/preset-react",
+              "@babel/preset-typescript",
             ],
             plugins: ["@babel/plugin-transform-runtime"],
           },

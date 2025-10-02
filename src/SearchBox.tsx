@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef, ReactNode } from "react";
-import { useSharedContext } from "./SharedContextProvider";
+import { useSharedContext } from "./SharedContext";
 import { disjunctsFrom } from "./utils";
 
 export interface SearchBoxProps {
@@ -126,7 +126,7 @@ export default function SearchBox({
       {children &&
         React.Children.map(children, (child) => {
           if (React.isValidElement(child)) {
-            return React.cloneElement(child as React.ReactElement<any>, {
+            return React.cloneElement(child as React.ReactElement<Record<string, unknown>>, {
               searchValue: value,
               onSuggestionSelect: handleSuggestionSelect,
               containerRef,

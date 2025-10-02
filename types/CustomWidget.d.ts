@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { SharedState, SharedAction } from "./SharedContextProvider";
+import { SharedState, SharedAction } from "./SharedContext";
 import { Dispatch } from "react";
 export interface ContextAwareProps {
     ctx?: SharedState;

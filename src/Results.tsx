@@ -1,5 +1,5 @@
 import React, { useEffect, useState, ReactNode } from "react";
-import { useSharedContext } from "./SharedContextProvider";
+import { useSharedContext } from "./SharedContext";
 import Pagination from "./Pagination";
 import { QueryHit } from "@antfly/sdk";
 

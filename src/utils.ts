@@ -95,7 +95,7 @@ export function fromUrlQueryString(str = ""): Map<string, unknown> {
     ...Object.entries(qs.parse(str?.replace(/^\?/, "") || "")).map(([k, v]) => {
       try {
         return [k, typeof v === "string" ? JSON.parse(v) : v] as [string, unknown];
-      } catch (e) {
+      } catch {
         return [k, v] as [string, unknown];
       }
     }),

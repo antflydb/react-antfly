@@ -1,5 +1,6 @@
 import React, { ReactNode, useEffect } from "react";
-import { SharedContextProvider, SharedState, SharedAction } from "./SharedContextProvider";
+import { SharedContextProvider } from "./SharedContextProvider";
+import { SharedState, SharedAction } from "./SharedContext";
 import { initializeAntflyClient } from "./utils";
 import Listener from "./Listener";
 

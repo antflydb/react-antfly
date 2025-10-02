@@ -1,9 +1,22 @@
 import React, { useState, useEffect } from "react";
 import Autosuggest from "react-autosuggest";
-import { useSharedContext } from "../SharedContextProvider";
+import { QueryRequest } from "@antfly/sdk";
+import { useSharedContext } from "../SharedContext";
 import { msearch, MultiqueryRequest } from "../utils";
 import { Operator, Combinator } from "./utils";
 import { FieldOption, QueryBuilderRule } from "./QueryBuilder";
+
+interface ExtendedOperator extends Operator {
+  suggestionQuery?: (field: string, value: string) => QueryRequest;
+}
+
+interface AutosuggestResponse {
+  status: number;
+  error?: unknown;
+  hits?: {
+    hits?: Array<{ _source: Record<string, unknown> }>;
+  };
+}
 
 export interface RuleProps {
   fields: (string | FieldOption)[];
@@ -84,8 +97,8 @@ export default function Rule({
         <Autosuggest
           suggestions={suggestions}
           onSuggestionsFetchRequested={async ({ value: suggestValue }: { value: string }) => {
-            let query;
-            const suggestionQuery = (currentOperator as any).suggestionQuery;
+            let query: QueryRequest;
+            const suggestionQuery = (currentOperator as ExtendedOperator).suggestionQuery;
             if (suggestionQuery) {
               query = suggestionQuery(field, suggestValue);
             } else {
@@ -101,7 +114,7 @@ export default function Rule({
                 // Bleve's default analyzer is case insensitive.
                 full_text_search: { disjuncts },
                 limit: 10,
-              };
+              } as QueryRequest;
             }
 
             const msearchRequest: MultiqueryRequest[] = [
@@ -112,14 +125,18 @@ export default function Rule({
 
             const suggestions = await msearch(url || "", msearchRequest, headers || {});
 
-            const responses = (suggestions as any)?.responses;
+            const responses = (suggestions as { responses?: AutosuggestResponse[] })?.responses;
             if (responses && responses[0]) {
               const response = responses[0];
               if (response.status !== 200) {
                 console.error(response.error);
                 return;
               }
-              setSuggestions(response.hits.hits?.map((e: any) => e._source[field]) || []);
+              setSuggestions(
+                response.hits?.hits?.map((e: { _source: Record<string, unknown> }) =>
+                  String(e._source[field] || "")
+                ) || []
+              );
             }
           }}
           onSuggestionsClearRequested={() => setSuggestions([])}
@@ -127,7 +144,7 @@ export default function Rule({
           renderSuggestion={(suggestion: string) => <div>{suggestion}</div>}
           inputProps={{
             value,
-            onChange: (event: any, { newValue }: { newValue: string }) => setValue(newValue),
+            onChange: (event: React.FormEvent<HTMLElement>, { newValue }: { newValue: string }) => setValue(newValue),
             className: "react-af-rule-value",
             autoComplete: "new-password",
           }}

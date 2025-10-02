@@ -1,6 +1,6 @@
 import React, { useState, useEffect, ReactNode } from "react";
 import { disjunctsFrom, toTermQueries } from "./utils";
-import { useSharedContext } from "./SharedContextProvider";
+import { useSharedContext } from "./SharedContext";
 import { TermFacetResult } from "@antfly/sdk";
 
 export interface FacetProps {
@@ -43,7 +43,6 @@ export default function Facet({
   const widget = widgets.get(id);
   const { result } = widget || {};
   const data: TermFacetResult[] = (result && result.facetData) || [];
-  const total = (result && result.total) || 0;
 
   // Update widgets properties on state change.
   useEffect(() => {
@@ -79,6 +78,7 @@ export default function Facet({
     if (widgetValue && Array.isArray(widgetValue) && widgetValue !== value) {
       setValue(widgetValue);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [widgetValue, id]); // Remove value from deps to prevent loops
 
   // Destroy widget from context (remove from the list to unapply its effects)

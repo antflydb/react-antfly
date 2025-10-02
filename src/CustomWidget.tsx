@@ -1,5 +1,5 @@
 import React, { ReactNode } from "react";
-import { useSharedContext, SharedState, SharedAction } from "./SharedContextProvider";
+import { useSharedContext, SharedState, SharedAction } from "./SharedContext";
 import { Dispatch } from "react";
 
 // Interface for components that can receive context props

@@ -96,7 +96,7 @@ export const Wikipedia = () => {
       <Results
         id="result"
         items={(data) =>
-          data.map(({ _source, _score, _id }) => (
+          data.map(({ _source, _id }) => (
             <div key={_id}>
               <a href={_source.url} target="_blank" rel="noopener noreferrer">
                 {_source.title}

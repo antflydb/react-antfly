@@ -21,6 +21,6 @@ export type { AutosuggestProps } from "./Autosuggest";
 export type { QueryBuilderProps, QueryBuilderRule, FieldOption } from "./QueryBuilder/QueryBuilder";
 export type { RuleProps } from "./QueryBuilder/Rule";
 export type { Operator, Combinator } from "./QueryBuilder/utils";
-export type { SharedState, SharedAction, Widget } from "./SharedContextProvider";
+export type { SharedState, SharedAction, Widget } from "./SharedContext";
 export type { MultiqueryRequest } from "./utils";
 //# sourceMappingURL=index.d.ts.map

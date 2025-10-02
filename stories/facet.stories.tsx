@@ -7,7 +7,7 @@ export default {
   component: Facet,
 };
 
-function CollapsableFacet({ initialCollapsed, title, ...rest }) {
+function CollapsableFacet({ title, ...rest }) {
   const [collapsed, setCollapsed] = useState(true);
 
   function FacetWrapper() {

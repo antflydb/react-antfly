@@ -1,5 +1,5 @@
 import React, { ReactNode } from "react";
-import { useSharedContext } from "./SharedContextProvider";
+import { useSharedContext } from "./SharedContext";
 
 export interface ActiveFilter {
   key: string;

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { useSharedContext } from "../SharedContextProvider";
+import React, { useState, useEffect, useMemo } from "react";
+import { useSharedContext } from "../SharedContext";
 import {
   defaultOperators,
   defaultCombinators,
@@ -68,6 +68,9 @@ export default function QueryBuilder({
     withUniqueKey(initialValue || [finalTemplateRule]) as QueryBuilderRule[],
   );
 
+  // Create stable reference for rules to avoid complex expression in dependency array
+  const rulesKey = useMemo(() => JSON.stringify(rules), [rules]);
+
   useEffect(() => {
     const queries = mergedQueries(
       rules.map((r) => ({
@@ -93,7 +96,8 @@ export default function QueryBuilder({
       configuration: undefined,
       result: undefined,
     });
-  }, [JSON.stringify(rules), dispatch, id, finalOperators]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rulesKey, dispatch, id, finalOperators]); // rules tracked via rulesKey
 
   // Destroy widget from context (remove from the list to unapply its effects)
   useEffect(() => () => dispatch({ type: "deleteWidget", key: id }), [dispatch, id]);

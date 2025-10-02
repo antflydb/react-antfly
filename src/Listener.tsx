@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, ReactNode } from "react";
-import { useSharedContext, Widget } from "./SharedContextProvider";
+import { useSharedContext, Widget } from "./SharedContext";
 import { QueryResult, QueryHit, TermFacetResult } from "@antfly/sdk";
 import { msearch as multiquery, conjunctsFrom, defer, MultiqueryRequest } from "./utils";
 
@@ -8,12 +8,61 @@ interface ListenerProps {
   onChange?: (params: Map<string, unknown>) => void;
 }
 
+interface SearchWidgetConfig {
+  itemsPerPage: number;
+  page: number;
+  sort?: string;
+  fields?: string[];
+}
+
+interface FacetWidgetConfig {
+  fields: string[];
+  size: number;
+  filterValue?: string;
+  useCustomQuery?: boolean;
+}
+
+interface SemanticQueryConfig {
+  indexes?: string[];
+  limit?: number;
+}
+
 interface MSSearchItem {
   query: unknown;
   data: (result: QueryResult) => QueryHit[];
   facetData: (result: QueryResult) => TermFacetResult[];
-  total: (result: any) => number;
+  total: (result: QueryResult) => number;
   id: string;
+}
+
+interface ErrorResult {
+  error: boolean;
+  message: string;
+}
+
+interface QueryResponse {
+  status: number;
+  took: number;
+  error?: string;
+  hits?: {
+    hits: QueryHit[];
+    total: number;
+  };
+  facets?: Record<string, { terms: TermFacetResult[] }>;
+}
+
+interface MultiqueryResult {
+  responses: QueryResponse[];
+}
+
+// Type guard function to check if configuration is a SearchWidgetConfig
+function isSearchWidgetConfig(config: unknown): config is SearchWidgetConfig {
+  return (
+    config !== null &&
+    typeof config === 'object' &&
+    typeof (config as SearchWidgetConfig).itemsPerPage === 'number' &&
+    typeof (config as SearchWidgetConfig).page === 'number'
+  );
 }
 
 export default function Listener({ children, onChange }: ListenerProps) {
@@ -42,8 +91,8 @@ export default function Listener({ children, onChange }: ListenerProps) {
         k,
         {
           query: v.semanticQuery || "",
-          indexes: (v.configuration as any)?.indexes,
-          limit: (v.configuration as any)?.limit,
+          indexes: (v.configuration as SemanticQueryConfig)?.indexes,
+          limit: (v.configuration as SemanticQueryConfig)?.limit,
         },
       ]),
   );
@@ -60,13 +109,15 @@ export default function Listener({ children, onChange }: ListenerProps) {
     if (onChange) {
       // Add pages to params.
       const pages = [...configurations]
-        .filter(([, v]) => (v as any)?.page && (v as any).page > 1)
-        .map(([k, v]) => [`${k}Page`, (v as any).page]);
+        .filter(([, v]) => (v as SearchWidgetConfig)?.page && (v as SearchWidgetConfig).page > 1)
+        .map(([k, v]) => [`${k}Page`, (v as SearchWidgetConfig).page]);
       // Run the change callback with all params.
       onChange(new Map([...pages, ...values] as Array<[string, unknown]>));
     }
     // Run the deferred (thx algolia) listener effect.
-    listenerEffect && listenerEffect();
+    if (listenerEffect) {
+      listenerEffect();
+    }
   });
 
   // Run effect on update for each change in queries or configuration.
@@ -94,7 +145,11 @@ export default function Listener({ children, onChange }: ListenerProps) {
             value: () => {
               const multiqueryData: MSSearchItem[] = [];
               resultWidgets.forEach((r, id) => {
-                const config = r.configuration as any;
+                const config = r.configuration;
+                // Type guard to ensure configuration has required SearchWidgetConfig properties
+                if (!isSearchWidgetConfig(config)) {
+                  return; // Skip widgets without proper configuration
+                }
                 const { itemsPerPage, page, sort } = config;
                 // Join semanticQueries as a string
                 const semanticQuery = Array.from(semanticQueries.values())
@@ -137,14 +192,14 @@ export default function Listener({ children, onChange }: ListenerProps) {
                   },
                   data: (result: QueryResult) => result.hits?.hits || [],
                   facetData: () => [],
-                  total: (result: any) => result.hits.total,
+                  total: (result: QueryResult) => result.hits?.total || 0,
                   id,
                 });
               });
 
               // Fetch data for internal facet components.
               facetWidgets.forEach((f, id) => {
-                const config = f.configuration as any;
+                const config = f.configuration as FacetWidgetConfig;
                 const fields = config.fields;
                 const size = config.size;
                 const filterValue = config.filterValue;
@@ -218,7 +273,7 @@ export default function Listener({ children, onChange }: ListenerProps) {
                         }
                         // Only use filterValue for legacy mode (non-custom queries)
                         if (filterValue && !useCustomQuery) {
-                          return result.facets[f].terms.filter((i: any) =>
+                          return result.facets[f].terms.filter((i: TermFacetResult) =>
                             i.term.toLowerCase().includes(filterValue.toLowerCase()),
                           );
                         }
@@ -232,10 +287,10 @@ export default function Listener({ children, onChange }: ListenerProps) {
                         });
                       });
                     return [...map.values()]
-                      .sort((x: any, y: any) => y.count - x.count)
+                      .sort((x: TermFacetResult, y: TermFacetResult) => y.count - x.count)
                       .slice(0, size);
                   },
-                  total: (result: any) => result.hits.total,
+                  total: (result: QueryResult) => result.hits?.total || 0,
                   id: id,
                 });
               });
@@ -246,13 +301,13 @@ export default function Listener({ children, onChange }: ListenerProps) {
                 if (multiqueryData.length) {
                   try {
                     const msearchRequests: MultiqueryRequest[] = multiqueryData.map((item) => ({
-                      query: item.query as any,
+                      query: item.query as Record<string, unknown>,
                     }));
                     const result = await multiquery(url || "", msearchRequests, headers || {});
 
                     // Handle connection error from multiquery
                     if (result && typeof result === "object" && "error" in result && result.error) {
-                      console.error("Antfly connection error:", (result as any).message);
+                      console.error("Antfly connection error:", (result as ErrorResult).message);
                       // Set error state for all widgets
                       multiqueryData.forEach(({ id }) => {
                         const widget = widgets.get(id);
@@ -261,7 +316,7 @@ export default function Listener({ children, onChange }: ListenerProps) {
                             data: [],
                             facetData: [],
                             total: 0,
-                            error: (result as any).message,
+                            error: (result as ErrorResult).message,
                           };
                           dispatch({ type: "setWidget", key: id, ...widget });
                         }
@@ -269,9 +324,9 @@ export default function Listener({ children, onChange }: ListenerProps) {
                       return;
                     }
 
-                    const responses = (result as any)?.responses;
+                    const responses = (result as MultiqueryResult)?.responses;
                     if (responses) {
-                      responses.forEach((response: any, key: number) => {
+                      responses.forEach((response: QueryResponse, key: number) => {
                         const widget = widgets.get(multiqueryData[key].id);
                         if (widget) {
                           if (response.status !== 200) {
@@ -280,7 +335,7 @@ export default function Listener({ children, onChange }: ListenerProps) {
                               data: [],
                               facetData: [],
                               total: 0,
-                              error: response.error?.reason || "Query failed",
+                              error: response.error || "Query failed",
                             };
                           } else {
                             widget.result = {
@@ -327,6 +382,7 @@ export default function Listener({ children, onChange }: ListenerProps) {
         clearTimeout(debounceTimeoutRef.current);
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     queriesKey,
     semanticQueriesKey,
@@ -337,6 +393,8 @@ export default function Listener({ children, onChange }: ListenerProps) {
     searchWidgets.size,
     configurableWidgets.size,
     // listenerEffect removed to prevent infinite loop
+    // Note: We intentionally use stable keys instead of the Map objects themselves
+    // to avoid constant re-renders while still tracking changes
   ]);
 
   return <>{children}</>;
