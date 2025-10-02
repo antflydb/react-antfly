@@ -15,6 +15,7 @@ export interface ResultsProps {
   items: (data: unknown[]) => ReactNode;
   id: string;
   sort?: unknown;
+  fields?: string[];
 }
 
 export default function Results({
@@ -25,6 +26,7 @@ export default function Results({
   items,
   id,
   sort,
+  fields,
 }: ResultsProps) {
   const [{ widgets }, dispatch] = useSharedContext();
   const [initialization, setInitialization] = useState(true);
@@ -74,10 +76,10 @@ export default function Results({
       isFacet: false,
       wantResults: true,
       isSemantic: isSemanticSearchActive,
-      configuration: { itemsPerPage, page, sort },
+      configuration: { itemsPerPage, page, sort, fields },
       // Don't pass result here - it should only be set by the Listener after fetching
     });
-  }, [dispatch, id, itemsPerPage, page, sort, isSemanticSearchActive]); // Remove data and total to prevent loops
+  }, [dispatch, id, itemsPerPage, page, sort, fields, isSemanticSearchActive]); // Remove data and total to prevent loops
 
   // Destroy widget from context (remove from the list to unapply its effects)
   useEffect(() => () => dispatch({ type: "deleteWidget", key: id }), [dispatch, id]);

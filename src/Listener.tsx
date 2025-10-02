@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, ReactNode } from "react";
-import { useSharedContext, SharedState, Widget } from "./SharedContextProvider";
-import { QueryResult, QueryHit, FacetResult, TermFacetResult } from "@antfly/sdk";
+import { useSharedContext, Widget } from "./SharedContextProvider";
+import { QueryResult, QueryHit, TermFacetResult } from "@antfly/sdk";
 import { msearch as multiquery, queryFrom, defer, MultiqueryRequest } from "./utils";
 
 interface ListenerProps {
@@ -133,6 +133,7 @@ export default function Listener({ children, onChange }: ListenerProps) {
                     limit: itemsPerPage,
                     offset: (page - 1) * itemsPerPage,
                     order_by: sort,
+                    ...(config.fields && { _source: config.fields }),
                   },
                   data: (result: QueryResult) => result.hits?.hits || [],
                   facetData: () => [],

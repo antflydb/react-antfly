@@ -47,6 +47,9 @@ export default function Facet({
 
   // Update widgets properties on state change.
   useEffect(() => {
+    const termQueries = toTermQueries(fields, value);
+    const query = termQueries.length === 1 ? termQueries[0] : { disjuncts: termQueries };
+
     dispatch({
       type: "setWidget",
       key: id,
@@ -54,7 +57,7 @@ export default function Facet({
       needsConfiguration: true,
       isFacet: true,
       wantResults: false,
-      query: { disjuncts: toTermQueries(fields, value) },
+      query,
       value,
       configuration: { size, filterValue, fields, filterValueModifier },
     });

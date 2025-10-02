@@ -54,9 +54,10 @@ export async function msearch(
 }
 
 export function queryFrom(queries?: Map<string, unknown>): Record<string, unknown> {
-  return queries?.size === 0
-    ? { match_none: {} }
-    : { conjuncts: Array.from(queries?.values() || []) };
+  if (!queries) return { match_all: {} };
+  if (queries.size === 0) return { match_none: {} };
+  if (queries.size === 1) return queries.values().next().value as Record<string, unknown>;
+  return { conjuncts: Array.from(queries.values()) };
 }
 
 export function toTermQueries(
