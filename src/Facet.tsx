@@ -1,5 +1,5 @@
 import React, { useState, useEffect, ReactNode } from "react";
-import { toTermQueries } from "./utils";
+import { disjunctsFrom, toTermQueries } from "./utils";
 import { useSharedContext } from "./SharedContextProvider";
 import { TermFacetResult } from "@antfly/sdk";
 
@@ -47,9 +47,6 @@ export default function Facet({
 
   // Update widgets properties on state change.
   useEffect(() => {
-    const termQueries = toTermQueries(fields, value);
-    const query = termQueries.length === 1 ? termQueries[0] : { disjuncts: termQueries };
-
     dispatch({
       type: "setWidget",
       key: id,
@@ -57,7 +54,7 @@ export default function Facet({
       needsConfiguration: true,
       isFacet: true,
       wantResults: false,
-      query,
+      query: disjunctsFrom(toTermQueries(fields, value)),
       value,
       configuration: { size, filterValue, fields, filterValueModifier },
     });

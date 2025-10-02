@@ -53,11 +53,28 @@ export async function msearch(
   }
 }
 
-export function queryFrom(queries?: Map<string, unknown>): Record<string, unknown> {
+export function conjunctsFrom(queries?: Map<string, unknown>): Record<string, unknown> {
   if (!queries) return { match_all: {} };
   if (queries.size === 0) return { match_none: {} };
   if (queries.size === 1) return queries.values().next().value as Record<string, unknown>;
-  return { conjuncts: Array.from(queries.values()) };
+  const conjuncts = Array.from(queries.values()).filter(
+    (a) => !(a && typeof a === "object" && "match_all" in a && Object.keys(a).length === 1),
+  );
+  if (conjuncts.length === 0) return { match_all: {} };
+  if (conjuncts.length === 1) return conjuncts[0] as Record<string, unknown>;
+  return { conjuncts };
+}
+
+export function disjunctsFrom(queries?: Array<Record<string, unknown>>): Record<string, unknown> {
+  if (!queries) return { match_all: {} };
+  if (queries.length === 0) return { match_none: {} };
+  if (queries.length === 1) return queries[0];
+  const disjuncts = Array.from(queries.values()).filter(
+    (a) => !(a && typeof a === "object" && "match_all" in a && Object.keys(a).length === 1),
+  );
+  if (disjuncts.length === 0) return { match_all: {} };
+  if (disjuncts.length === 1) return disjuncts[0] as Record<string, unknown>;
+  return { disjuncts };
 }
 
 export function toTermQueries(

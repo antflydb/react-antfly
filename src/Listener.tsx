@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, ReactNode } from "react";
 import { useSharedContext, Widget } from "./SharedContextProvider";
 import { QueryResult, QueryHit, TermFacetResult } from "@antfly/sdk";
-import { msearch as multiquery, queryFrom, defer, MultiqueryRequest } from "./utils";
+import { msearch as multiquery, conjunctsFrom, defer, MultiqueryRequest } from "./utils";
 
 interface ListenerProps {
   children: ReactNode;
@@ -129,7 +129,7 @@ export default function Listener({ children, onChange }: ListenerProps) {
                   query: {
                     semantic_search: semanticQuery,
                     indexes: semanticQuery ? indexes : undefined,
-                    full_text_search: queryFrom(filteredQueries),
+                    full_text_search: conjunctsFrom(filteredQueries),
                     limit: itemsPerPage,
                     offset: (page - 1) * itemsPerPage,
                     order_by: sort,
@@ -192,8 +192,8 @@ export default function Listener({ children, onChange }: ListenerProps) {
 
                   const fullTextQuery =
                     useCustomQuery && f.query
-                      ? queryFrom(new Map([...facetOnlyQueries, [id, f.query]]))
-                      : queryFrom(baseQueries);
+                      ? conjunctsFrom(new Map([...facetOnlyQueries, [id, f.query]]))
+                      : conjunctsFrom(baseQueries);
 
                   return {
                     semantic_search: semanticQuery,

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef, ReactNode } from "react";
 import { useSharedContext } from "./SharedContextProvider";
 import { QueryHit, TermFacetResult } from "@antfly/sdk";
+import { disjunctsFrom } from "./utils";
 
 export interface AutosuggestProps {
   fields: string[];
@@ -85,18 +86,15 @@ export default function Autosuggest({
         wantResults: true,
         query: customQuery
           ? customQuery(searchValue, fields)
-          : {
-              disjuncts: fields.map((field) => {
-                if (field.endsWith("__keyword")) {
-                  return { match_prefix: searchValue, field };
-                }
-                return {
-                  // TODO (ajr) Do we want match_phrase or make a match_phrase_prefix?
-                  match: searchValue,
-                  field,
-                };
+          : disjunctsFrom(
+              fields.map((field) => {
+                if (field.endsWith("__keyword")) return { match_prefix: searchValue, field };
+                if (field.endsWith("__2gram")) return { match: searchValue, field };
+                // TODO (ajr) Do we want match_phrase or make a match_phrase_prefix?
+                // if (field.includes(" ")) return {};
+                return { match: searchValue, field };
               }),
-            },
+            ),
         configuration: {
           fields,
           size: limit,
