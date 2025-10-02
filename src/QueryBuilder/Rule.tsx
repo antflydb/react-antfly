@@ -36,7 +36,7 @@ export default function Rule({
 }: RuleProps) {
   const processedFields = fields.map((f) => {
     if (typeof f === "string") {
-      let field = f;
+      const field = f;
       return { value: field, text: field };
     }
     return f;

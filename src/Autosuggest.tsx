@@ -88,10 +88,10 @@ export default function Autosuggest({
           ? customQuery(searchValue, fields)
           : disjunctsFrom(
               fields.map((field) => {
-                if (field.endsWith("__keyword")) return { match_prefix: searchValue, field };
-                if (field.endsWith("__2gram")) return { match: searchValue, field };
                 // TODO (ajr) Do we want match_phrase or make a match_phrase_prefix?
                 // if (field.includes(" ")) return {};
+                if (field.endsWith("__keyword")) return { match_prefix: searchValue, field };
+                if (field.endsWith("__2gram")) return { match: searchValue, field };
                 return { match: searchValue, field };
               }),
             ),

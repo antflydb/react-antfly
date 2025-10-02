@@ -21,7 +21,7 @@ export interface Rule {
 
 export function mergedQueries(queries: QueryItem[]): Record<string, unknown> {
   // TODO (ajr) Implement must_not?
-  let obj = { must: [] as unknown[], should: [] as unknown[] };
+  const obj = { must: [] as unknown[], should: [] as unknown[] };
   queries
     .filter((q) => q.query)
     .forEach((q, k) => {
@@ -31,7 +31,7 @@ export function mergedQueries(queries: QueryItem[]): Record<string, unknown> {
       }
       obj[combinator === "AND" ? "must" : "should"].push(q.query);
     });
-  let ret: Record<string, unknown> = {
+  const ret: Record<string, unknown> = {
     must: { conjuncts: obj["must"] },
     should: { disjuncts: obj["should"] },
   };
