@@ -1,4 +1,4 @@
-import { AntflyClient, QueryRequest, QueryResponses } from "@antfly/sdk";
+import { AntflyClient, QueryRequest, QueryResponses } from '@antfly/sdk';
 export interface MultiqueryRequest {
     query: QueryRequest;
 }

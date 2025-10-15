@@ -1,5 +1,5 @@
-import { QueryHit, TermFacetResult } from "@antfly/sdk";
-import { Dispatch } from "react";
+import { QueryHit, TermFacetResult } from '@antfly/sdk';
+import { Dispatch } from 'react';
 export interface Widget {
     id: string;
     needsQuery?: boolean;
@@ -57,6 +57,6 @@ export type SharedAction = {
     value: (() => void) | null;
 };
 export type SharedContextType = [SharedState, Dispatch<SharedAction>] | null;
-export declare const SharedContext: import("react").Context<SharedContextType>;
+export declare const SharedContext: import('react').Context<SharedContextType>;
 export declare const useSharedContext: () => [SharedState, Dispatch<SharedAction>];
 //# sourceMappingURL=SharedContext.d.ts.map

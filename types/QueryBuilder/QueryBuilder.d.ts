@@ -1,4 +1,4 @@
-import { Operator, Combinator } from "./utils";
+import { Operator, Combinator } from './utils';
 export interface QueryBuilderRule {
     field: string;
     operator: string;

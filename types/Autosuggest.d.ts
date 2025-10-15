@@ -1,4 +1,4 @@
-import React, { ReactNode } from "react";
+import { default as React, ReactNode } from 'react';
 export interface AutosuggestProps {
     fields: string[];
     limit?: number;

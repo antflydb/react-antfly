@@ -1,5 +1,5 @@
-import { ReactNode } from "react";
-import { TermFacetResult } from "@antfly/sdk";
+import { ReactNode } from 'react';
+import { TermFacetResult } from '@antfly/sdk';
 export interface FacetProps {
     fields: string[];
     id: string;
