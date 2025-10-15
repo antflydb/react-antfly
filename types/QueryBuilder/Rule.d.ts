@@ -1,5 +1,5 @@
-import { Operator, Combinator } from "./utils";
-import { FieldOption, QueryBuilderRule } from "./QueryBuilder";
+import { Operator, Combinator } from './utils';
+import { FieldOption, QueryBuilderRule } from './QueryBuilder';
 export interface RuleProps {
     fields: (string | FieldOption)[];
     operators: Operator[];
