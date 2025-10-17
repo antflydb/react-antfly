@@ -70,7 +70,7 @@ export default function Autosuggest({
               fields.map((field) => {
                 // TODO (ajr) Do we want match_phrase or make a match_phrase_prefix?
                 // if (field.includes(" ")) return {};
-                if (field.endsWith("__keyword")) return { match_prefix: searchValue, field };
+                if (field.endsWith("__keyword")) return { prefix: searchValue, field };
                 if (field.endsWith("__2gram")) return { match: searchValue, field };
                 return { match: searchValue, field };
               }),
