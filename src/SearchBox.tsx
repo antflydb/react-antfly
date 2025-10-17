@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef, ReactNode } from "react";
 import { useSharedContext } from "./SharedContext";
 import { disjunctsFrom } from "./utils";
+import { QueryHit } from "@antfly/sdk";
 
 export interface SearchBoxProps {
   customQuery?: (query?: string) => unknown;
@@ -105,11 +106,29 @@ export default function SearchBox({
 
   // Handle suggestion selection from Autosuggest
   const handleSuggestionSelect = useCallback(
-    (suggestion: string) => {
-      setValue(suggestion);
-      update(suggestion);
+    (suggestion: QueryHit) => {
+      // If the child component had its own onSuggestionSelect, call it first
+      const childProps = React.isValidElement(children)
+        ? (children as React.ReactElement<{ onSuggestionSelect?: (hit: QueryHit) => void }>).props
+        : {};
+      const originalHandler = childProps.onSuggestionSelect;
+
+      if (originalHandler) {
+        // Let the custom handler decide what to do (e.g., navigate away)
+        originalHandler(suggestion);
+        // Don't update search box value if custom handler provided
+        return;
+      }
+
+      // Default behavior: update search box with selected value
+      // Extract value from first field for display in search box
+      const firstField = fields?.[0]?.replace(/__(2gram|keyword)$/, "");
+      const valueToSet = firstField ? String(suggestion._source?.[firstField] || '') : '';
+
+      setValue(valueToSet);
+      update(valueToSet);
     },
-    [update],
+    [update, fields, children],
   );
 
   // Destroy widget from context (remove from the list to unapply its effects)

@@ -11,7 +11,9 @@ import { defineConfig } from "eslint/config";
 
 export default defineConfig(
   {
-    ignores: ["**/build/**", "**/dist/**"],
+    ignores: ["**/build/**", "**/dist/**", "dist/**", "build/**"],
+  },
+  {
     plugins: {
       "@typescript-eslint": tseslint.plugin,
     },
