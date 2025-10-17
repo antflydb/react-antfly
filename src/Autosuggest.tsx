@@ -1,17 +1,17 @@
 import React, { useState, useEffect, useCallback, useRef, ReactNode, useMemo } from "react";
 import { useSharedContext } from "./SharedContext";
-import { QueryHit, TermFacetResult } from "@antfly/sdk";
+import { QueryHit } from "@antfly/sdk";
 import { disjunctsFrom } from "./utils";
 
 export interface AutosuggestProps {
   fields: string[];
   limit?: number;
   minChars?: number;
-  renderSuggestion?: (suggestion: string, count?: number) => ReactNode;
+  renderSuggestion?: (hit: QueryHit) => ReactNode;
   customQuery?: (value: string, fields: string[]) => unknown;
   // Internal props passed from SearchBox
   searchValue?: string;
-  onSuggestionSelect?: (value: string) => void;
+  onSuggestionSelect?: (hit: QueryHit) => void;
   containerRef?: React.RefObject<HTMLDivElement>;
 }
 
@@ -35,30 +35,11 @@ export default function Autosuggest({
   // Get suggestions from widget result
   const widget = widgets.get(id);
 
-  // Transform hits into suggestions by extracting field values and counting occurrences
-  const suggestions: TermFacetResult[] = useMemo(() => {
+  // Use hits directly as suggestions
+  const suggestions: QueryHit[] = useMemo(() => {
     const rawData = (widget?.result?.data as QueryHit[]) || [];
-    if (rawData.length === 0) return [];
-
-    const suggestionMap = new Map<string, number>();
-
-    rawData.forEach((hit: QueryHit) => {
-      fields.forEach((field) => {
-        // Strip __2gram and __keyword suffixes to get the actual field name in _source
-        const sourceField = field.replace(/__(2gram|keyword)$/, "");
-        const value = hit._source?.[sourceField];
-        if (value) {
-          const stringValue = String(value);
-          suggestionMap.set(stringValue, (suggestionMap.get(stringValue) || 0) + 1);
-        }
-      });
-    });
-
-    return Array.from(suggestionMap.entries())
-      .map(([term, count]) => ({ term, count }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, limit);
-  }, [widget?.result?.data, fields, limit]);
+    return rawData.slice(0, limit);
+  }, [widget?.result?.data, limit]);
 
   // Update widget configuration when searchValue changes
   useEffect(() => {
@@ -139,7 +120,7 @@ export default function Autosuggest({
           e.preventDefault();
           if (selectedIndex >= 0 && selectedIndex < suggestions.length) {
             justSelectedRef.current = true;
-            onSuggestionSelect?.(suggestions[selectedIndex].term);
+            onSuggestionSelect?.(suggestions[selectedIndex]);
             setIsOpen(false);
           }
           break;
@@ -186,9 +167,9 @@ export default function Autosuggest({
 
   // Handle suggestion click
   const handleSuggestionClick = useCallback(
-    (suggestion: string) => {
+    (hit: QueryHit) => {
       justSelectedRef.current = true;
-      onSuggestionSelect?.(suggestion);
+      onSuggestionSelect?.(hit);
       setIsOpen(false);
       setSelectedIndex(-1);
     },
@@ -196,9 +177,12 @@ export default function Autosuggest({
   );
 
   // Default suggestion renderer
-  const defaultRenderSuggestion = (suggestion: string) => (
-    <span className="react-af-autosuggest-term">{suggestion}</span>
-  );
+  const defaultRenderSuggestion = (hit: QueryHit) => {
+    // Display first available field value
+    const firstField = fields[0]?.replace(/__(2gram|keyword)$/, "");
+    const value = hit._source?.[firstField];
+    return <span className="react-af-autosuggest-term">{value ? String(value) : hit._id}</span>;
+  };
 
   if (!isOpen || suggestions.length === 0) {
     return null;
@@ -206,18 +190,16 @@ export default function Autosuggest({
 
   return (
     <ul className="react-af-autosuggest" ref={suggestionsRef}>
-      {suggestions.map((suggestion, index) => (
+      {suggestions.map((hit, index) => (
         <li
-          key={suggestion.term}
+          key={hit._id}
           className={`react-af-autosuggest-item ${
             index === selectedIndex ? "react-af-autosuggest-item-selected" : ""
           }`}
-          onClick={() => handleSuggestionClick(suggestion.term)}
+          onClick={() => handleSuggestionClick(hit)}
           onMouseEnter={() => setSelectedIndex(index)}
         >
-          {renderSuggestion
-            ? renderSuggestion(suggestion.term, suggestion.count)
-            : defaultRenderSuggestion(suggestion.term)}
+          {renderSuggestion ? renderSuggestion(hit) : defaultRenderSuggestion(hit)}
         </li>
       ))}
     </ul>
