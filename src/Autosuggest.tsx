@@ -5,6 +5,7 @@ import { disjunctsFrom } from "./utils";
 
 export interface AutosuggestProps {
   fields?: string[];
+  returnFields?: string[];
   limit?: number;
   minChars?: number;
   renderSuggestion?: (hit: QueryHit) => ReactNode;
@@ -18,6 +19,7 @@ export interface AutosuggestProps {
 
 export default function Autosuggest({
   fields,
+  returnFields,
   limit = 10,
   minChars = 2,
   renderSuggestion,
@@ -28,6 +30,8 @@ export default function Autosuggest({
   containerRef,
 }: AutosuggestProps) {
   const isSemanticEnabled = semanticIndexes && semanticIndexes.length > 0;
+  // Default returnFields to fields if not specified
+  const effectiveReturnFields = returnFields ?? fields;
   const [{ widgets }, dispatch] = useSharedContext();
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [isOpenOverride, setIsOpenOverride] = useState<boolean | null>(null);
@@ -68,7 +72,10 @@ export default function Autosuggest({
     if (shouldShowNow) {
       // Determine if this autosuggest can actually query
       // It needs either: semantic indexes, custom query, or non-empty fields
-      const canQuery = isSemanticEnabled || customQuery || (Array.isArray(fields) && fields.length > 0);
+      const canQuery =
+        isSemanticEnabled ||
+        customQuery !== undefined ||
+        (Array.isArray(fields) && fields.length > 0);
 
       // Register widget to fetch its own query results
       dispatch({
@@ -82,7 +89,9 @@ export default function Autosuggest({
         isSemantic: isSemanticEnabled,
         wantResults: canQuery,
         query: isSemanticEnabled
-          ? (customQuery ? customQuery() : null)
+          ? customQuery
+            ? customQuery()
+            : null
           : customQuery
             ? customQuery(searchValue, fields)
             : Array.isArray(fields) && fields.length > 0
@@ -99,9 +108,15 @@ export default function Autosuggest({
         semanticQuery: isSemanticEnabled ? searchValue : undefined,
         configuration: canQuery
           ? isSemanticEnabled
-            ? { indexes: Array.isArray(semanticIndexes) ? semanticIndexes : [], limit, itemsPerPage: limit, page: 1 }
+            ? {
+                indexes: Array.isArray(semanticIndexes) ? semanticIndexes : [],
+                limit,
+                itemsPerPage: limit,
+                page: 1,
+                fields: effectiveReturnFields,
+              }
             : {
-                fields,
+                fields: effectiveReturnFields,
                 size: limit,
                 itemsPerPage: limit,
                 page: 1,
@@ -124,7 +139,19 @@ export default function Autosuggest({
         result: { data: [], total: 0 },
       });
     }
-  }, [searchValue, fields, limit, minChars, customQuery, dispatch, id, isSemanticEnabled, semanticIndexes, shouldShow]);
+  }, [
+    searchValue,
+    fields,
+    limit,
+    minChars,
+    customQuery,
+    dispatch,
+    id,
+    isSemanticEnabled,
+    effectiveReturnFields,
+    semanticIndexes,
+    shouldShow,
+  ]);
 
   // Cleanup on unmount
   useEffect(() => () => dispatch({ type: "deleteWidget", key: id }), [dispatch, id]);

@@ -29,10 +29,13 @@ export default function SearchBox({
   const [value, setValue] = useState(initialValue || "");
   const isExternalUpdate = useRef(false);
   const [containerRefObject] = useState<{ current: HTMLDivElement | null }>({ current: null });
-  const containerRef = useCallback((node: HTMLDivElement | null) => {
-    // eslint-disable-next-line react-hooks/immutability
-    containerRefObject.current = node;
-  }, [containerRefObject]);
+  const containerRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      // eslint-disable-next-line react-hooks/immutability
+      containerRefObject.current = node;
+    },
+    [containerRefObject],
+  );
 
   // Build a query from a value.
   const queryFromValue = useCallback(
@@ -127,7 +130,7 @@ export default function SearchBox({
       // Default behavior: update search box with selected value
       // Extract value from first field for display in search box
       const firstField = fields?.[0]?.replace(/__(2gram|keyword)$/, "");
-      let valueToSet = '';
+      let valueToSet = "";
 
       if (firstField && suggestion._source?.[firstField]) {
         // Use the specified field if available
@@ -135,7 +138,7 @@ export default function SearchBox({
       } else if (!fields || fields.length === 0) {
         // When no fields specified, try to find a reasonable value from the suggestion
         // First try common text fields, then fall back to first available field or _id
-        const commonTextFields = ['title', 'name', 'label', 'text', 'description'];
+        const commonTextFields = ["title", "name", "label", "text", "description"];
         const sourceFields = suggestion._source ? Object.keys(suggestion._source) : [];
 
         for (const commonField of commonTextFields) {
@@ -149,14 +152,14 @@ export default function SearchBox({
         if (!valueToSet && sourceFields.length > 0) {
           const firstAvailableField = sourceFields[0];
           const fieldValue = suggestion._source?.[firstAvailableField];
-          if (fieldValue && typeof fieldValue !== 'object') {
+          if (fieldValue && typeof fieldValue !== "object") {
             valueToSet = String(fieldValue);
           }
         }
 
         // Last resort: use the document ID
         if (!valueToSet) {
-          valueToSet = suggestion._id || '';
+          valueToSet = suggestion._id || "";
         }
       }
 
@@ -183,7 +186,7 @@ export default function SearchBox({
             // Only clone props onto custom components (not native DOM elements like div, span, etc.)
             // Native DOM elements are represented as strings (e.g., 'div'), while custom components
             // are functions or classes
-            if (typeof child.type === 'function' || typeof child.type === 'object') {
+            if (typeof child.type === "function" || typeof child.type === "object") {
               return React.cloneElement(child as React.ReactElement<Record<string, unknown>>, {
                 searchValue: value,
                 onSuggestionSelect: handleSuggestionSelect,
