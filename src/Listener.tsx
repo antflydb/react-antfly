@@ -151,12 +151,21 @@ export default function Listener({ children, onChange }: ListenerProps) {
                   return; // Skip widgets without proper configuration
                 }
                 const { itemsPerPage, page, sort } = config;
-                // Join semanticQueries as a string
-                const semanticQuery = Array.from(semanticQueries.values())
+                // Join semanticQueries as a string, excluding autosuggest widgets except this one
+                const nonAutosuggestSemanticQueries = [...semanticQueries.entries()]
+                  .filter(([widgetId]) => {
+                    const widget = widgets.get(widgetId);
+                    // Include this widget's own semantic query
+                    if (widgetId === id) return true;
+                    // Exclude other autosuggest widgets
+                    return !widget?.isAutosuggest;
+                  })
+                  .map(([, v]) => v);
+                const semanticQuery = nonAutosuggestSemanticQueries
                   .map((v) => v.query)
                   .join(" ");
                 // Get the first indexes configured for the widget
-                const indexes = Array.from(semanticQueries.values())
+                const indexes = nonAutosuggestSemanticQueries
                   .map((v) => v.indexes)
                   .filter((i) => i && Array.isArray(i) && i.length > 0)[0];
 
@@ -224,15 +233,24 @@ export default function Listener({ children, onChange }: ListenerProps) {
                   fields.forEach((f: string) => {
                     result = { ...result, ...aggFromField(f) };
                   });
-                  // Join semanticQueries as a string
-                  const semanticQuery = Array.from(semanticQueries.values())
+                  // Join semanticQueries as a string, excluding autosuggest widgets except this one
+                  const nonAutosuggestSemanticQueries = [...semanticQueries.entries()]
+                    .filter(([widgetId]) => {
+                      const widget = widgets.get(widgetId);
+                      // Include this widget's own semantic query
+                      if (widgetId === id) return true;
+                      // Exclude other autosuggest widgets
+                      return !widget?.isAutosuggest;
+                    })
+                    .map(([, v]) => v);
+                  const semanticQuery = nonAutosuggestSemanticQueries
                     .map((v) => v.query)
                     .join(" ");
                   // Get the first indexes configured for the widget
-                  const indexes = Array.from(semanticQueries.values())
+                  const indexes = nonAutosuggestSemanticQueries
                     .map((v) => v.indexes)
                     .filter((i) => i && Array.isArray(i) && i.length > 0)[0];
-                  const limit = Array.from(semanticQueries.values()).map((v) => v.limit)[0] || 10;
+                  const limit = nonAutosuggestSemanticQueries.map((v) => v.limit)[0] || 10;
 
                   // Build query with custom query support
                   const baseQueries = withoutOwnQueries();
@@ -266,6 +284,10 @@ export default function Listener({ children, onChange }: ListenerProps) {
                     // then remove duplicate and add count (sum),
                     // then sort and slice to get only 10 first.
                     const map = new Map();
+                    // Safety check: ensure fields is an array before calling .map()
+                    if (!fields || !Array.isArray(fields)) {
+                      return [];
+                    }
                     fields
                       .map((f: string) => {
                         if (!result.facets || !result.facets[f] || !result.facets[f].terms) {
@@ -279,7 +301,7 @@ export default function Listener({ children, onChange }: ListenerProps) {
                         }
                         return result.facets[f].terms;
                       })
-                      .reduce((a: TermFacetResult[], b: TermFacetResult[]) => a.concat(b))
+                      .reduce((a: TermFacetResult[], b: TermFacetResult[]) => a.concat(b), [])
                       .forEach((i: TermFacetResult) => {
                         map.set(i.term, {
                           term: i.term,

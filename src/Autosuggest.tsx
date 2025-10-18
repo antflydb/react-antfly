@@ -1,14 +1,16 @@
-import React, { useState, useEffect, useCallback, useRef, ReactNode, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useRef, ReactNode, useMemo, useId } from "react";
 import { useSharedContext } from "./SharedContext";
 import { QueryHit } from "@antfly/sdk";
 import { disjunctsFrom } from "./utils";
 
 export interface AutosuggestProps {
-  fields: string[];
+  fields?: string[];
+  returnFields?: string[];
   limit?: number;
   minChars?: number;
   renderSuggestion?: (hit: QueryHit) => ReactNode;
-  customQuery?: (value: string, fields: string[]) => unknown;
+  customQuery?: (value?: string, fields?: string[]) => unknown;
+  semanticIndexes?: string[];
   // Internal props passed from SearchBox
   searchValue?: string;
   onSuggestionSelect?: (hit: QueryHit) => void;
@@ -17,20 +19,26 @@ export interface AutosuggestProps {
 
 export default function Autosuggest({
   fields,
+  returnFields,
   limit = 10,
   minChars = 2,
   renderSuggestion,
   customQuery,
+  semanticIndexes,
   searchValue = "",
   onSuggestionSelect,
   containerRef,
 }: AutosuggestProps) {
+  const isSemanticEnabled = semanticIndexes && semanticIndexes.length > 0;
+  // Default returnFields to fields if not specified
+  const effectiveReturnFields = returnFields ?? fields;
   const [{ widgets }, dispatch] = useSharedContext();
   const [selectedIndex, setSelectedIndex] = useState(-1);
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpenOverride, setIsOpenOverride] = useState<boolean | null>(null);
   const suggestionsRef = useRef<HTMLUListElement>(null);
   const justSelectedRef = useRef(false);
-  const id = useRef(`autosuggest-${Math.random().toString(36).slice(2, 11)}`).current;
+  const prevSearchValueRef = useRef(searchValue);
+  const id = `autosuggest-${useId()}`;
 
   // Get suggestions from widget result
   const widget = widgets.get(id);
@@ -41,46 +49,79 @@ export default function Autosuggest({
     return rawData.slice(0, limit);
   }, [widget?.result?.data, limit]);
 
+  // Derive isOpen from searchValue, with ability to override
+  const shouldShow = searchValue.length >= minChars;
+  const isOpen = isOpenOverride !== null ? isOpenOverride : shouldShow;
+
   // Update widget configuration when searchValue changes
   useEffect(() => {
-    const shouldShow = searchValue.length >= minChars;
-
-    // Don't reopen if user just selected a suggestion
-    if (!justSelectedRef.current) {
-      setIsOpen(shouldShow);
+    // Reset override and selection when search value changes
+    if (prevSearchValueRef.current !== searchValue) {
+      prevSearchValueRef.current = searchValue;
+      if (!justSelectedRef.current) {
+        // Use a microtask to avoid setState during render
+        Promise.resolve().then(() => {
+          setIsOpenOverride(null);
+          setSelectedIndex(-1);
+        });
+      }
+      justSelectedRef.current = false;
     }
-    justSelectedRef.current = false;
 
-    setSelectedIndex(-1);
+    const shouldShowNow = searchValue.length >= minChars;
+    if (shouldShowNow) {
+      // Determine if this autosuggest can actually query
+      // It needs either: semantic indexes, custom query, or non-empty fields
+      const canQuery =
+        isSemanticEnabled ||
+        customQuery !== undefined ||
+        (Array.isArray(fields) && fields.length > 0);
 
-    if (shouldShow) {
       // Register widget to fetch its own query results
       dispatch({
         type: "setWidget",
         key: id,
-        needsQuery: true,
-        needsConfiguration: true,
+        needsQuery: canQuery,
+        needsConfiguration: canQuery,
         isFacet: false,
         rootQuery: true,
         isAutosuggest: true,
-        wantResults: true,
-        query: customQuery
-          ? customQuery(searchValue, fields)
-          : disjunctsFrom(
-              fields.map((field) => {
-                // TODO (ajr) Do we want match_phrase or make a match_phrase_prefix?
-                // if (field.includes(" ")) return {};
-                if (field.endsWith("__keyword")) return { prefix: searchValue, field };
-                if (field.endsWith("__2gram")) return { match: searchValue, field };
-                return { match: searchValue, field };
-              }),
-            ),
-        configuration: {
-          fields,
-          size: limit,
-          itemsPerPage: limit,
-          page: 1,
-        },
+        isSemantic: isSemanticEnabled,
+        wantResults: canQuery,
+        query: isSemanticEnabled
+          ? customQuery
+            ? customQuery()
+            : null
+          : customQuery
+            ? customQuery(searchValue, fields)
+            : Array.isArray(fields) && fields.length > 0
+              ? disjunctsFrom(
+                  fields.map((field) => {
+                    // TODO (ajr) Do we want match_phrase or make a match_phrase_prefix?
+                    // if (field.includes(" ")) return {};
+                    if (field.endsWith("__keyword")) return { prefix: searchValue, field };
+                    if (field.endsWith("__2gram")) return { match: searchValue, field };
+                    return { match: searchValue, field };
+                  }),
+                )
+              : null,
+        semanticQuery: isSemanticEnabled ? searchValue : undefined,
+        configuration: canQuery
+          ? isSemanticEnabled
+            ? {
+                indexes: Array.isArray(semanticIndexes) ? semanticIndexes : [],
+                limit,
+                itemsPerPage: limit,
+                page: 1,
+                fields: effectiveReturnFields,
+              }
+            : {
+                fields: effectiveReturnFields,
+                size: limit,
+                itemsPerPage: limit,
+                page: 1,
+              }
+          : undefined,
         result: undefined,
       });
     } else {
@@ -93,11 +134,24 @@ export default function Autosuggest({
         isFacet: false,
         rootQuery: true,
         isAutosuggest: true,
+        isSemantic: isSemanticEnabled,
         wantResults: false,
         result: { data: [], total: 0 },
       });
     }
-  }, [searchValue, fields, limit, minChars, customQuery, dispatch, id]);
+  }, [
+    searchValue,
+    fields,
+    limit,
+    minChars,
+    customQuery,
+    dispatch,
+    id,
+    isSemanticEnabled,
+    effectiveReturnFields,
+    semanticIndexes,
+    shouldShow,
+  ]);
 
   // Cleanup on unmount
   useEffect(() => () => dispatch({ type: "deleteWidget", key: id }), [dispatch, id]);
@@ -121,12 +175,12 @@ export default function Autosuggest({
           if (selectedIndex >= 0 && selectedIndex < suggestions.length) {
             justSelectedRef.current = true;
             onSuggestionSelect?.(suggestions[selectedIndex]);
-            setIsOpen(false);
+            setIsOpenOverride(false);
           }
           break;
         case "Escape":
           e.preventDefault();
-          setIsOpen(false);
+          setIsOpenOverride(false);
           setSelectedIndex(-1);
           break;
       }
@@ -148,7 +202,7 @@ export default function Autosuggest({
 
     const handleClickOutside = (event: MouseEvent) => {
       if (containerRef?.current && !containerRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
+        setIsOpenOverride(false);
         setSelectedIndex(-1);
       }
     };
@@ -170,7 +224,7 @@ export default function Autosuggest({
     (hit: QueryHit) => {
       justSelectedRef.current = true;
       onSuggestionSelect?.(hit);
-      setIsOpen(false);
+      setIsOpenOverride(false);
       setSelectedIndex(-1);
     },
     [onSuggestionSelect],
@@ -179,8 +233,8 @@ export default function Autosuggest({
   // Default suggestion renderer
   const defaultRenderSuggestion = (hit: QueryHit) => {
     // Display first available field value
-    const firstField = fields[0]?.replace(/__(2gram|keyword)$/, "");
-    const value = hit._source?.[firstField];
+    const firstField = fields?.[0]?.replace(/__(2gram|keyword)$/, "");
+    const value = firstField ? hit._source?.[firstField] : undefined;
     return <span className="react-af-autosuggest-term">{value ? String(value) : hit._id}</span>;
   };
 

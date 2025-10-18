@@ -30,9 +30,9 @@ export default function Results({
   fields,
 }: ResultsProps) {
   const [{ widgets }, dispatch] = useSharedContext();
-  const [initialization, setInitialization] = useState(true);
   const [page, setPage] = useState(initialPage);
   const [lastQueryHash, setLastQueryHash] = useState<string | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   const widget = widgets.get(id);
   const data = widget && widget.result && widget.result.data ? widget.result.data : [];
@@ -54,21 +54,31 @@ export default function Results({
       w.semanticQuery.trim().length > 0,
   );
 
-  useEffect(() => {
-    // Create a hash of all search/filter widgets to detect query changes
-    const queryWidgets = Array.from(widgets.values()).filter((w) => w.needsQuery);
-    const queryHash = JSON.stringify(
-      queryWidgets.map((w) => ({ id: w.id, value: w.value, query: w.query })),
-    );
+  // Create a hash of all search/filter widgets to detect query changes
+  const queryWidgets = Array.from(widgets.values()).filter((w) => w.needsQuery);
+  const queryHash = JSON.stringify(
+    queryWidgets.map((w) => ({ id: w.id, value: w.value, query: w.query })),
+  );
 
-    // Only reset to page 1 if the query actually changed (not just pagination)
+  // Compute the desired page based on query changes
+  const desiredPage = React.useMemo(() => {
     if (queryHash !== lastQueryHash) {
-      setPage(initialization ? initialPage : 1);
-      setLastQueryHash(queryHash);
+      return !isInitialized ? initialPage : 1;
     }
+    return page;
+  }, [queryHash, lastQueryHash, isInitialized, initialPage, page]);
 
-    return () => setInitialization(false);
-  }, [widgets, total, initialPage, lastQueryHash, initialization]);
+  // Update state after query hash changes
+  useEffect(() => {
+    if (queryHash !== lastQueryHash) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setLastQueryHash(queryHash);
+      setIsInitialized(true);
+      if (desiredPage !== page) {
+        setPage(desiredPage);
+      }
+    }
+  }, [queryHash, lastQueryHash, desiredPage, page]);
 
   // Update context with page (and itemsPerPage)
   useEffect(() => {
