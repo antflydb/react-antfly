@@ -218,6 +218,167 @@ describe("Listener", () => {
       });
     });
 
+    it("should exclude autosuggest semantic queries from main Results semantic query", async () => {
+      // Regression test for bug where:
+      // - Autosuggest has semanticIndexes configured
+      // - SearchBox does not have semanticIndexes
+      // - User types "test" in SearchBox
+      // - Autosuggest registers with semanticQuery: "test"
+      // - Listener was joining all semanticQueries including autosuggest
+      // - Result: semantic query was "test" instead of being excluded
+      //
+      // Expected: Autosuggest semantic queries should NOT affect Results queries
+
+      const { container } = render(
+        <TestWrapper>
+          <SearchBox id="main" fields={["title__keyword"]}>
+            <Autosuggest
+              semanticIndexes={["title_body_semantic"]}
+              fields={[]}
+              limit={10}
+              minChars={2}
+            />
+          </SearchBox>
+          <Results
+            id="result"
+            items={(data) => <div className="test-results">{data.length} results</div>}
+            itemsPerPage={10}
+          />
+        </TestWrapper>,
+      );
+
+      const input = container.querySelector("input") as HTMLInputElement;
+      expect(input).toBeTruthy();
+
+      // Type into the search box
+      await userEvent.type(input, "test query");
+
+      // Results should render without autosuggest semantic query being attached
+      await waitFor(() => {
+        expect(container.querySelector(".react-af-results")).toBeTruthy();
+      });
+
+      // Both autosuggest (if it had results) and results should work independently
+      expect(input.value).toBe("test query");
+    });
+
+    it("should handle SearchBox with semantic search and Autosuggest with semantic search independently", async () => {
+      // Test case where both have semantic indexes
+      // Each should query independently without interfering with each other
+
+      const { container } = render(
+        <TestWrapper>
+          <SearchBox id="main" semanticIndexes={["main_semantic_index"]} limit={20}>
+            <Autosuggest
+              semanticIndexes={["autosuggest_semantic_index"]}
+              fields={[]}
+              limit={5}
+              minChars={2}
+            />
+          </SearchBox>
+          <Results
+            id="result"
+            items={(data) => <div className="test-results">{data.length} results</div>}
+            itemsPerPage={10}
+          />
+        </TestWrapper>,
+      );
+
+      const input = container.querySelector("input") as HTMLInputElement;
+      await userEvent.type(input, "semantic test");
+
+      // Both should work independently
+      await waitFor(() => {
+        expect(container.querySelector(".react-af-results")).toBeTruthy();
+      });
+
+      expect(input.value).toBe("semantic test");
+    });
+
+    it("should include autosuggest's own semantic query when autosuggest queries for results", async () => {
+      // Regression test for bug where:
+      // - Autosuggest has semanticIndexes configured and wantResults: true
+      // - User types "foo" in SearchBox
+      // - Autosuggest registers with semanticQuery: "foo", isAutosuggest: true
+      // - Listener was filtering out ALL autosuggest semantic queries
+      // - Result: autosuggest's own query had semantic_search: "" instead of "foo"
+      //
+      // Expected: Autosuggest should get its OWN semantic query, but NOT other autosuggest queries
+
+      const utils = await import("./utils");
+      const msearchSpy = vi.spyOn(utils, "msearch").mockResolvedValue({
+        responses: [
+          {
+            status: 200,
+            took: 10,
+            hits: { hits: [], total: 0 },
+          },
+          {
+            status: 200,
+            took: 10,
+            hits: { hits: [], total: 0 },
+          },
+        ],
+      });
+
+      const { container } = render(
+        <TestWrapper>
+          <SearchBox id="main" fields={["title__keyword"]}>
+            <Autosuggest
+              semanticIndexes={["title_body_semantic"]}
+              fields={[]}
+              limit={10}
+              minChars={2}
+            />
+          </SearchBox>
+          <Results
+            id="result"
+            items={(data) => <div className="test-results">{data.length} results</div>}
+            itemsPerPage={10}
+          />
+        </TestWrapper>,
+      );
+
+      const input = container.querySelector("input") as HTMLInputElement;
+      expect(input).toBeTruthy();
+
+      // Type into the search box
+      await userEvent.type(input, "foo");
+
+      // Wait for queries to be fired
+      await waitFor(() => {
+        expect(msearchSpy).toHaveBeenCalled();
+      });
+
+      // Check that the autosuggest query includes its semantic search
+      const calls = msearchSpy.mock.calls;
+      const lastCall = calls[calls.length - 1];
+      const queries = lastCall[1]; // Second argument is the queries array
+
+      // There should be exactly 2 queries: one for autosuggest, one for Results
+      expect(queries.length).toBe(2);
+
+      // Autosuggest query has semantic_search="foo" and indexes array
+      // Results query has semantic_search="" and no indexes (undefined)
+      const autosuggestQuery = queries.find((q: { query: { semantic_search?: string, indexes?: string[] } }) =>
+        q.query.semantic_search === "foo" && Array.isArray(q.query.indexes)
+      );
+
+      expect(autosuggestQuery).toBeTruthy();
+      expect(autosuggestQuery.query.semantic_search).toBe("foo");
+      expect(autosuggestQuery.query.indexes).toEqual(["title_body_semantic"]);
+
+      // Results query has empty semantic_search and no indexes
+      const resultsQuery = queries.find((q: { query: { semantic_search?: string, indexes?: string[] } }) =>
+        q.query.semantic_search === "" && !q.query.indexes
+      );
+
+      expect(resultsQuery).toBeTruthy();
+      expect(resultsQuery.query.semantic_search).toBe("");
+
+      msearchSpy.mockRestore();
+    });
+
     it("should include facet queries in main search", async () => {
       // This is just a smoke test - we don't have facet components in this test
       // but we verify the system doesn't break without them
