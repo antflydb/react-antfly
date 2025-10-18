@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
@@ -6,6 +6,7 @@ import Antfly from './Antfly';
 import SearchBox from './SearchBox';
 import Autosuggest from './Autosuggest';
 import Results from './Results';
+import * as utils from './utils';
 
 // Wrapper component to provide required context
 const TestWrapper = ({ children }: { children: React.ReactNode }) => {
@@ -318,6 +319,61 @@ describe('Integration Tests', () => {
       await userEvent.type(input, 'test');
 
       expect(container).toBeTruthy();
+    });
+
+    it('should fire queries when SearchBox has fields but Autosuggest has empty fields', async () => {
+      // This is the exact configuration from the user's bug report:
+      // SearchBox with fields, Autosuggest with empty fields array
+      // Bug: Autosuggest sets needsQuery=true but query=null, causing
+      // queries.size + semanticQueries.size !== searchWidgets.size
+
+      // Spy on the msearch function to verify it gets called
+      const msearchSpy = vi.spyOn(utils, 'msearch').mockResolvedValue({
+        responses: [
+          {
+            status: 200,
+            took: 10,
+            hits: { hits: [], total: 0 },
+          },
+        ],
+      });
+
+      const { container } = render(
+        <TestWrapper>
+          <SearchBox id="search" fields={['title__keyword']}>
+            <Autosuggest fields={[]} minChars={2} />
+          </SearchBox>
+          <Results
+            id="results"
+            items={(data) => <div className="results-content">{data.length} results</div>}
+          />
+        </TestWrapper>
+      );
+
+      const input = container.querySelector('input') as HTMLInputElement;
+
+      // Wait for initial render to settle
+      await waitFor(() => {
+        expect(msearchSpy).toHaveBeenCalled();
+      }, { timeout: 1000 });
+
+      const initialCallCount = msearchSpy.mock.calls.length;
+
+      // Now type - this is where the bug manifests!
+      // When user types, Autosuggest updates and sets needsQuery=true but query=null
+      await userEvent.type(input, 'te');
+
+      // The key test: verify that msearch was called AGAIN after typing
+      // If the bug exists, this will timeout because no new queries fire
+      await waitFor(
+        () => {
+          const newCallCount = msearchSpy.mock.calls.length;
+          expect(newCallCount).toBeGreaterThan(initialCallCount);
+        },
+        { timeout: 3000 }
+      );
+
+      msearchSpy.mockRestore();
     });
 
     it('should handle very long search queries', async () => {

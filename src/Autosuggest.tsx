@@ -66,17 +66,21 @@ export default function Autosuggest({
 
     const shouldShowNow = searchValue.length >= minChars;
     if (shouldShowNow) {
+      // Determine if this autosuggest can actually query
+      // It needs either: semantic indexes, custom query, or non-empty fields
+      const canQuery = isSemanticEnabled || customQuery || (Array.isArray(fields) && fields.length > 0);
+
       // Register widget to fetch its own query results
       dispatch({
         type: "setWidget",
         key: id,
-        needsQuery: true,
-        needsConfiguration: true,
+        needsQuery: canQuery,
+        needsConfiguration: canQuery,
         isFacet: false,
         rootQuery: true,
         isAutosuggest: true,
         isSemantic: isSemanticEnabled,
-        wantResults: true,
+        wantResults: canQuery,
         query: isSemanticEnabled
           ? (customQuery ? customQuery() : null)
           : customQuery
@@ -93,14 +97,16 @@ export default function Autosuggest({
                 )
               : null,
         semanticQuery: isSemanticEnabled ? searchValue : undefined,
-        configuration: isSemanticEnabled
-          ? { indexes: Array.isArray(semanticIndexes) ? semanticIndexes : [], limit, itemsPerPage: limit, page: 1 }
-          : {
-              fields,
-              size: limit,
-              itemsPerPage: limit,
-              page: 1,
-            },
+        configuration: canQuery
+          ? isSemanticEnabled
+            ? { indexes: Array.isArray(semanticIndexes) ? semanticIndexes : [], limit, itemsPerPage: limit, page: 1 }
+            : {
+                fields,
+                size: limit,
+                itemsPerPage: limit,
+                page: 1,
+              }
+          : undefined,
         result: undefined,
       });
     } else {
