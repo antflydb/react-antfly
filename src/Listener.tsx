@@ -266,6 +266,10 @@ export default function Listener({ children, onChange }: ListenerProps) {
                     // then remove duplicate and add count (sum),
                     // then sort and slice to get only 10 first.
                     const map = new Map();
+                    // Safety check: ensure fields is an array before calling .map()
+                    if (!fields || !Array.isArray(fields)) {
+                      return [];
+                    }
                     fields
                       .map((f: string) => {
                         if (!result.facets || !result.facets[f] || !result.facets[f].terms) {
@@ -279,7 +283,7 @@ export default function Listener({ children, onChange }: ListenerProps) {
                         }
                         return result.facets[f].terms;
                       })
-                      .reduce((a: TermFacetResult[], b: TermFacetResult[]) => a.concat(b))
+                      .reduce((a: TermFacetResult[], b: TermFacetResult[]) => a.concat(b), [])
                       .forEach((i: TermFacetResult) => {
                         map.set(i.term, {
                           term: i.term,

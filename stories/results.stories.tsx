@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import { Antfly, Results } from "../src";
 import { url } from "./utils";
 
@@ -67,10 +67,9 @@ export const WithCustomStats = () => {
 export const SortableDmisDesc = () => {
   const [sortKey, setSortKey] = useState("DMIS");
   const [sortOrder, setSortOrder] = useState("desc");
-  const [sortQuery, setSortQuery] = useState([{ [sortKey]: { order: sortOrder } }]);
 
-  useEffect(() => {
-    setSortQuery({ [sortKey]: sortOrder == "desc" });
+  const sortQuery = useMemo(() => {
+    return { [sortKey]: sortOrder == "desc" };
   }, [sortKey, sortOrder]);
 
   return (
