@@ -360,21 +360,23 @@ describe("Listener", () => {
 
       // Autosuggest query has semantic_search="foo" and indexes array
       // Results query has semantic_search="" and no indexes (undefined)
-      const autosuggestQuery = queries.find((q: { query: { semantic_search?: string, indexes?: string[] } }) =>
-        q.query.semantic_search === "foo" && Array.isArray(q.query.indexes)
+      const autosuggestQuery = queries.find(
+        (q: { query: { semantic_search?: string; indexes?: string[] } }) =>
+          q.query.semantic_search === "foo" && Array.isArray(q.query.indexes),
       );
 
       expect(autosuggestQuery).toBeTruthy();
-      expect(autosuggestQuery.query.semantic_search).toBe("foo");
-      expect(autosuggestQuery.query.indexes).toEqual(["title_body_semantic"]);
+      expect(autosuggestQuery?.query.semantic_search).toBe("foo");
+      expect(autosuggestQuery?.query.indexes).toEqual(["title_body_semantic"]);
 
       // Results query has empty semantic_search and no indexes
-      const resultsQuery = queries.find((q: { query: { semantic_search?: string, indexes?: string[] } }) =>
-        q.query.semantic_search === "" && !q.query.indexes
+      const resultsQuery = queries.find(
+        (q: { query: { semantic_search?: string; indexes?: string[] } }) =>
+          q.query.semantic_search === "" && !q.query.indexes,
       );
 
       expect(resultsQuery).toBeTruthy();
-      expect(resultsQuery.query.semantic_search).toBe("");
+      expect(resultsQuery?.query.semantic_search).toBe("");
 
       msearchSpy.mockRestore();
     });
