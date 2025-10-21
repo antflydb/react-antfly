@@ -12,6 +12,7 @@ UI components for React + Antfly. Create search applications using declarative c
 const MySearchComponent = () => (
   <Antfly url="http://<antfly_url>/table/movies">
     <SearchBox id="mainSearch" fields={["title"]} />
+    <Autosuggest id="autosuggest" fields={["title"]} returnFields={["title"]} />
     <Facet id="actors" fields={["actors"]} />
     <Facet id="releasedYear" fields={["releasedYear"]} />
     <Results
@@ -29,12 +30,9 @@ const MySearchComponent = () => (
 
 ```
 npm i @antfly/components
-yarn add @antfly/components
 ```
 
 ## Develop
-
-You can test components with storybook (20+ examples).
 
 ```
 npm run storybook

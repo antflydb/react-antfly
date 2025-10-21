@@ -486,7 +486,7 @@ describe("Autosuggest", () => {
     });
 
     it("should handle containerRef with null current", () => {
-      const ref = React.createRef<HTMLDivElement>();
+      const ref = React.createRef<HTMLDivElement | null>();
       const { container } = render(
         <TestWrapper>
           <Autosuggest fields={["title"]} searchValue="test" minChars={1} containerRef={ref} />

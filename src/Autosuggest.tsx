@@ -14,7 +14,7 @@ export interface AutosuggestProps {
   // Internal props passed from SearchBox
   searchValue?: string;
   onSuggestionSelect?: (hit: QueryHit) => void;
-  containerRef?: React.RefObject<HTMLDivElement>;
+  containerRef?: React.RefObject<HTMLDivElement | null>;
 }
 
 export default function Autosuggest({

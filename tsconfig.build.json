@@ -5,15 +5,6 @@
     "emitDeclarationOnly": true,
     "declarationDir": "./types"
   },
-  "include": [
-    "src/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "build",
-    "stories",
-    "**/*.test.ts",
-    "**/*.test.tsx"
-  ]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "build", "stories", "**/*.test.ts", "**/*.test.tsx"]
 }
