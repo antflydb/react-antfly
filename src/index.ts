@@ -8,12 +8,15 @@ import ActiveFilters from "./ActiveFilters";
 import QueryBuilder from "./QueryBuilder/QueryBuilder";
 import CustomWidget from "./CustomWidget";
 import Autosuggest from "./Autosuggest";
+import AnswerBox from "./AnswerBox";
+import RAGResults from "./RAGResults";
 import {
   fromUrlQueryString,
   toUrlQueryString,
   msearch,
   initializeAntflyClient,
   getAntflyClient,
+  streamRAG,
 } from "./utils";
 
 export {
@@ -29,9 +32,12 @@ export {
   QueryBuilder,
   CustomWidget,
   Autosuggest,
+  AnswerBox,
+  RAGResults,
   msearch,
   initializeAntflyClient,
   getAntflyClient,
+  streamRAG,
 };
 
 // Export types for users of the library
@@ -43,8 +49,10 @@ export type { PaginationProps } from "./Pagination";
 export type { ActiveFiltersProps, ActiveFilter } from "./ActiveFilters";
 export type { CustomWidgetProps } from "./CustomWidget";
 export type { AutosuggestProps } from "./Autosuggest";
+export type { AnswerBoxProps } from "./AnswerBox";
+export type { RAGResultsProps } from "./RAGResults";
 export type { QueryBuilderProps, QueryBuilderRule, FieldOption } from "./QueryBuilder/QueryBuilder";
 export type { RuleProps } from "./QueryBuilder/Rule";
 export type { Operator, Combinator } from "./QueryBuilder/utils";
 export type { SharedState, SharedAction, Widget } from "./SharedContext";
-export type { MultiqueryRequest } from "./utils";
+export type { MultiqueryRequest, RAGRequest, SSEChunk } from "./utils";

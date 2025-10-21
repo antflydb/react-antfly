@@ -1,5 +1,5 @@
 import qs from "qs";
-import { AntflyClient, QueryRequest, QueryResponses } from "@antfly/sdk";
+import { AntflyClient, QueryRequest, QueryResponses, ModelConfig } from "@antfly/sdk";
 
 export interface MultiqueryRequest {
   query: QueryRequest;
@@ -115,3 +115,116 @@ export function toUrlQueryString(params: Map<string, unknown>): string {
 export const defer = (f: () => void): void => {
   queueMicrotask(f);
 };
+
+// RAG-related types and functions
+export interface RAGRequest {
+  query: QueryRequest;
+  summarizer: ModelConfig;
+  system_prompt?: string;
+}
+
+export interface SSEChunk {
+  chunk?: string;
+  error?: string;
+}
+
+/**
+ * Stream RAG results from the Antfly /rag endpoint using Server-Sent Events
+ * @param url - Base URL of the Antfly server
+ * @param request - RAG request containing query and summarizer config
+ * @param headers - Optional HTTP headers for authentication
+ * @param onChunk - Callback for each chunk of the summary
+ * @param onComplete - Callback when the stream completes
+ * @param onError - Callback for errors
+ * @returns AbortController to cancel the stream
+ */
+export async function streamRAG(
+  url: string,
+  request: RAGRequest,
+  headers: Record<string, string> = {},
+  onChunk: (chunk: string) => void,
+  onComplete: () => void,
+  onError: (error: Error) => void,
+): Promise<AbortController> {
+  const abortController = new AbortController();
+
+  try {
+    const response = await fetch(`${url}/rag`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "text/event-stream",
+        ...headers,
+      },
+      body: JSON.stringify(request),
+      signal: abortController.signal,
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`RAG request failed: ${response.status} ${errorText}`);
+    }
+
+    if (!response.body) {
+      throw new Error("Response body is null");
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+
+    // Read the stream
+    while (true) {
+      const { done, value } = await reader.read();
+
+      if (done) {
+        onComplete();
+        break;
+      }
+
+      // Decode the chunk and add to buffer
+      buffer += decoder.decode(value, { stream: true });
+
+      // Process complete SSE messages
+      const lines = buffer.split("\n");
+      buffer = lines.pop() || ""; // Keep incomplete line in buffer
+
+      for (const line of lines) {
+        if (!line.trim()) continue;
+
+        // SSE format: "data: {json}" or "data: [DONE]"
+        if (line.startsWith("data: ")) {
+          const data = line.slice(6).trim();
+
+          if (data === "[DONE]") {
+            onComplete();
+            return abortController;
+          }
+
+          try {
+            const parsed = JSON.parse(data) as SSEChunk;
+            if (parsed.chunk) {
+              onChunk(parsed.chunk);
+            } else if (parsed.error) {
+              onError(new Error(parsed.error));
+            }
+          } catch (e) {
+            console.warn("Failed to parse SSE data:", data, e);
+          }
+        }
+      }
+    }
+  } catch (error) {
+    if (error instanceof Error) {
+      if (error.name === "AbortError") {
+        console.log("RAG stream aborted");
+      } else {
+        onError(error);
+      }
+    } else {
+      onError(new Error("Unknown error occurred during RAG streaming"));
+    }
+  }
+
+  return abortController;
+}
