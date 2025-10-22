@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, ReactNode } from "react";
 import { useSharedContext, Widget } from "./SharedContext";
 import { QueryResult, QueryHit, TermFacetResult } from "@antfly/sdk";
-import { msearch as multiquery, conjunctsFrom, defer, MultiqueryRequest } from "./utils";
+import { multiquery, conjunctsFrom, defer, MultiqueryRequest } from "./utils";
 
 interface ListenerProps {
   children: ReactNode;
@@ -59,9 +59,9 @@ interface MultiqueryResult {
 function isSearchWidgetConfig(config: unknown): config is SearchWidgetConfig {
   return (
     config !== null &&
-    typeof config === 'object' &&
-    typeof (config as SearchWidgetConfig).itemsPerPage === 'number' &&
-    typeof (config as SearchWidgetConfig).page === 'number'
+    typeof config === "object" &&
+    typeof (config as SearchWidgetConfig).itemsPerPage === "number" &&
+    typeof (config as SearchWidgetConfig).page === "number"
   );
 }
 
@@ -161,9 +161,7 @@ export default function Listener({ children, onChange }: ListenerProps) {
                     return !widget?.isAutosuggest;
                   })
                   .map(([, v]) => v);
-                const semanticQuery = nonAutosuggestSemanticQueries
-                  .map((v) => v.query)
-                  .join(" ");
+                const semanticQuery = nonAutosuggestSemanticQueries.map((v) => v.query).join(" ");
                 // Get the first indexes configured for the widget
                 const indexes = nonAutosuggestSemanticQueries
                   .map((v) => v.indexes)
@@ -243,9 +241,7 @@ export default function Listener({ children, onChange }: ListenerProps) {
                       return !widget?.isAutosuggest;
                     })
                     .map(([, v]) => v);
-                  const semanticQuery = nonAutosuggestSemanticQueries
-                    .map((v) => v.query)
-                    .join(" ");
+                  const semanticQuery = nonAutosuggestSemanticQueries.map((v) => v.query).join(" ");
                   // Get the first indexes configured for the widget
                   const indexes = nonAutosuggestSemanticQueries
                     .map((v) => v.indexes)

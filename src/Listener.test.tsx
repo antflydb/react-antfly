@@ -306,7 +306,7 @@ describe("Listener", () => {
       // Expected: Autosuggest should get its OWN semantic query, but NOT other autosuggest queries
 
       const utils = await import("./utils");
-      const msearchSpy = vi.spyOn(utils, "msearch").mockResolvedValue({
+      const msearchSpy = vi.spyOn(utils, "multiquery").mockResolvedValue({
         responses: [
           {
             status: 200,

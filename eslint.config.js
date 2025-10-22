@@ -10,7 +10,7 @@ import { defineConfig } from "eslint/config";
 
 export default defineConfig(
   {
-    ignores: ["**/build/**", "**/dist/**", "dist/**", "build/**"],
+    ignores: ["**/build/**", "**/dist/**", "dist/**", "build/**", "storybook-static/**"],
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,

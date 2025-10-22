@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, waitFor, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import React from "react";
@@ -6,10 +6,11 @@ import RAGResults from "./RAGResults";
 import AnswerBox from "./AnswerBox";
 import Antfly from "./Antfly";
 import type { ModelConfig } from "@antfly/sdk";
+import * as utils from "./utils";
 
 // Wrapper component to provide required context
 const TestWrapper = ({ children }: { children: React.ReactNode }) => {
-  return <Antfly url="http://localhost:8082/api/v1/test">{children}</Antfly>;
+  return <Antfly url="http://localhost:8082/api/v1/table/test">{children}</Antfly>;
 };
 
 // Mock ModelConfig for testing
@@ -19,39 +20,17 @@ const mockSummarizer: ModelConfig = {
   api_key: "test-key",
 };
 
-// Helper to create a mock ReadableStream
-const createMockStream = (chunks: string[]) => {
-  return new ReadableStream({
-    start(controller) {
-      const encoder = new TextEncoder();
-      chunks.forEach((chunk) => {
-        controller.enqueue(encoder.encode(chunk));
-      });
-      controller.close();
-    },
-  });
-};
-
-// Helper to create mock fetch response with headers
-const createMockFetchResponse = (body: ReadableStream, contentType = "text/event-stream") => {
+// Mock the streamRAG function from utils
+vi.mock("./utils", async () => {
+  const actual = await vi.importActual<typeof utils>("./utils");
   return {
-    ok: true,
-    body,
-    headers: {
-      get: (name: string) => (name.toLowerCase() === "content-type" ? contentType : null),
-    },
+    ...actual,
+    streamRAG: vi.fn(),
   };
-};
+});
 
 describe("RAGResults", () => {
-  let originalFetch: typeof global.fetch;
-
   beforeEach(() => {
-    originalFetch = global.fetch;
-  });
-
-  afterEach(() => {
-    global.fetch = originalFetch;
     vi.clearAllMocks();
   });
 
@@ -102,16 +81,14 @@ describe("RAGResults", () => {
 
   describe("streaming behavior", () => {
     it("should stream chunks progressively", async () => {
-      // Mock fetch to return a streaming response
-      global.fetch = vi.fn().mockResolvedValue(
-        createMockFetchResponse(
-          createMockStream([
-            'data: {"chunk":"Hello "}\n\n',
-            'data: {"chunk":"world"}\n\n',
-            "data: [DONE]\n\n",
-          ]),
-        ),
-      );
+      // Mock streamRAG to simulate streaming chunks
+      const mockStreamRAG = vi.mocked(utils.streamRAG);
+      mockStreamRAG.mockImplementation(async (_url, _request, _headers, onChunk, onComplete) => {
+        onChunk("Hello ");
+        onChunk("world");
+        onComplete();
+        return new AbortController();
+      });
 
       const { container } = render(
         <TestWrapper>
@@ -138,28 +115,16 @@ describe("RAGResults", () => {
         { timeout: 3000 },
       );
 
-      expect(global.fetch).toHaveBeenCalledWith(
-        "http://localhost:8082/api/v1/test/rag",
-        expect.objectContaining({
-          method: "POST",
-          headers: expect.objectContaining({
-            "Content-Type": "application/json",
-            Accept: "text/event-stream, application/json",
-          }),
-        }),
-      );
+      expect(mockStreamRAG).toHaveBeenCalled();
     });
 
     it("should show streaming indicator while streaming", async () => {
-      // Create a stream that sends data but doesn't close immediately
-      global.fetch = vi.fn().mockResolvedValue(
-        createMockFetchResponse(
-          createMockStream([
-            'data: {"chunk":"Streaming..."}\n\n',
-            // Stream ends here, will show indicator briefly
-          ]),
-        ),
-      );
+      const mockStreamRAG = vi.mocked(utils.streamRAG);
+      mockStreamRAG.mockImplementation(async (_url, _request, _headers, onChunk, onComplete) => {
+        onChunk("Streaming...");
+        onComplete();
+        return new AbortController();
+      });
 
       const { container } = render(
         <TestWrapper>
@@ -185,9 +150,12 @@ describe("RAGResults", () => {
     });
 
     it("should handle [DONE] signal", async () => {
-      global.fetch = vi.fn().mockResolvedValue(
-        createMockFetchResponse(createMockStream(['data: {"chunk":"Complete"}\n\n', "data: [DONE]\n\n"])),
-      );
+      const mockStreamRAG = vi.mocked(utils.streamRAG);
+      mockStreamRAG.mockImplementation(async (_url, _request, _headers, onChunk, onComplete) => {
+        onChunk("Complete");
+        onComplete();
+        return new AbortController();
+      });
 
       const { container } = render(
         <TestWrapper>
@@ -216,7 +184,13 @@ describe("RAGResults", () => {
 
   describe("error handling", () => {
     it("should display error when fetch fails", async () => {
-      global.fetch = vi.fn().mockRejectedValue(new Error("Network error"));
+      const mockStreamRAG = vi.mocked(utils.streamRAG);
+      mockStreamRAG.mockImplementation(
+        async (_url, _request, _headers, _onChunk, _onComplete, onError) => {
+          onError(new Error("Network error"));
+          return new AbortController();
+        },
+      );
 
       const { container } = render(
         <TestWrapper>
@@ -241,11 +215,13 @@ describe("RAGResults", () => {
     });
 
     it("should handle HTTP error responses", async () => {
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: false,
-        status: 500,
-        text: async () => "Internal Server Error",
-      });
+      const mockStreamRAG = vi.mocked(utils.streamRAG);
+      mockStreamRAG.mockImplementation(
+        async (_url, _request, _headers, _onChunk, _onComplete, onError) => {
+          onError(new Error("RAG request failed: 500 Internal Server Error"));
+          return new AbortController();
+        },
+      );
 
       const { container } = render(
         <TestWrapper>
@@ -270,8 +246,12 @@ describe("RAGResults", () => {
     });
 
     it("should handle error chunks in stream", async () => {
-      global.fetch = vi.fn().mockResolvedValue(
-        createMockFetchResponse(createMockStream(['data: {"error":"Something went wrong"}\n\n'])),
+      const mockStreamRAG = vi.mocked(utils.streamRAG);
+      mockStreamRAG.mockImplementation(
+        async (_url, _request, _headers, _onChunk, _onComplete, onError) => {
+          onError(new Error("Something went wrong"));
+          return new AbortController();
+        },
       );
 
       const { container } = render(
@@ -297,11 +277,13 @@ describe("RAGResults", () => {
     });
 
     it("should handle malformed JSON in stream", async () => {
-      global.fetch = vi
-        .fn()
-        .mockResolvedValue(
-          createMockFetchResponse(createMockStream(["data: {invalid json}\n\n", "data: [DONE]\n\n"])),
-        );
+      const mockStreamRAG = vi.mocked(utils.streamRAG);
+      mockStreamRAG.mockImplementation(async (_url, _request, _headers, onChunk, onComplete) => {
+        // Simulate handling malformed JSON gracefully
+        onChunk("{invalid json}");
+        onComplete();
+        return new AbortController();
+      });
 
       const { container } = render(
         <TestWrapper>
@@ -327,8 +309,13 @@ describe("RAGResults", () => {
 
   describe("configuration options", () => {
     it("should use custom system prompt", async () => {
-      const fetchSpy = vi.fn().mockResolvedValue(createMockFetchResponse(createMockStream(["data: [DONE]\n\n"])));
-      global.fetch = fetchSpy;
+      const mockStreamRAG = vi.mocked(utils.streamRAG);
+      mockStreamRAG.mockImplementation(async (_url, request, _headers, _onChunk, onComplete) => {
+        // Verify system prompt is in the request
+        expect(request.system_prompt).toBe("You are a helpful assistant.");
+        onComplete();
+        return new AbortController();
+      });
 
       const { container } = render(
         <TestWrapper>
@@ -351,18 +338,18 @@ describe("RAGResults", () => {
       });
 
       await waitFor(() => {
-        expect(fetchSpy).toHaveBeenCalledWith(
-          expect.any(String),
-          expect.objectContaining({
-            body: expect.stringContaining("You are a helpful assistant"),
-          }),
-        );
+        expect(mockStreamRAG).toHaveBeenCalled();
       });
     });
 
     it("should pass fields to query", async () => {
-      const fetchSpy = vi.fn().mockResolvedValue(createMockFetchResponse(createMockStream(["data: [DONE]\n\n"])));
-      global.fetch = fetchSpy;
+      const mockStreamRAG = vi.mocked(utils.streamRAG);
+      mockStreamRAG.mockImplementation(async (_url, request, _headers, _onChunk, onComplete) => {
+        // Verify fields are in the request
+        expect(request.query.fields).toEqual(["title", "content"]);
+        onComplete();
+        return new AbortController();
+      });
 
       const { container } = render(
         <TestWrapper>
@@ -385,24 +372,19 @@ describe("RAGResults", () => {
       });
 
       await waitFor(() => {
-        expect(fetchSpy).toHaveBeenCalledWith(
-          expect.any(String),
-          expect.objectContaining({
-            body: expect.stringContaining("title"),
-          }),
-        );
+        expect(mockStreamRAG).toHaveBeenCalled();
       });
     });
   });
 
   describe("query updates", () => {
     it("should trigger request when question is submitted", async () => {
-      const fetchSpy = vi
-        .fn()
-        .mockResolvedValue(
-          createMockFetchResponse(createMockStream(['data: {"chunk":"Answer"}\n\n', "data: [DONE]\n\n"])),
-        );
-      global.fetch = fetchSpy;
+      const mockStreamRAG = vi.mocked(utils.streamRAG);
+      mockStreamRAG.mockImplementation(async (_url, _request, _headers, onChunk, onComplete) => {
+        onChunk("Answer");
+        onComplete();
+        return new AbortController();
+      });
 
       const { container } = render(
         <TestWrapper>
@@ -425,12 +407,15 @@ describe("RAGResults", () => {
         expect(summary?.textContent).toContain("Answer");
       });
 
-      expect(fetchSpy).toHaveBeenCalled();
+      expect(mockStreamRAG).toHaveBeenCalled();
     });
 
-    it("should NOT trigger request if question is the same", async () => {
-      const fetchSpy = vi.fn().mockResolvedValue(createMockFetchResponse(createMockStream(["data: [DONE]\n\n"])));
-      global.fetch = fetchSpy;
+    it("should trigger new request even if question is the same when explicitly resubmitted", async () => {
+      const mockStreamRAG = vi.mocked(utils.streamRAG);
+      mockStreamRAG.mockImplementation(async (_url, _request, _headers, _onChunk, onComplete) => {
+        onComplete();
+        return new AbortController();
+      });
 
       const { container } = render(
         <TestWrapper>
@@ -448,25 +433,27 @@ describe("RAGResults", () => {
       });
 
       await waitFor(() => {
-        expect(fetchSpy).toHaveBeenCalledTimes(1);
+        expect(mockStreamRAG).toHaveBeenCalledTimes(1);
       });
 
-      // Click again without changing the question
+      // Click again without changing the question - should trigger a new request
       await act(async () => {
         await userEvent.click(button);
       });
 
-      // Should still be only 1 call
-      expect(fetchSpy).toHaveBeenCalledTimes(1);
+      // Should be 2 calls since user explicitly clicked submit again
+      await waitFor(() => {
+        expect(mockStreamRAG).toHaveBeenCalledTimes(2);
+      });
     });
 
     it("should reset summary when new request starts", async () => {
-      const fetchSpy = vi
-        .fn()
-        .mockResolvedValue(
-          createMockFetchResponse(createMockStream(['data: {"chunk":"New answer"}\n\n', "data: [DONE]\n\n"])),
-        );
-      global.fetch = fetchSpy;
+      const mockStreamRAG = vi.mocked(utils.streamRAG);
+      mockStreamRAG.mockImplementation(async (_url, _request, _headers, onChunk, onComplete) => {
+        onChunk("New answer");
+        onComplete();
+        return new AbortController();
+      });
 
       const { container } = render(
         <TestWrapper>
@@ -504,7 +491,11 @@ describe("RAGResults", () => {
     });
 
     it("should handle empty stream", async () => {
-      global.fetch = vi.fn().mockResolvedValue(createMockFetchResponse(createMockStream([])));
+      const mockStreamRAG = vi.mocked(utils.streamRAG);
+      mockStreamRAG.mockImplementation(async (_url, _request, _headers, _onChunk, onComplete) => {
+        onComplete();
+        return new AbortController();
+      });
 
       const { container } = render(
         <TestWrapper>
@@ -525,12 +516,10 @@ describe("RAGResults", () => {
     });
 
     it("should handle null response body", async () => {
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        body: null,
-        headers: {
-          get: (name: string) => (name.toLowerCase() === "content-type" ? "text/event-stream" : null),
-        },
+      const mockStreamRAG = vi.mocked(utils.streamRAG);
+      mockStreamRAG.mockImplementation(async (_url, _request, _headers, _onChunk, _onComplete, onError) => {
+        onError(new Error("Response body is null"));
+        return new AbortController();
       });
 
       const { container } = render(

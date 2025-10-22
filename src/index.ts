@@ -13,7 +13,7 @@ import RAGResults from "./RAGResults";
 import {
   fromUrlQueryString,
   toUrlQueryString,
-  msearch,
+  multiquery,
   initializeAntflyClient,
   getAntflyClient,
   streamRAG,
@@ -34,7 +34,7 @@ export {
   Autosuggest,
   AnswerBox,
   RAGResults,
-  msearch,
+  multiquery as msearch,
   initializeAntflyClient,
   getAntflyClient,
   streamRAG,

@@ -67,14 +67,9 @@ export default function RAGResults({
     const answerBoxSemanticQuery = answerBoxWidget?.semanticQuery;
     const answerBoxConfiguration = answerBoxWidget?.configuration;
 
-    // Extract table name from URL (e.g., http://localhost:8080/api/v1/table/example -> example)
-    const tableMatch = url.match(/\/table\/([^/]+)/);
-    const tableName = tableMatch ? tableMatch[1] : undefined;
-
     // Build the RAG request
     const ragRequest: RAGRequest = {
       query: {
-        table: tableName,
         full_text_search: answerBoxQuery as Record<string, unknown> | undefined,
         semantic_search: answerBoxSemanticQuery,
         indexes: answerBoxConfiguration?.indexes as string[] | undefined,

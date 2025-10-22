@@ -25,7 +25,7 @@ export function getAntflyClient(): AntflyClient {
   return defaultClient;
 }
 
-export async function msearch(
+export async function multiquery(
   url: string,
   msearchData: MultiqueryRequest[],
   headers: Record<string, string> = {},
@@ -124,7 +124,7 @@ export interface SSEChunk {
 
 /**
  * Stream RAG results from the Antfly /rag endpoint using Server-Sent Events or JSON
- * @param url - Base URL of the Antfly server
+ * @param url - Base URL of the Antfly server (e.g., http://localhost:8080/api/v1/table/example)
  * @param request - RAG request containing query and summarizer config
  * @param headers - Optional HTTP headers for authentication
  * @param onChunk - Callback for each chunk of the summary (used in streaming mode)
@@ -142,113 +142,41 @@ export async function streamRAG(
   onError: (error: Error) => void,
   onRAGResult?: (result: RAGResult) => void,
 ): Promise<AbortController> {
-  const abortController = new AbortController();
-
   try {
-    // Extract base URL by removing /table/{tableName} suffix if present
-    const baseUrl = url.replace(/\/table\/[^/]+$/, "");
+    let client = defaultClient;
 
-    const response = await fetch(`${baseUrl}/rag`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "text/event-stream, application/json",
-        ...headers,
-      },
-      body: JSON.stringify(request),
-      signal: abortController.signal,
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`RAG request failed: ${response.status} ${errorText}`);
+    if (!client) {
+      client = initializeAntflyClient(url, headers);
     }
 
-    if (!response.body) {
-      throw new Error("Response body is null");
-    }
+    // Extract table name from URL if present (e.g., /api/v1/table/example -> example)
+    const tableMatch = url.match(/\/table\/([^/]+)/);
+    const tableName = tableMatch ? tableMatch[1] : undefined;
 
-    // Check content type to determine response format
-    const contentType = response.headers.get("content-type") || "";
-    const isJSON = contentType.includes("application/json");
+    // Use table-specific RAG if we have a table name, otherwise use global RAG
+    const result = tableName
+      ? await client.tables.rag(tableName, request, onChunk)
+      : await client.rag(request, onChunk);
 
-    // Handle JSON response with query results and citations
-    if (isJSON) {
-      const ragResult = (await response.json()) as RAGResult;
+    // Handle non-streaming response (RAGResult)
+    if (result && typeof result === "object" && "query_result" in result) {
       if (onRAGResult) {
-        onRAGResult(ragResult);
+        onRAGResult(result as RAGResult);
       }
       onComplete();
-      return abortController;
+      return new AbortController(); // Return a dummy controller for consistency
     }
 
-    // Handle SSE streaming response
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = "";
-
-    // Read the stream
-    while (true) {
-      const { done, value } = await reader.read();
-
-      if (done) {
-        onComplete();
-        break;
-      }
-
-      // Decode the chunk and add to buffer
-      buffer += decoder.decode(value, { stream: true });
-
-      // Process complete SSE messages
-      const lines = buffer.split("\n");
-      buffer = lines.pop() || ""; // Keep incomplete line in buffer
-
-      let currentEvent = "";
-      for (const line of lines) {
-        if (!line.trim()) continue;
-
-        // Check for event type
-        if (line.startsWith("event: ")) {
-          currentEvent = line.slice(7).trim();
-          continue;
-        }
-
-        // Handle data lines
-        if (line.startsWith("data: ")) {
-          // Extract data after "data: " - don't trim to preserve spaces in tokens
-          const data = line.slice(6);
-
-          // Handle special events
-          if (currentEvent === "done" || data === "[DONE]" || data === "complete") {
-            onComplete();
-            return abortController;
-          }
-
-          if (currentEvent === "error") {
-            onError(new Error(data));
-            currentEvent = "";
-            continue;
-          }
-
-          // Try to parse as JSON first (for structured data)
-          try {
-            const parsed = JSON.parse(data) as SSEChunk;
-            if (parsed.chunk) {
-              onChunk(parsed.chunk);
-            } else if (parsed.error) {
-              onError(new Error(parsed.error));
-            }
-          } catch {
-            // If not JSON, treat as plain text chunk
-            if (data) {
-              onChunk(data);
-            }
-          }
-
-          currentEvent = "";
-        }
-      }
+    // Handle streaming response (AbortController)
+    if (result && typeof result === "object" && "abort" in result) {
+      // Stream completes via the onChunk callback
+      onComplete();
+      return result as AbortController;
     }
+
+    // Fallback
+    onComplete();
+    return new AbortController();
   } catch (error) {
     if (error instanceof Error) {
       if (error.name === "AbortError") {
@@ -259,7 +187,6 @@ export async function streamRAG(
     } else {
       onError(new Error("Unknown error occurred during RAG streaming"));
     }
+    return new AbortController();
   }
-
-  return abortController;
 }
