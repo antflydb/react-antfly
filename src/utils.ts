@@ -1,5 +1,11 @@
 import qs from "qs";
-import { AntflyClient, QueryRequest, QueryResponses, ModelConfig } from "@antfly/sdk";
+import {
+  AntflyClient,
+  QueryRequest,
+  QueryResponses,
+  RAGRequest,
+  RAGResult,
+} from "@antfly/sdk";
 
 export interface MultiqueryRequest {
   query: QueryRequest;
@@ -117,25 +123,20 @@ export const defer = (f: () => void): void => {
 };
 
 // RAG-related types and functions
-export interface RAGRequest {
-  query: QueryRequest;
-  summarizer: ModelConfig;
-  system_prompt?: string;
-}
-
 export interface SSEChunk {
   chunk?: string;
   error?: string;
 }
 
 /**
- * Stream RAG results from the Antfly /rag endpoint using Server-Sent Events
+ * Stream RAG results from the Antfly /rag endpoint using Server-Sent Events or JSON
  * @param url - Base URL of the Antfly server
  * @param request - RAG request containing query and summarizer config
  * @param headers - Optional HTTP headers for authentication
- * @param onChunk - Callback for each chunk of the summary
+ * @param onChunk - Callback for each chunk of the summary (used in streaming mode)
  * @param onComplete - Callback when the stream completes
  * @param onError - Callback for errors
+ * @param onRAGResult - Callback for RAG result with query results and summary (used when with_citations is true)
  * @returns AbortController to cancel the stream
  */
 export async function streamRAG(
@@ -145,6 +146,7 @@ export async function streamRAG(
   onChunk: (chunk: string) => void,
   onComplete: () => void,
   onError: (error: Error) => void,
+  onRAGResult?: (result: RAGResult) => void,
 ): Promise<AbortController> {
   const abortController = new AbortController();
 
@@ -153,7 +155,7 @@ export async function streamRAG(
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Accept: "text/event-stream",
+        Accept: "text/event-stream, application/json",
         ...headers,
       },
       body: JSON.stringify(request),
@@ -169,6 +171,21 @@ export async function streamRAG(
       throw new Error("Response body is null");
     }
 
+    // Check content type to determine response format
+    const contentType = response.headers.get("content-type") || "";
+    const isJSON = contentType.includes("application/json");
+
+    // Handle JSON response with query results and citations
+    if (isJSON) {
+      const ragResult = (await response.json()) as RAGResult;
+      if (onRAGResult) {
+        onRAGResult(ragResult);
+      }
+      onComplete();
+      return abortController;
+    }
+
+    // Handle SSE streaming response
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
     let buffer = "";

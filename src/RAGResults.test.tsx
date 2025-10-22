@@ -32,6 +32,17 @@ const createMockStream = (chunks: string[]) => {
   });
 };
 
+// Helper to create mock fetch response with headers
+const createMockFetchResponse = (body: ReadableStream, contentType = "text/event-stream") => {
+  return {
+    ok: true,
+    body,
+    headers: {
+      get: (name: string) => (name.toLowerCase() === "content-type" ? contentType : null),
+    },
+  };
+};
+
 describe("RAGResults", () => {
   let originalFetch: typeof global.fetch;
 
@@ -92,14 +103,15 @@ describe("RAGResults", () => {
   describe("streaming behavior", () => {
     it("should stream chunks progressively", async () => {
       // Mock fetch to return a streaming response
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        body: createMockStream([
-          'data: {"chunk":"Hello "}\n\n',
-          'data: {"chunk":"world"}\n\n',
-          "data: [DONE]\n\n",
-        ]),
-      });
+      global.fetch = vi.fn().mockResolvedValue(
+        createMockFetchResponse(
+          createMockStream([
+            'data: {"chunk":"Hello "}\n\n',
+            'data: {"chunk":"world"}\n\n',
+            "data: [DONE]\n\n",
+          ]),
+        ),
+      );
 
       const { container } = render(
         <TestWrapper>
@@ -132,7 +144,7 @@ describe("RAGResults", () => {
           method: "POST",
           headers: expect.objectContaining({
             "Content-Type": "application/json",
-            Accept: "text/event-stream",
+            Accept: "text/event-stream, application/json",
           }),
         }),
       );
@@ -140,13 +152,14 @@ describe("RAGResults", () => {
 
     it("should show streaming indicator while streaming", async () => {
       // Create a stream that sends data but doesn't close immediately
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        body: createMockStream([
-          'data: {"chunk":"Streaming..."}\n\n',
-          // Stream ends here, will show indicator briefly
-        ]),
-      });
+      global.fetch = vi.fn().mockResolvedValue(
+        createMockFetchResponse(
+          createMockStream([
+            'data: {"chunk":"Streaming..."}\n\n',
+            // Stream ends here, will show indicator briefly
+          ]),
+        ),
+      );
 
       const { container } = render(
         <TestWrapper>
@@ -172,10 +185,9 @@ describe("RAGResults", () => {
     });
 
     it("should handle [DONE] signal", async () => {
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        body: createMockStream(['data: {"chunk":"Complete"}\n\n', "data: [DONE]\n\n"]),
-      });
+      global.fetch = vi.fn().mockResolvedValue(
+        createMockFetchResponse(createMockStream(['data: {"chunk":"Complete"}\n\n', "data: [DONE]\n\n"])),
+      );
 
       const { container } = render(
         <TestWrapper>
@@ -258,10 +270,9 @@ describe("RAGResults", () => {
     });
 
     it("should handle error chunks in stream", async () => {
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        body: createMockStream(['data: {"error":"Something went wrong"}\n\n']),
-      });
+      global.fetch = vi.fn().mockResolvedValue(
+        createMockFetchResponse(createMockStream(['data: {"error":"Something went wrong"}\n\n'])),
+      );
 
       const { container } = render(
         <TestWrapper>
@@ -286,10 +297,11 @@ describe("RAGResults", () => {
     });
 
     it("should handle malformed JSON in stream", async () => {
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        body: createMockStream(["data: {invalid json}\n\n", "data: [DONE]\n\n"]),
-      });
+      global.fetch = vi
+        .fn()
+        .mockResolvedValue(
+          createMockFetchResponse(createMockStream(["data: {invalid json}\n\n", "data: [DONE]\n\n"])),
+        );
 
       const { container } = render(
         <TestWrapper>
@@ -315,10 +327,7 @@ describe("RAGResults", () => {
 
   describe("configuration options", () => {
     it("should use custom system prompt", async () => {
-      const fetchSpy = vi.fn().mockResolvedValue({
-        ok: true,
-        body: createMockStream(["data: [DONE]\n\n"]),
-      });
+      const fetchSpy = vi.fn().mockResolvedValue(createMockFetchResponse(createMockStream(["data: [DONE]\n\n"])));
       global.fetch = fetchSpy;
 
       const { container } = render(
@@ -352,10 +361,7 @@ describe("RAGResults", () => {
     });
 
     it("should pass fields to query", async () => {
-      const fetchSpy = vi.fn().mockResolvedValue({
-        ok: true,
-        body: createMockStream(["data: [DONE]\n\n"]),
-      });
+      const fetchSpy = vi.fn().mockResolvedValue(createMockFetchResponse(createMockStream(["data: [DONE]\n\n"])));
       global.fetch = fetchSpy;
 
       const { container } = render(
@@ -391,10 +397,11 @@ describe("RAGResults", () => {
 
   describe("query updates", () => {
     it("should trigger request when question is submitted", async () => {
-      const fetchSpy = vi.fn().mockResolvedValue({
-        ok: true,
-        body: createMockStream(['data: {"chunk":"Answer"}\n\n', "data: [DONE]\n\n"]),
-      });
+      const fetchSpy = vi
+        .fn()
+        .mockResolvedValue(
+          createMockFetchResponse(createMockStream(['data: {"chunk":"Answer"}\n\n', "data: [DONE]\n\n"])),
+        );
       global.fetch = fetchSpy;
 
       const { container } = render(
@@ -422,10 +429,7 @@ describe("RAGResults", () => {
     });
 
     it("should NOT trigger request if question is the same", async () => {
-      const fetchSpy = vi.fn().mockResolvedValue({
-        ok: true,
-        body: createMockStream(["data: [DONE]\n\n"]),
-      });
+      const fetchSpy = vi.fn().mockResolvedValue(createMockFetchResponse(createMockStream(["data: [DONE]\n\n"])));
       global.fetch = fetchSpy;
 
       const { container } = render(
@@ -457,10 +461,11 @@ describe("RAGResults", () => {
     });
 
     it("should reset summary when new request starts", async () => {
-      const fetchSpy = vi.fn().mockResolvedValue({
-        ok: true,
-        body: createMockStream(['data: {"chunk":"New answer"}\n\n', "data: [DONE]\n\n"]),
-      });
+      const fetchSpy = vi
+        .fn()
+        .mockResolvedValue(
+          createMockFetchResponse(createMockStream(['data: {"chunk":"New answer"}\n\n', "data: [DONE]\n\n"])),
+        );
       global.fetch = fetchSpy;
 
       const { container } = render(
@@ -499,10 +504,7 @@ describe("RAGResults", () => {
     });
 
     it("should handle empty stream", async () => {
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        body: createMockStream([]),
-      });
+      global.fetch = vi.fn().mockResolvedValue(createMockFetchResponse(createMockStream([])));
 
       const { container } = render(
         <TestWrapper>
@@ -526,6 +528,9 @@ describe("RAGResults", () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
         body: null,
+        headers: {
+          get: (name: string) => (name.toLowerCase() === "content-type" ? "text/event-stream" : null),
+        },
       });
 
       const { container } = render(

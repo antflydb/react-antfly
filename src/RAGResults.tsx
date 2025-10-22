@@ -1,15 +1,16 @@
 import React, { useState, useEffect, useCallback, useRef, ReactNode } from "react";
 import { useSharedContext } from "./SharedContext";
-import { streamRAG, RAGRequest } from "./utils";
-import { ModelConfig, QueryHit } from "@antfly/sdk";
+import { streamRAG } from "./utils";
+import { ModelConfig, RAGRequest, RAGResult, Citation } from "@antfly/sdk";
 
 export interface RAGResultsProps {
   id: string;
   answerBoxId: string;
   summarizer: ModelConfig;
   systemPrompt?: string;
-  renderSummary?: (summary: string, isStreaming: boolean, sources?: QueryHit[]) => ReactNode;
-  showSources?: boolean;
+  renderSummary?: (summary: string, isStreaming: boolean, citations?: Citation[]) => ReactNode;
+  showCitations?: boolean;
+  withCitations?: boolean;
   fields?: string[];
 }
 
@@ -19,14 +20,15 @@ export default function RAGResults({
   summarizer,
   systemPrompt,
   renderSummary,
-  showSources = false,
+  showCitations = true,
+  withCitations = false,
   fields,
 }: RAGResultsProps) {
   const [{ widgets, url, headers }, dispatch] = useSharedContext();
   const [summary, setSummary] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [sources, setSources] = useState<QueryHit[]>([]);
+  const [citations, setCitations] = useState<Citation[]>([]);
   const abortControllerRef = useRef<AbortController | null>(null);
   const previousQueryRef = useRef<string>("");
 
@@ -69,6 +71,7 @@ export default function RAGResults({
       },
       summarizer,
       system_prompt: systemPrompt,
+      with_citations: withCitations,
     };
 
     // Start streaming
@@ -77,7 +80,7 @@ export default function RAGResults({
       setSummary("");
       setError(null);
       setIsStreaming(true);
-      setSources([]);
+      setCitations([]);
 
       try {
         const controller = await streamRAG(
@@ -91,15 +94,16 @@ export default function RAGResults({
           // onComplete
           () => {
             setIsStreaming(false);
-
-            // Optionally fetch sources
-            if (showSources && answerBoxWidget?.result?.data) {
-              setSources(answerBoxWidget.result.data);
-            }
           },
           // onError
           (err: Error) => {
             setError(err.message);
+            setIsStreaming(false);
+          },
+          // onRAGResult
+          (result: RAGResult) => {
+            setSummary(result.summary_result?.summary || "");
+            setCitations(result.summary_result?.citations || []);
             setIsStreaming(false);
           },
         );
@@ -119,7 +123,7 @@ export default function RAGResults({
         abortControllerRef.current.abort();
       }
     };
-  }, [currentQuery, answerBoxWidget, url, headers, summarizer, systemPrompt, fields, showSources]);
+  }, [currentQuery, answerBoxWidget, url, headers, summarizer, systemPrompt, withCitations, fields]);
 
   // Register this component as a widget (for consistency with other components)
   useEffect(() => {
@@ -147,7 +151,7 @@ export default function RAGResults({
 
   // Default render function
   const defaultRender = useCallback(
-    (summaryText: string, streaming: boolean, sourceDocs?: QueryHit[]) => (
+    (summaryText: string, streaming: boolean, citationList?: Citation[]) => (
       <div className="react-af-rag-results">
         {error && (
           <div className="react-af-rag-error" style={{ color: "red" }}>
@@ -163,16 +167,15 @@ export default function RAGResults({
             {streaming && <span className="react-af-rag-streaming"> ...</span>}
           </div>
         )}
-        {sourceDocs && sourceDocs.length > 0 && (
-          <details className="react-af-rag-sources">
-            <summary>Sources ({sourceDocs.length})</summary>
+        {showCitations && citationList && citationList.length > 0 && (
+          <details className="react-af-rag-citations">
+            <summary>Citations ({citationList.length})</summary>
             <ul>
-              {sourceDocs.map((source, idx) => (
-                <li key={source._id || idx}>
-                  {source._source && fields && fields[0] && source._source[fields[0]]
-                    ? String(source._source[fields[0]])
-                    : source._id}
-                  {source._score && <span> (score: {source._score.toFixed(2)})</span>}
+              {citationList.map((citation, idx) => (
+                <li key={citation.document_id || idx}>
+                  <strong>Document:</strong> {citation.document_id}
+                  {citation.score && <span> (score: {citation.score.toFixed(2)})</span>}
+                  <div className="react-af-rag-citation-content">{citation.content}</div>
                 </li>
               ))}
             </ul>
@@ -180,8 +183,8 @@ export default function RAGResults({
         )}
       </div>
     ),
-    [error, fields],
+    [error, showCitations],
   );
 
-  return <>{renderSummary ? renderSummary(summary, isStreaming, sources) : defaultRender(summary, isStreaming, sources)}</>;
+  return <>{renderSummary ? renderSummary(summary, isStreaming, citations) : defaultRender(summary, isStreaming, citations)}</>;
 }
