@@ -30,21 +30,28 @@ export default function RAGResults({
   const [error, setError] = useState<string | null>(null);
   const [citations, setCitations] = useState<Citation[]>([]);
   const abortControllerRef = useRef<AbortController | null>(null);
-  const previousQueryRef = useRef<string>("");
+  const previousSubmissionRef = useRef<number | undefined>(undefined);
 
   // Watch for changes in the AnswerBox widget
   const answerBoxWidget = widgets.get(answerBoxId);
   const currentQuery = answerBoxWidget?.value as string | undefined;
+  const submittedAt = answerBoxWidget?.submittedAt;
 
-  // Trigger RAG request when AnswerBox value changes
+  // Trigger RAG request when AnswerBox is submitted (based on timestamp, not just query value)
   useEffect(() => {
-    // Only trigger if we have a query and it's different from the previous one
-    if (!currentQuery || currentQuery === previousQueryRef.current) {
+    // Only trigger if we have a query and a submission timestamp
+    if (!currentQuery || !submittedAt) {
+      return;
+    }
+
+    // Check if this is a new submission (different timestamp from previous)
+    if (submittedAt === previousSubmissionRef.current) {
       return;
     }
 
     // Validation check - don't proceed if URL is missing
     if (!url) {
+      console.error("RAGResults: Missing API URL in context");
       return;
     }
 
@@ -53,16 +60,21 @@ export default function RAGResults({
       abortControllerRef.current.abort();
     }
 
-    previousQueryRef.current = currentQuery;
+    previousSubmissionRef.current = submittedAt;
 
     // Get the query from the AnswerBox widget
     const answerBoxQuery = answerBoxWidget?.query;
     const answerBoxSemanticQuery = answerBoxWidget?.semanticQuery;
     const answerBoxConfiguration = answerBoxWidget?.configuration;
 
+    // Extract table name from URL (e.g., http://localhost:8080/api/v1/table/example -> example)
+    const tableMatch = url.match(/\/table\/([^/]+)/);
+    const tableName = tableMatch ? tableMatch[1] : undefined;
+
     // Build the RAG request
     const ragRequest: RAGRequest = {
       query: {
+        table: tableName,
         full_text_search: answerBoxQuery as Record<string, unknown> | undefined,
         semantic_search: answerBoxSemanticQuery,
         indexes: answerBoxConfiguration?.indexes as string[] | undefined,
@@ -117,13 +129,23 @@ export default function RAGResults({
 
     startStream();
 
-    // Cleanup on unmount or when query changes
+    // Cleanup on unmount or when submission changes
     return () => {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
     };
-  }, [currentQuery, answerBoxWidget, url, headers, summarizer, systemPrompt, withCitations, fields]);
+  }, [
+    submittedAt,
+    currentQuery,
+    answerBoxWidget,
+    url,
+    headers,
+    summarizer,
+    systemPrompt,
+    withCitations,
+    fields,
+  ]);
 
   // Register this component as a widget (for consistency with other components)
   useEffect(() => {
@@ -159,7 +181,9 @@ export default function RAGResults({
           </div>
         )}
         {!error && !summaryText && !streaming && (
-          <div className="react-af-rag-empty">No results yet. Submit a question to get started.</div>
+          <div className="react-af-rag-empty">
+            No results yet. Submit a question to get started.
+          </div>
         )}
         {summaryText && (
           <div className="react-af-rag-summary">
@@ -172,10 +196,9 @@ export default function RAGResults({
             <summary>Citations ({citationList.length})</summary>
             <ul>
               {citationList.map((citation, idx) => (
-                <li key={citation.document_id || idx}>
-                  <strong>Document:</strong> {citation.document_id}
-                  {citation.score && <span> (score: {citation.score.toFixed(2)})</span>}
-                  <div className="react-af-rag-citation-content">{citation.content}</div>
+                <li key={citation.id || idx}>
+                  <strong>Document:</strong> {citation.id}
+                  <div className="react-af-rag-citation-content">{citation.quote}</div>
                 </li>
               ))}
             </ul>
@@ -186,5 +209,11 @@ export default function RAGResults({
     [error, showCitations],
   );
 
-  return <>{renderSummary ? renderSummary(summary, isStreaming, citations) : defaultRender(summary, isStreaming, citations)}</>;
+  return (
+    <>
+      {renderSummary
+        ? renderSummary(summary, isStreaming, citations)
+        : defaultRender(summary, isStreaming, citations)}
+    </>
+  );
 }

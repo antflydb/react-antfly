@@ -42,7 +42,7 @@ export const BasicUsage = () => {
 export const SemanticSearch = () => {
   return (
     <Antfly url={url}>
-      <SearchBox id="main" semanticIndexes={["full_nomic"]} limit={10} />
+      <SearchBox id="main" semanticIndexes={["tico_gemma"]} limit={10} />
       <div style={{ display: "inline-block" }}>
         <Facet id="author" fields={["AUTR"]} />
       </div>

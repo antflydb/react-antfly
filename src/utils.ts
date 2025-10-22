@@ -1,11 +1,5 @@
 import qs from "qs";
-import {
-  AntflyClient,
-  QueryRequest,
-  QueryResponses,
-  RAGRequest,
-  RAGResult,
-} from "@antfly/sdk";
+import { AntflyClient, QueryRequest, QueryResponses, RAGRequest, RAGResult } from "@antfly/sdk";
 
 export interface MultiqueryRequest {
   query: QueryRequest;
@@ -151,7 +145,10 @@ export async function streamRAG(
   const abortController = new AbortController();
 
   try {
-    const response = await fetch(`${url}/rag`, {
+    // Extract base URL by removing /table/{tableName} suffix if present
+    const baseUrl = url.replace(/\/table\/[^/]+$/, "");
+
+    const response = await fetch(`${baseUrl}/rag`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -206,18 +203,34 @@ export async function streamRAG(
       const lines = buffer.split("\n");
       buffer = lines.pop() || ""; // Keep incomplete line in buffer
 
+      let currentEvent = "";
       for (const line of lines) {
         if (!line.trim()) continue;
 
-        // SSE format: "data: {json}" or "data: [DONE]"
-        if (line.startsWith("data: ")) {
-          const data = line.slice(6).trim();
+        // Check for event type
+        if (line.startsWith("event: ")) {
+          currentEvent = line.slice(7).trim();
+          continue;
+        }
 
-          if (data === "[DONE]") {
+        // Handle data lines
+        if (line.startsWith("data: ")) {
+          // Extract data after "data: " - don't trim to preserve spaces in tokens
+          const data = line.slice(6);
+
+          // Handle special events
+          if (currentEvent === "done" || data === "[DONE]" || data === "complete") {
             onComplete();
             return abortController;
           }
 
+          if (currentEvent === "error") {
+            onError(new Error(data));
+            currentEvent = "";
+            continue;
+          }
+
+          // Try to parse as JSON first (for structured data)
           try {
             const parsed = JSON.parse(data) as SSEChunk;
             if (parsed.chunk) {
@@ -225,9 +238,14 @@ export async function streamRAG(
             } else if (parsed.error) {
               onError(new Error(parsed.error));
             }
-          } catch (e) {
-            console.warn("Failed to parse SSE data:", data, e);
+          } catch {
+            // If not JSON, treat as plain text chunk
+            if (data) {
+              onChunk(data);
+            }
           }
+
+          currentEvent = "";
         }
       }
     }

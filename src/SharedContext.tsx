@@ -13,6 +13,7 @@ export interface Widget {
   semanticQuery?: string;
   isSemantic?: boolean;
   value?: unknown;
+  submittedAt?: number; // Timestamp of when this widget was last submitted
   configuration?: {
     fields?: string[];
     size?: number;
@@ -49,6 +50,7 @@ export type SharedAction =
       semanticQuery?: string;
       isSemantic?: boolean;
       value?: unknown;
+      submittedAt?: number;
       configuration?: Widget["configuration"];
       result?: Widget["result"];
     }

@@ -1,4 +1,3 @@
-import React from "react";
 import { Antfly, AnswerBox, RAGResults, Results, ModelConfig } from "../src";
 import { url } from "./utils";
 
@@ -9,9 +8,11 @@ export default {
 
 // Mock summarizer configuration - replace with your actual config
 const mockSummarizer: ModelConfig = {
-  provider: "openai",
-  model: "gpt-4",
-  api_key: process.env.OPENAI_API_KEY || "your-api-key-here",
+  provider: "ollama",
+  model: "gemma3:4b",
+  // provider: "openai",
+  // model: "gpt-4",
+  // api_key: import.meta.env.VITE_OPENAI_API_KEY || "your-api-key-here",
 };
 
 export const BasicRAG = () => {
@@ -312,14 +313,16 @@ export const StyledRAGExample = () => {
       <div className="rag-container">
         <AnswerBox
           id="question"
-          fields={["TICO", "AUTR"]}
+          semanticIndexes={["tico_gemma"]}
           placeholder="Ask me anything about the books..."
           buttonLabel="Get AI Answer"
+          fields={["TICO", "AUTR", "DESC"]}
         />
 
         <RAGResults
           id="rag-answer"
           answerBoxId="question"
+          fields={["TICO", "AUTR", "DESC"]}
           summarizer={mockSummarizer}
           withCitations={true}
           systemPrompt="You are a knowledgeable librarian. Provide helpful, detailed answers about books."
@@ -333,13 +336,13 @@ export const MultipleLanguageModels = () => {
   const gpt4Summarizer: ModelConfig = {
     provider: "openai",
     model: "gpt-4",
-    api_key: process.env.OPENAI_API_KEY || "your-api-key",
+    api_key: import.meta.env.VITE_OPENAI_API_KEY || "your-api-key",
   };
 
   const claudeSummarizer: ModelConfig = {
     provider: "anthropic",
     model: "claude-3-sonnet-20240229",
-    api_key: process.env.ANTHROPIC_API_KEY || "your-api-key",
+    api_key: import.meta.env.VITE_ANTHROPIC_API_KEY || "your-api-key",
   };
 
   return (
@@ -349,7 +352,9 @@ export const MultipleLanguageModels = () => {
 
       <AnswerBox id="question" fields={["TICO", "AUTR"]} placeholder="Ask a question..." />
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginTop: "20px" }}>
+      <div
+        style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginTop: "20px" }}
+      >
         <div>
           <h3>GPT-4 Response</h3>
           <RAGResults id="rag-gpt4" answerBoxId="question" summarizer={gpt4Summarizer} />

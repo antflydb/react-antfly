@@ -65,6 +65,7 @@ export default function AnswerBox({
         query: isSemanticEnabled ? (customQuery ? customQuery() : null) : queryFromValue(v),
         semanticQuery: isSemanticEnabled ? v : undefined,
         value: v,
+        submittedAt: Date.now(), // Timestamp to track when this query was submitted
         configuration: isSemanticEnabled
           ? { indexes: semanticIndexes || [], limit: limit || 10 }
           : undefined,
