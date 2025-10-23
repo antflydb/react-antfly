@@ -28,7 +28,7 @@ export default function AnswerBox({
   onSubmit,
 }: AnswerBoxProps) {
   const isSemanticEnabled = semanticIndexes && semanticIndexes.length > 0;
-  const [{ widgets }, dispatch] = useSharedContext();
+  const [, dispatch] = useSharedContext();
   const [value, setValue] = useState(() => initialValue || "");
 
   // Build a query from a value.
@@ -74,13 +74,6 @@ export default function AnswerBox({
     },
     [dispatch, id, isSemanticEnabled, customQuery, queryFromValue, semanticIndexes, limit],
   );
-
-  // Handle external widget value changes (using layout effect to avoid cascading renders)
-  const widgetValue = widgets.get(id)?.value;
-  if (widgetValue !== undefined && widgetValue !== value) {
-    // This is safe because it's a controlled component update from external state
-    setValue(String(widgetValue || ""));
-  }
 
   // Handle input changes (only update local state, don't trigger query)
   const handleChange = useCallback(

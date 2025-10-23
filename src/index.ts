@@ -55,5 +55,5 @@ export type { QueryBuilderProps, QueryBuilderRule, FieldOption } from "./QueryBu
 export type { RuleProps } from "./QueryBuilder/Rule";
 export type { Operator, Combinator } from "./QueryBuilder/utils";
 export type { SharedState, SharedAction, Widget } from "./SharedContext";
-export type { MultiqueryRequest, SSEChunk } from "./utils";
+export type { MultiqueryRequest, RAGCallbacks } from "./utils";
 export type { RAGRequest, RAGResult, Citation, SummarizeResult, ModelConfig } from "@antfly/sdk";

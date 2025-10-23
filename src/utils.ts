@@ -1,5 +1,13 @@
 import qs from "qs";
-import { AntflyClient, QueryRequest, QueryResponses, RAGRequest, RAGResult } from "@antfly/sdk";
+import type { RAGStreamCallbacks, QueryHit } from "@antfly/sdk";
+import {
+  AntflyClient,
+  QueryRequest,
+  QueryResponses,
+  RAGRequest,
+  RAGResult,
+  Citation,
+} from "@antfly/sdk";
 
 export interface MultiqueryRequest {
   query: QueryRequest;
@@ -117,9 +125,13 @@ export const defer = (f: () => void): void => {
 };
 
 // RAG-related types and functions
-export interface SSEChunk {
-  chunk?: string;
-  error?: string;
+export interface RAGCallbacks {
+  onHit?: (hit: QueryHit) => void;
+  onSummary?: (chunk: string) => void;
+  onCitation?: (citation: Citation) => void;
+  onComplete?: () => void;
+  onError?: (error: Error | string) => void;
+  onRAGResult?: (result: RAGResult) => void;
 }
 
 /**
@@ -127,65 +139,105 @@ export interface SSEChunk {
  * @param url - Base URL of the Antfly server (e.g., http://localhost:8080/api/v1/table/example)
  * @param request - RAG request containing query and summarizer config
  * @param headers - Optional HTTP headers for authentication
- * @param onChunk - Callback for each chunk of the summary (used in streaming mode)
- * @param onComplete - Callback when the stream completes
- * @param onError - Callback for errors
- * @param onRAGResult - Callback for RAG result with query results and summary (used when with_citations is true)
+ * @param callbacks - Structured callbacks for RAG events (hit, summary, citation, complete, error, ragResult)
  * @returns AbortController to cancel the stream
  */
 export async function streamRAG(
   url: string,
   request: RAGRequest,
   headers: Record<string, string> = {},
-  onChunk: (chunk: string) => void,
-  onComplete: () => void,
-  onError: (error: Error) => void,
-  onRAGResult?: (result: RAGResult) => void,
+  callbacks: RAGCallbacks,
 ): Promise<AbortController> {
   try {
-    let client = defaultClient;
-
-    if (!client) {
-      client = initializeAntflyClient(url, headers);
-    }
-
     // Extract table name from URL if present (e.g., /api/v1/table/example -> example)
     const tableMatch = url.match(/\/table\/([^/]+)/);
     const tableName = tableMatch ? tableMatch[1] : undefined;
 
+    // Extract base URL (without /table/{tableName} suffix) for client initialization
+    const baseUrl = tableName ? url.replace(/\/table\/[^/]+$/, "") : url;
+
+    // Always create a fresh client with the correct base URL to avoid path duplication
+    // (don't reuse defaultClient as it may have been initialized with a different base URL)
+    const client = new AntflyClient({
+      baseUrl,
+      headers,
+    });
+
+    // Determine if we should stream based on presence of streaming callbacks
+    const shouldStream = !!(callbacks.onHit || callbacks.onSummary || callbacks.onCitation);
+
+    // Build the request with streaming flag if needed
+    const ragRequest = {
+      ...request,
+      with_streaming: shouldStream,
+    };
+
+    // Build SDK callbacks if streaming
+    const sdkCallbacks: RAGStreamCallbacks | undefined = shouldStream
+      ? {
+          onHit: callbacks.onHit
+            ? (hit: QueryHit) => {
+                callbacks.onHit!(hit);
+              }
+            : undefined,
+          onSummary: callbacks.onSummary
+            ? (chunk: string) => {
+                callbacks.onSummary!(chunk);
+              }
+            : undefined,
+          onCitation: callbacks.onCitation
+            ? (citation: Citation) => {
+                callbacks.onCitation!(citation);
+              }
+            : undefined,
+          onDone: () => {
+            if (callbacks.onComplete) {
+              callbacks.onComplete();
+            }
+          },
+          onError: (error: string) => {
+            if (callbacks.onError) {
+              callbacks.onError(error);
+            }
+          },
+        }
+      : undefined;
+
     // Use table-specific RAG if we have a table name, otherwise use global RAG
     const result = tableName
-      ? await client.tables.rag(tableName, request, onChunk)
-      : await client.rag(request, onChunk);
+      ? await client.tables.rag(tableName, ragRequest, sdkCallbacks)
+      : await client.rag(ragRequest, sdkCallbacks);
 
     // Handle non-streaming response (RAGResult)
     if (result && typeof result === "object" && "query_result" in result) {
-      if (onRAGResult) {
-        onRAGResult(result as RAGResult);
+      if (callbacks.onRAGResult) {
+        callbacks.onRAGResult(result as RAGResult);
       }
-      onComplete();
+      if (callbacks.onComplete) {
+        callbacks.onComplete();
+      }
       return new AbortController(); // Return a dummy controller for consistency
     }
 
     // Handle streaming response (AbortController)
     if (result && typeof result === "object" && "abort" in result) {
-      // Stream completes via the onChunk callback
-      onComplete();
       return result as AbortController;
     }
 
     // Fallback
-    onComplete();
+    if (callbacks.onComplete) {
+      callbacks.onComplete();
+    }
     return new AbortController();
   } catch (error) {
     if (error instanceof Error) {
       if (error.name === "AbortError") {
-        console.log("RAG stream aborted");
-      } else {
-        onError(error);
+        // Stream was aborted - this is expected behavior
+      } else if (callbacks.onError) {
+        callbacks.onError(error);
       }
-    } else {
-      onError(new Error("Unknown error occurred during RAG streaming"));
+    } else if (callbacks.onError) {
+      callbacks.onError(new Error("Unknown error occurred during RAG streaming"));
     }
     return new AbortController();
   }

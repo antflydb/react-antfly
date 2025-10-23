@@ -1,16 +1,22 @@
 import React, { useState, useEffect, useCallback, useRef, ReactNode } from "react";
 import { useSharedContext } from "./SharedContext";
 import { streamRAG } from "./utils";
-import { ModelConfig, RAGRequest, RAGResult, Citation } from "@antfly/sdk";
+import { ModelConfig, RAGRequest, Citation, QueryHit } from "@antfly/sdk";
 
 export interface RAGResultsProps {
   id: string;
   answerBoxId: string;
   summarizer: ModelConfig;
   systemPrompt?: string;
-  renderSummary?: (summary: string, isStreaming: boolean, citations?: Citation[]) => ReactNode;
+  renderSummary?: (
+    summary: string,
+    isStreaming: boolean,
+    citations?: Citation[],
+    hits?: QueryHit[],
+  ) => ReactNode;
   showCitations?: boolean;
   withCitations?: boolean;
+  showHits?: boolean;
   fields?: string[];
 }
 
@@ -22,6 +28,7 @@ export default function RAGResults({
   renderSummary,
   showCitations = true,
   withCitations = false,
+  showHits = false,
   fields,
 }: RAGResultsProps) {
   const [{ widgets, url, headers }, dispatch] = useSharedContext();
@@ -29,6 +36,7 @@ export default function RAGResults({
   const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [citations, setCitations] = useState<Citation[]>([]);
+  const [hits, setHits] = useState<QueryHit[]>([]);
   const abortControllerRef = useRef<AbortController | null>(null);
   const previousSubmissionRef = useRef<number | undefined>(undefined);
 
@@ -88,32 +96,35 @@ export default function RAGResults({
       setError(null);
       setIsStreaming(true);
       setCitations([]);
+      setHits([]);
 
       try {
-        const controller = await streamRAG(
-          url,
-          ragRequest,
-          headers || {},
-          // onChunk
-          (chunk: string) => {
+        const controller = await streamRAG(url, ragRequest, headers || {}, {
+          onHit: (hit) => {
+            setHits((prev) => [...prev, hit]);
+          },
+          onSummary: (chunk) => {
             setSummary((prev) => prev + chunk);
           },
-          // onComplete
-          () => {
+          onCitation: (citation) => {
+            setCitations((prev) => [...prev, citation]);
+          },
+          onComplete: () => {
             setIsStreaming(false);
           },
-          // onError
-          (err: Error) => {
-            setError(err.message);
+          onError: (err) => {
+            const message = err instanceof Error ? err.message : String(err);
+            setError(message);
             setIsStreaming(false);
           },
-          // onRAGResult
-          (result: RAGResult) => {
+          onRAGResult: (result) => {
+            // Non-streaming response
             setSummary(result.summary_result?.summary || "");
             setCitations(result.summary_result?.citations || []);
+            setHits(result.query_result?.hits?.hits || []);
             setIsStreaming(false);
           },
-        );
+        });
 
         abortControllerRef.current = controller;
       } catch (err) {
@@ -168,7 +179,7 @@ export default function RAGResults({
 
   // Default render function
   const defaultRender = useCallback(
-    (summaryText: string, streaming: boolean, citationList?: Citation[]) => (
+    (summaryText: string, streaming: boolean, citationList?: Citation[], hitList?: QueryHit[]) => (
       <div className="react-af-rag-results">
         {error && (
           <div className="react-af-rag-error" style={{ color: "red" }}>
@@ -199,16 +210,29 @@ export default function RAGResults({
             </ul>
           </details>
         )}
+        {showHits && hitList && hitList.length > 0 && (
+          <details className="react-af-rag-hits">
+            <summary>Search Results ({hitList.length})</summary>
+            <ul>
+              {hitList.map((hit, idx) => (
+                <li key={hit._id || idx}>
+                  <strong>Score:</strong> {hit._score.toFixed(3)}
+                  <pre>{JSON.stringify(hit._source, null, 2)}</pre>
+                </li>
+              ))}
+            </ul>
+          </details>
+        )}
       </div>
     ),
-    [error, showCitations],
+    [error, showCitations, showHits],
   );
 
   return (
     <>
       {renderSummary
-        ? renderSummary(summary, isStreaming, citations)
-        : defaultRender(summary, isStreaming, citations)}
+        ? renderSummary(summary, isStreaming, citations, hits)
+        : defaultRender(summary, isStreaming, citations, hits)}
     </>
   );
 }

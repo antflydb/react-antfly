@@ -1,6 +1,9 @@
 import '@testing-library/jest-dom';
 import { vi } from 'vitest';
 
+// Configure React to recognize the test environment
+globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+
 // Mock the @antfly/sdk module
 vi.mock('@antfly/sdk', () => {
   return {

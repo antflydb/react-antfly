@@ -10,8 +10,8 @@ import { default as CustomWidget } from './CustomWidget';
 import { default as Autosuggest } from './Autosuggest';
 import { default as AnswerBox } from './AnswerBox';
 import { default as RAGResults } from './RAGResults';
-import { fromUrlQueryString, toUrlQueryString, msearch, initializeAntflyClient, getAntflyClient, streamRAG } from './utils';
-export { Antfly, Results, SearchBox, Facet, Pagination, Listener, fromUrlQueryString, toUrlQueryString, ActiveFilters, QueryBuilder, CustomWidget, Autosuggest, AnswerBox, RAGResults, msearch, initializeAntflyClient, getAntflyClient, streamRAG, };
+import { fromUrlQueryString, toUrlQueryString, multiquery, initializeAntflyClient, getAntflyClient, streamRAG } from './utils';
+export { Antfly, Results, SearchBox, Facet, Pagination, Listener, fromUrlQueryString, toUrlQueryString, ActiveFilters, QueryBuilder, CustomWidget, Autosuggest, AnswerBox, RAGResults, multiquery as msearch, initializeAntflyClient, getAntflyClient, streamRAG, };
 export type { AntflyProps } from './Antfly';
 export type { ResultsProps } from './Results';
 export type { SearchBoxProps } from './SearchBox';
@@ -26,6 +26,6 @@ export type { QueryBuilderProps, QueryBuilderRule, FieldOption } from './QueryBu
 export type { RuleProps } from './QueryBuilder/Rule';
 export type { Operator, Combinator } from './QueryBuilder/utils';
 export type { SharedState, SharedAction, Widget } from './SharedContext';
-export type { MultiqueryRequest, SSEChunk } from './utils';
+export type { MultiqueryRequest, RAGCallbacks } from './utils';
 export type { RAGRequest, RAGResult, Citation, SummarizeResult, ModelConfig } from '@antfly/sdk';
 //# sourceMappingURL=index.d.ts.map

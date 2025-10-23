@@ -83,10 +83,10 @@ describe("RAGResults", () => {
     it("should stream chunks progressively", async () => {
       // Mock streamRAG to simulate streaming chunks
       const mockStreamRAG = vi.mocked(utils.streamRAG);
-      mockStreamRAG.mockImplementation(async (_url, _request, _headers, onChunk, onComplete) => {
-        onChunk("Hello ");
-        onChunk("world");
-        onComplete();
+      mockStreamRAG.mockImplementation(async (_url, _request, _headers, callbacks) => {
+        callbacks.onSummary?.("Hello ");
+        callbacks.onSummary?.("world");
+        callbacks.onComplete?.();
         return new AbortController();
       });
 
@@ -120,9 +120,9 @@ describe("RAGResults", () => {
 
     it("should show streaming indicator while streaming", async () => {
       const mockStreamRAG = vi.mocked(utils.streamRAG);
-      mockStreamRAG.mockImplementation(async (_url, _request, _headers, onChunk, onComplete) => {
-        onChunk("Streaming...");
-        onComplete();
+      mockStreamRAG.mockImplementation(async (_url, _request, _headers, callbacks) => {
+        callbacks.onSummary?.("Streaming...");
+        callbacks.onComplete?.();
         return new AbortController();
       });
 
@@ -151,9 +151,9 @@ describe("RAGResults", () => {
 
     it("should handle [DONE] signal", async () => {
       const mockStreamRAG = vi.mocked(utils.streamRAG);
-      mockStreamRAG.mockImplementation(async (_url, _request, _headers, onChunk, onComplete) => {
-        onChunk("Complete");
-        onComplete();
+      mockStreamRAG.mockImplementation(async (_url, _request, _headers, callbacks) => {
+        callbacks.onSummary?.("Complete");
+        callbacks.onComplete?.();
         return new AbortController();
       });
 
@@ -186,8 +186,8 @@ describe("RAGResults", () => {
     it("should display error when fetch fails", async () => {
       const mockStreamRAG = vi.mocked(utils.streamRAG);
       mockStreamRAG.mockImplementation(
-        async (_url, _request, _headers, _onChunk, _onComplete, onError) => {
-          onError(new Error("Network error"));
+        async (_url, _request, _headers, callbacks) => {
+          callbacks.onError?.(new Error("Network error"));
           return new AbortController();
         },
       );
@@ -217,8 +217,8 @@ describe("RAGResults", () => {
     it("should handle HTTP error responses", async () => {
       const mockStreamRAG = vi.mocked(utils.streamRAG);
       mockStreamRAG.mockImplementation(
-        async (_url, _request, _headers, _onChunk, _onComplete, onError) => {
-          onError(new Error("RAG request failed: 500 Internal Server Error"));
+        async (_url, _request, _headers, callbacks) => {
+          callbacks.onError?.(new Error("RAG request failed: 500 Internal Server Error"));
           return new AbortController();
         },
       );
@@ -248,8 +248,8 @@ describe("RAGResults", () => {
     it("should handle error chunks in stream", async () => {
       const mockStreamRAG = vi.mocked(utils.streamRAG);
       mockStreamRAG.mockImplementation(
-        async (_url, _request, _headers, _onChunk, _onComplete, onError) => {
-          onError(new Error("Something went wrong"));
+        async (_url, _request, _headers, callbacks) => {
+          callbacks.onError?.(new Error("Something went wrong"));
           return new AbortController();
         },
       );
@@ -278,10 +278,10 @@ describe("RAGResults", () => {
 
     it("should handle malformed JSON in stream", async () => {
       const mockStreamRAG = vi.mocked(utils.streamRAG);
-      mockStreamRAG.mockImplementation(async (_url, _request, _headers, onChunk, onComplete) => {
+      mockStreamRAG.mockImplementation(async (_url, _request, _headers, callbacks) => {
         // Simulate handling malformed JSON gracefully
-        onChunk("{invalid json}");
-        onComplete();
+        callbacks.onSummary?.("{invalid json}");
+        callbacks.onComplete?.();
         return new AbortController();
       });
 
@@ -310,10 +310,10 @@ describe("RAGResults", () => {
   describe("configuration options", () => {
     it("should use custom system prompt", async () => {
       const mockStreamRAG = vi.mocked(utils.streamRAG);
-      mockStreamRAG.mockImplementation(async (_url, request, _headers, _onChunk, onComplete) => {
+      mockStreamRAG.mockImplementation(async (_url, request, _headers, callbacks) => {
         // Verify system prompt is in the request
         expect(request.system_prompt).toBe("You are a helpful assistant.");
-        onComplete();
+        callbacks.onComplete?.();
         return new AbortController();
       });
 
@@ -344,10 +344,10 @@ describe("RAGResults", () => {
 
     it("should pass fields to query", async () => {
       const mockStreamRAG = vi.mocked(utils.streamRAG);
-      mockStreamRAG.mockImplementation(async (_url, request, _headers, _onChunk, onComplete) => {
+      mockStreamRAG.mockImplementation(async (_url, request, _headers, callbacks) => {
         // Verify fields are in the request
         expect(request.query.fields).toEqual(["title", "content"]);
-        onComplete();
+        callbacks.onComplete?.();
         return new AbortController();
       });
 
@@ -380,9 +380,9 @@ describe("RAGResults", () => {
   describe("query updates", () => {
     it("should trigger request when question is submitted", async () => {
       const mockStreamRAG = vi.mocked(utils.streamRAG);
-      mockStreamRAG.mockImplementation(async (_url, _request, _headers, onChunk, onComplete) => {
-        onChunk("Answer");
-        onComplete();
+      mockStreamRAG.mockImplementation(async (_url, _request, _headers, callbacks) => {
+        callbacks.onSummary?.("Answer");
+        callbacks.onComplete?.();
         return new AbortController();
       });
 
@@ -412,8 +412,8 @@ describe("RAGResults", () => {
 
     it("should trigger new request even if question is the same when explicitly resubmitted", async () => {
       const mockStreamRAG = vi.mocked(utils.streamRAG);
-      mockStreamRAG.mockImplementation(async (_url, _request, _headers, _onChunk, onComplete) => {
-        onComplete();
+      mockStreamRAG.mockImplementation(async (_url, _request, _headers, callbacks) => {
+        callbacks.onComplete?.();
         return new AbortController();
       });
 
@@ -449,9 +449,9 @@ describe("RAGResults", () => {
 
     it("should reset summary when new request starts", async () => {
       const mockStreamRAG = vi.mocked(utils.streamRAG);
-      mockStreamRAG.mockImplementation(async (_url, _request, _headers, onChunk, onComplete) => {
-        onChunk("New answer");
-        onComplete();
+      mockStreamRAG.mockImplementation(async (_url, _request, _headers, callbacks) => {
+        callbacks.onSummary?.("New answer");
+        callbacks.onComplete?.();
         return new AbortController();
       });
 
@@ -492,8 +492,8 @@ describe("RAGResults", () => {
 
     it("should handle empty stream", async () => {
       const mockStreamRAG = vi.mocked(utils.streamRAG);
-      mockStreamRAG.mockImplementation(async (_url, _request, _headers, _onChunk, onComplete) => {
-        onComplete();
+      mockStreamRAG.mockImplementation(async (_url, _request, _headers, callbacks) => {
+        callbacks.onComplete?.();
         return new AbortController();
       });
 
@@ -517,8 +517,8 @@ describe("RAGResults", () => {
 
     it("should handle null response body", async () => {
       const mockStreamRAG = vi.mocked(utils.streamRAG);
-      mockStreamRAG.mockImplementation(async (_url, _request, _headers, _onChunk, _onComplete, onError) => {
-        onError(new Error("Response body is null"));
+      mockStreamRAG.mockImplementation(async (_url, _request, _headers, callbacks) => {
+        callbacks.onError?.(new Error("Response body is null"));
         return new AbortController();
       });
 
