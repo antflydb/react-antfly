@@ -38,6 +38,7 @@ export default function Antfly({ children, url, onChange, headers = {} }: Antfly
           isSemantic: action.isSemantic,
           isAutosuggest: action.isAutosuggest,
           value: action.value,
+          submittedAt: action.submittedAt,
           configuration: action.configuration,
           result: action.result,
         };

@@ -10,7 +10,7 @@ export interface AutosuggestProps {
     semanticIndexes?: string[];
     searchValue?: string;
     onSuggestionSelect?: (hit: QueryHit) => void;
-    containerRef?: React.RefObject<HTMLDivElement>;
+    containerRef?: React.RefObject<HTMLDivElement | null>;
 }
 export default function Autosuggest({ fields, returnFields, limit, minChars, renderSuggestion, customQuery, semanticIndexes, searchValue, onSuggestionSelect, containerRef, }: AutosuggestProps): import("react/jsx-runtime").JSX.Element | null;
 //# sourceMappingURL=Autosuggest.d.ts.map

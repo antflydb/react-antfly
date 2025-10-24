@@ -6,6 +6,7 @@
 dist/
 /example/build
 *.d.ts.map
+storybook-static/
 
 
 # misc

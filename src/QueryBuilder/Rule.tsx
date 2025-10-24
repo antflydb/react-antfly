@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import Autosuggest from "react-autosuggest";
 import { QueryRequest } from "@antfly/sdk";
 import { useSharedContext } from "../SharedContext";
-import { msearch, MultiqueryRequest } from "../utils";
+import { multiquery, MultiqueryRequest } from "../utils";
 import { Operator, Combinator } from "./utils";
 import { FieldOption, QueryBuilderRule } from "./QueryBuilder";
 
@@ -123,7 +123,7 @@ export default function Rule({
               },
             ];
 
-            const suggestions = await msearch(url || "", msearchRequest, headers || {});
+            const suggestions = await multiquery(url || "", msearchRequest, headers || {});
 
             const responses = (suggestions as { responses?: AutosuggestResponse[] })?.responses;
             if (responses && responses[0]) {
@@ -134,8 +134,8 @@ export default function Rule({
               }
               setSuggestions(
                 response.hits?.hits?.map((e: { _source: Record<string, unknown> }) =>
-                  String(e._source[field] || "")
-                ) || []
+                  String(e._source[field] || ""),
+                ) || [],
               );
             }
           }}
@@ -144,7 +144,8 @@ export default function Rule({
           renderSuggestion={(suggestion: string) => <div>{suggestion}</div>}
           inputProps={{
             value,
-            onChange: (event: React.FormEvent<HTMLElement>, { newValue }: { newValue: string }) => setValue(newValue),
+            onChange: (event: React.FormEvent<HTMLElement>, { newValue }: { newValue: string }) =>
+              setValue(newValue),
             className: "react-af-rule-value",
             autoComplete: "new-password",
           }}

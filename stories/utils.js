@@ -22,4 +22,4 @@ export function customQueryMovie(query) {
   };
 }
 
-export const url = "http://localhost:8080/table/example";
+export const url = "http://localhost:8080/api/v1/table/example";

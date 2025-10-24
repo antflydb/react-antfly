@@ -322,7 +322,7 @@ describe("Integration Tests", () => {
       // queries.size + semanticQueries.size !== searchWidgets.size
 
       // Spy on the msearch function to verify it gets called
-      const msearchSpy = vi.spyOn(utils, "msearch").mockResolvedValue({
+      const msearchSpy = vi.spyOn(utils, "multiquery").mockResolvedValue({
         responses: [
           {
             status: 200,
