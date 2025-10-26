@@ -77,13 +77,13 @@ export default function RAGResults({
 
     // Build the RAG request
     const ragRequest: RAGRequest = {
-      query: {
+      queries: [{
         full_text_search: answerBoxQuery as Record<string, unknown> | undefined,
         semantic_search: answerBoxSemanticQuery,
         indexes: answerBoxConfiguration?.indexes as string[] | undefined,
         limit: (answerBoxConfiguration?.limit as number | undefined) || 10,
         fields: fields || [],
-      },
+      }],
       summarizer,
       system_prompt: systemPrompt,
       with_citations: withCitations,
@@ -121,7 +121,7 @@ export default function RAGResults({
             // Non-streaming response
             setSummary(result.summary_result?.summary || "");
             setCitations(result.summary_result?.citations || []);
-            setHits(result.query_result?.hits?.hits || []);
+            setHits(result.query_results?.[0]?.hits?.hits || []);
             setIsStreaming(false);
           },
         });

@@ -1,4 +1,4 @@
-import { QueryHit, AntflyClient, QueryRequest, QueryResponses, RAGRequest, RAGResult } from '@antfly/sdk';
+import { QueryHit, AntflyClient, QueryRequest, QueryResponses, RAGRequest, RAGResult, Citation } from '@antfly/sdk';
 export interface MultiqueryRequest {
     query: QueryRequest;
 }
@@ -14,7 +14,7 @@ export declare const defer: (f: () => void) => void;
 export interface RAGCallbacks {
     onHit?: (hit: QueryHit) => void;
     onSummary?: (chunk: string) => void;
-    onCitation?: (citation: import('@antfly/sdk').Citation) => void;
+    onCitation?: (citation: Citation) => void;
     onComplete?: () => void;
     onError?: (error: Error | string) => void;
     onRAGResult?: (result: RAGResult) => void;

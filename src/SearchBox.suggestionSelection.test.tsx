@@ -6,7 +6,7 @@ describe('SearchBox Suggestion Selection Logic', () => {
     it('should extract value from specified field', () => {
       const mockSuggestion: QueryHit = {
         _id: 'doc1',
-        _index: 'test',
+        _score: 1.0,
         _source: {
           title: 'Test Title',
           description: 'Test Description',
@@ -51,7 +51,7 @@ describe('SearchBox Suggestion Selection Logic', () => {
     it('should use title field when available', () => {
       const mockSuggestion: QueryHit = {
         _id: 'doc1',
-        _index: 'test',
+        _score: 1.0,
         _source: {
           title: 'Test Title',
           description: 'Test Description',
@@ -96,7 +96,7 @@ describe('SearchBox Suggestion Selection Logic', () => {
     it('should use name field when title not available', () => {
       const mockSuggestion: QueryHit = {
         _id: 'doc1',
-        _index: 'test',
+        _score: 1.0,
         _source: {
           name: 'Test Name',
           description: 'Test Description',
@@ -141,7 +141,7 @@ describe('SearchBox Suggestion Selection Logic', () => {
     it('should use first available field when no common fields exist', () => {
       const mockSuggestion: QueryHit = {
         _id: 'doc1',
-        _index: 'test',
+        _score: 1.0,
         _source: {
           custom_field: 'Custom Value',
           another_field: 'Another Value',
@@ -184,7 +184,7 @@ describe('SearchBox Suggestion Selection Logic', () => {
     it('should use _id when no source fields available', () => {
       const mockSuggestion: QueryHit = {
         _id: 'doc123',
-        _index: 'test',
+        _score: 1.0,
         _source: {},
       };
 
@@ -224,7 +224,7 @@ describe('SearchBox Suggestion Selection Logic', () => {
     it('should skip object values and find next available string field', () => {
       const mockSuggestion: QueryHit = {
         _id: 'doc1',
-        _index: 'test',
+        _score: 1.0,
         _source: {
           metadata: { nested: 'object' },
           title: 'Test Title',
@@ -271,7 +271,7 @@ describe('SearchBox Suggestion Selection Logic', () => {
     it('should behave same as undefined fields', () => {
       const mockSuggestion: QueryHit = {
         _id: 'doc1',
-        _index: 'test',
+        _score: 1.0,
         _source: {
           title: 'Test Title',
         },
