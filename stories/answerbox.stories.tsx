@@ -1,6 +1,6 @@
 import React from "react";
 import { Antfly, AnswerBox, Results } from "../src";
-import { url } from "./utils";
+import { url, tableName } from "./utils";
 
 export default {
   title: "AnswerBox",
@@ -9,7 +9,7 @@ export default {
 
 export const Basic = () => {
   return (
-    <Antfly url={url}>
+    <Antfly url={url} table={tableName}>
       <h1>Basic AnswerBox</h1>
       <p>Type a question and click Submit or press Enter to execute the query.</p>
       <pre>{`<AnswerBox id="question" fields={["TICO", "AUTR"]} />`}</pre>
@@ -31,7 +31,7 @@ export const Basic = () => {
 
 export const WithCustomPlaceholder = () => {
   return (
-    <Antfly url={url}>
+    <Antfly url={url} table={tableName}>
       <h1>AnswerBox with Custom Placeholder</h1>
       <pre>{`<AnswerBox
   id="question"
@@ -56,7 +56,7 @@ export const WithCustomPlaceholder = () => {
 
 export const WithCustomButtonLabel = () => {
   return (
-    <Antfly url={url}>
+    <Antfly url={url} table={tableName}>
       <h1>AnswerBox with Custom Button Label</h1>
       <pre>{`<AnswerBox
   id="question"
@@ -81,7 +81,7 @@ export const WithCustomButtonLabel = () => {
 
 export const WithInitialValue = () => {
   return (
-    <Antfly url={url}>
+    <Antfly url={url} table={tableName}>
       <h1>AnswerBox with Initial Value</h1>
       <pre>{`<AnswerBox
   id="question"
@@ -108,7 +108,7 @@ export const WithOnSubmitCallback = () => {
   const [lastSubmitted, setLastSubmitted] = React.useState<string>("");
 
   return (
-    <Antfly url={url}>
+    <Antfly url={url} table={tableName}>
       <h1>AnswerBox with onSubmit Callback</h1>
       <p>Last submitted: <strong>{lastSubmitted || "(none)"}</strong></p>
       <pre>{`<AnswerBox
@@ -150,7 +150,7 @@ export const WithCustomQuery = () => {
   };
 
   return (
-    <Antfly url={url}>
+    <Antfly url={url} table={tableName}>
       <h1>AnswerBox with Custom Query Function</h1>
       <p>Searches both TICO and AUTR fields</p>
       <pre>{`const customQuery = (query) => ({
@@ -179,7 +179,7 @@ export const WithCustomQuery = () => {
 
 export const StyledExample = () => {
   return (
-    <Antfly url={url}>
+    <Antfly url={url} table={tableName}>
       <h1>Styled AnswerBox Example</h1>
       <style>{`
         .react-af-answerbox form {

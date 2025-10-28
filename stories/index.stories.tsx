@@ -8,7 +8,7 @@ import {
   toUrlQueryString,
   fromUrlQueryString,
 } from "../src";
-import { customQuery, customQueryMovie, url } from "./utils";
+import { customQuery, customQueryMovie, url, tableName } from "./utils";
 
 export default {
   title: "Antfly",
@@ -17,7 +17,7 @@ export default {
 
 export const BasicUsage = () => {
   return (
-    <Antfly url={url}>
+    <Antfly url={url} table={tableName}>
       <SearchBox id="main" customQuery={customQuery} />
       <div style={{ display: "inline-block" }}>
         <Facet id="author" fields={["AUTR"]} />
@@ -41,7 +41,7 @@ export const BasicUsage = () => {
 
 export const SemanticSearch = () => {
   return (
-    <Antfly url={url}>
+    <Antfly url={url} table={tableName}>
       <SearchBox id="main" semanticIndexes={["tico_gemma"]} limit={10} />
       <div style={{ display: "inline-block" }}>
         <Facet id="author" fields={["AUTR"]} />

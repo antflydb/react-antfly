@@ -1,6 +1,6 @@
 import React from "react";
 import { Antfly, SearchBox, Results, ActiveFilters, Facet } from "../src";
-import { url } from "./utils";
+import { url, tableName } from "./utils";
 import "../src/style.css";
 
 export default {
@@ -10,7 +10,7 @@ export default {
 
 export const Active = () => {
   return (
-    <Antfly url={url}>
+    <Antfly url={url} table={tableName}>
       <h1>Display active filters</h1>
       <pre>{`<ActiveFilters id="active-filters" />`}</pre>
       Active Filters:
@@ -34,7 +34,7 @@ export const Active = () => {
 
 export const ActiveFilterChangeComponentOrder = () => {
   return (
-    <Antfly url={url}>
+    <Antfly url={url} table={tableName}>
       <h1>Active filter (change component order)</h1>
       <Facet id="autr" fields={["AUTR"]} />
       Recherche:

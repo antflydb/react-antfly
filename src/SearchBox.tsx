@@ -11,6 +11,7 @@ export interface SearchBoxProps {
   placeholder?: string;
   semanticIndexes?: string[];
   limit?: number;
+  table?: string; // Optional table override (Phase 1: single table only)
   children?: ReactNode;
 }
 
@@ -22,6 +23,7 @@ export default function SearchBox({
   placeholder,
   semanticIndexes,
   limit,
+  table,
   children,
 }: SearchBoxProps) {
   const isSemanticEnabled = semanticIndexes && semanticIndexes.length > 0;
@@ -72,13 +74,14 @@ export default function SearchBox({
         query: isSemanticEnabled ? (customQuery ? customQuery() : null) : queryFromValue(v),
         semanticQuery: isSemanticEnabled ? v : undefined,
         value: v,
+        table: table,
         configuration: isSemanticEnabled
           ? { indexes: semanticIndexes || [], limit: limit || 10 }
           : undefined,
         result: undefined,
       });
     },
-    [dispatch, id, isSemanticEnabled, customQuery, queryFromValue, semanticIndexes, limit],
+    [dispatch, id, isSemanticEnabled, customQuery, queryFromValue, semanticIndexes, limit, table],
   );
 
   // Update external query on mount - always initialize the widget

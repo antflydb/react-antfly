@@ -10,7 +10,7 @@ import * as utils from "./utils";
 
 // Wrapper component to provide required context
 const TestWrapper = ({ children }: { children: React.ReactNode }) => {
-  return <Antfly url="http://localhost:8082/api/v1/table/test">{children}</Antfly>;
+  return <Antfly url="http://localhost:8082/api/v1" table="test">{children}</Antfly>;
 };
 
 // Mock ModelConfig for testing
@@ -83,7 +83,7 @@ describe("RAGResults", () => {
     it("should stream chunks progressively", async () => {
       // Mock streamRAG to simulate streaming chunks
       const mockStreamRAG = vi.mocked(utils.streamRAG);
-      mockStreamRAG.mockImplementation(async (_url, _request, _headers, callbacks) => {
+      mockStreamRAG.mockImplementation(async (_url, _table, _request, _headers, callbacks) => {
         callbacks.onSummary?.("Hello ");
         callbacks.onSummary?.("world");
         callbacks.onComplete?.();
@@ -120,7 +120,7 @@ describe("RAGResults", () => {
 
     it("should show streaming indicator while streaming", async () => {
       const mockStreamRAG = vi.mocked(utils.streamRAG);
-      mockStreamRAG.mockImplementation(async (_url, _request, _headers, callbacks) => {
+      mockStreamRAG.mockImplementation(async (_url, _table, _request, _headers, callbacks) => {
         callbacks.onSummary?.("Streaming...");
         callbacks.onComplete?.();
         return new AbortController();
@@ -151,7 +151,7 @@ describe("RAGResults", () => {
 
     it("should handle [DONE] signal", async () => {
       const mockStreamRAG = vi.mocked(utils.streamRAG);
-      mockStreamRAG.mockImplementation(async (_url, _request, _headers, callbacks) => {
+      mockStreamRAG.mockImplementation(async (_url, _table, _request, _headers, callbacks) => {
         callbacks.onSummary?.("Complete");
         callbacks.onComplete?.();
         return new AbortController();
@@ -186,7 +186,7 @@ describe("RAGResults", () => {
     it("should display error when fetch fails", async () => {
       const mockStreamRAG = vi.mocked(utils.streamRAG);
       mockStreamRAG.mockImplementation(
-        async (_url, _request, _headers, callbacks) => {
+        async (_url, _table, _request, _headers, callbacks) => {
           callbacks.onError?.(new Error("Network error"));
           return new AbortController();
         },
@@ -217,7 +217,7 @@ describe("RAGResults", () => {
     it("should handle HTTP error responses", async () => {
       const mockStreamRAG = vi.mocked(utils.streamRAG);
       mockStreamRAG.mockImplementation(
-        async (_url, _request, _headers, callbacks) => {
+        async (_url, _table, _request, _headers, callbacks) => {
           callbacks.onError?.(new Error("RAG request failed: 500 Internal Server Error"));
           return new AbortController();
         },
@@ -248,7 +248,7 @@ describe("RAGResults", () => {
     it("should handle error chunks in stream", async () => {
       const mockStreamRAG = vi.mocked(utils.streamRAG);
       mockStreamRAG.mockImplementation(
-        async (_url, _request, _headers, callbacks) => {
+        async (_url, _table, _request, _headers, callbacks) => {
           callbacks.onError?.(new Error("Something went wrong"));
           return new AbortController();
         },
@@ -278,7 +278,7 @@ describe("RAGResults", () => {
 
     it("should handle malformed JSON in stream", async () => {
       const mockStreamRAG = vi.mocked(utils.streamRAG);
-      mockStreamRAG.mockImplementation(async (_url, _request, _headers, callbacks) => {
+      mockStreamRAG.mockImplementation(async (_url, _table, _request, _headers, callbacks) => {
         // Simulate handling malformed JSON gracefully
         callbacks.onSummary?.("{invalid json}");
         callbacks.onComplete?.();
@@ -380,7 +380,7 @@ describe("RAGResults", () => {
   describe("query updates", () => {
     it("should trigger request when question is submitted", async () => {
       const mockStreamRAG = vi.mocked(utils.streamRAG);
-      mockStreamRAG.mockImplementation(async (_url, _request, _headers, callbacks) => {
+      mockStreamRAG.mockImplementation(async (_url, _table, _request, _headers, callbacks) => {
         callbacks.onSummary?.("Answer");
         callbacks.onComplete?.();
         return new AbortController();
@@ -412,7 +412,7 @@ describe("RAGResults", () => {
 
     it("should trigger new request even if question is the same when explicitly resubmitted", async () => {
       const mockStreamRAG = vi.mocked(utils.streamRAG);
-      mockStreamRAG.mockImplementation(async (_url, _request, _headers, callbacks) => {
+      mockStreamRAG.mockImplementation(async (_url, _table, _request, _headers, callbacks) => {
         callbacks.onComplete?.();
         return new AbortController();
       });
@@ -449,7 +449,7 @@ describe("RAGResults", () => {
 
     it("should reset summary when new request starts", async () => {
       const mockStreamRAG = vi.mocked(utils.streamRAG);
-      mockStreamRAG.mockImplementation(async (_url, _request, _headers, callbacks) => {
+      mockStreamRAG.mockImplementation(async (_url, _table, _request, _headers, callbacks) => {
         callbacks.onSummary?.("New answer");
         callbacks.onComplete?.();
         return new AbortController();
@@ -492,7 +492,7 @@ describe("RAGResults", () => {
 
     it("should handle empty stream", async () => {
       const mockStreamRAG = vi.mocked(utils.streamRAG);
-      mockStreamRAG.mockImplementation(async (_url, _request, _headers, callbacks) => {
+      mockStreamRAG.mockImplementation(async (_url, _table, _request, _headers, callbacks) => {
         callbacks.onComplete?.();
         return new AbortController();
       });
@@ -517,7 +517,7 @@ describe("RAGResults", () => {
 
     it("should handle null response body", async () => {
       const mockStreamRAG = vi.mocked(utils.streamRAG);
-      mockStreamRAG.mockImplementation(async (_url, _request, _headers, callbacks) => {
+      mockStreamRAG.mockImplementation(async (_url, _table, _request, _headers, callbacks) => {
         callbacks.onError?.(new Error("Response body is null"));
         return new AbortController();
       });

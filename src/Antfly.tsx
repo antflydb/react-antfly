@@ -6,14 +6,16 @@ import Listener from "./Listener";
 
 export interface AntflyProps {
   children: ReactNode;
-  url: string;
+  url: string; // Base URL only (e.g., http://localhost:8080/api/v1)
+  table: string; // Required default table for all widgets
   onChange?: (params: Map<string, unknown>) => void;
   headers?: Record<string, string>;
 }
 
-export default function Antfly({ children, url, onChange, headers = {} }: AntflyProps) {
+export default function Antfly({ children, url, table, onChange, headers = {} }: AntflyProps) {
   const initialState: SharedState = {
     url,
+    table,
     listenerEffect: null,
     widgets: new Map(),
     headers,
@@ -39,6 +41,7 @@ export default function Antfly({ children, url, onChange, headers = {} }: Antfly
           isAutosuggest: action.isAutosuggest,
           value: action.value,
           submittedAt: action.submittedAt,
+          table: action.table,
           configuration: action.configuration,
           result: action.result,
         };

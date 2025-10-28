@@ -1,5 +1,5 @@
 import { Antfly, AnswerBox, RAGResults, Results, ModelConfig } from "../src";
-import { url } from "./utils";
+import { url, tableName } from "./utils";
 
 export default {
   title: "RAG (Retrieval-Augmented Generation)",
@@ -17,7 +17,7 @@ const mockSummarizer: ModelConfig = {
 
 export const BasicRAG = () => {
   return (
-    <Antfly url={url}>
+    <Antfly url={url} table={tableName}>
       <h1>Basic RAG Example</h1>
       <p>Ask a question and get an AI-generated summary based on search results.</p>
       <pre>{`<AnswerBox id="question" fields={["TICO", "AUTR"]} />
@@ -38,7 +38,7 @@ export const BasicRAG = () => {
 
 export const WithCitations = () => {
   return (
-    <Antfly url={url}>
+    <Antfly url={url} table={tableName}>
       <h1>RAG with Citations</h1>
       <p>Get an AI summary with citations from source documents.</p>
       <pre>{`<AnswerBox id="question" fields={["TICO", "AUTR"]} />
@@ -71,7 +71,7 @@ export const WithCitations = () => {
 
 export const WithSystemPrompt = () => {
   return (
-    <Antfly url={url}>
+    <Antfly url={url} table={tableName}>
       <h1>RAG with Custom System Prompt</h1>
       <p>Guide the AI's behavior with a custom system prompt.</p>
       <pre>{`<AnswerBox id="question" fields={["TICO"]} />
@@ -98,7 +98,7 @@ export const WithSystemPrompt = () => {
 
 export const WithCustomRendering = () => {
   return (
-    <Antfly url={url}>
+    <Antfly url={url} table={tableName}>
       <h1>RAG with Custom Rendering</h1>
       <p>Customize how the AI summary is displayed.</p>
       <pre>{`<RAGResults
@@ -158,7 +158,7 @@ export const WithCustomRendering = () => {
 
 export const RAGWithSearchResults = () => {
   return (
-    <Antfly url={url}>
+    <Antfly url={url} table={tableName}>
       <h1>RAG + Traditional Search Results</h1>
       <p>
         Combine AI-generated summaries with traditional search results for the best of both worlds.
@@ -279,7 +279,7 @@ export const StyledRAGExample = () => {
   };
 
   return (
-    <Antfly url={url}>
+    <Antfly url={url} table={tableName}>
       <h1>Styled RAG Interface with Streaming</h1>
       <style>{`
         .rag-container {
@@ -537,7 +537,7 @@ export const MultipleLanguageModels = () => {
   };
 
   return (
-    <Antfly url={url}>
+    <Antfly url={url} table={tableName}>
       <h1>Compare Different Language Models</h1>
       <p>See how different models respond to the same question.</p>
 

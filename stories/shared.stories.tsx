@@ -1,6 +1,6 @@
 import React from "react";
 import { Antfly, SearchBox, Results, CustomWidget } from "../src";
-import { url } from "./utils";
+import { url, tableName } from "./utils";
 
 export default {
   title: "CustomWidget",
@@ -19,7 +19,7 @@ function MyComponent({ ctx }) {
 
 export const Active = () => {
   return (
-    <Antfly url={url}>
+    <Antfly url={url} table={tableName}>
       <SearchBox id="main" fields={["AUTR"]} />
       <CustomWidget>
         <MyComponent />

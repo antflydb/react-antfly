@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, ReactNode } from "react";
 import { useSharedContext, Widget } from "./SharedContext";
 import { QueryResult, QueryHit, TermFacetResult } from "@antfly/sdk";
-import { multiquery, conjunctsFrom, defer, MultiqueryRequest } from "./utils";
+import { multiquery, conjunctsFrom, defer, MultiqueryRequest, resolveTable } from "./utils";
 
 interface ListenerProps {
   children: ReactNode;
@@ -66,7 +66,7 @@ function isSearchWidgetConfig(config: unknown): config is SearchWidgetConfig {
 }
 
 export default function Listener({ children, onChange }: ListenerProps) {
-  const [{ url, listenerEffect, widgets, headers }, dispatch] = useSharedContext();
+  const [{ url, table, listenerEffect, widgets, headers }, dispatch] = useSharedContext();
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // We need to prepare some data in each render.
@@ -186,9 +186,13 @@ export default function Listener({ children, onChange }: ListenerProps) {
                       }),
                     );
 
+                // Resolve table for this widget
+                const tableName = resolveTable(r.table, table);
+
                 // If there is no indexes, use the default one.
                 multiqueryData.push({
                   query: {
+                    table: tableName,
                     semantic_search: semanticQuery,
                     indexes: semanticQuery ? indexes : undefined,
                     full_text_search: conjunctsFrom(filteredQueries),
@@ -206,6 +210,9 @@ export default function Listener({ children, onChange }: ListenerProps) {
 
               // Fetch data for internal facet components.
               facetWidgets.forEach((f, id) => {
+                // Resolve table for this widget
+                const tableName = resolveTable(f.table, table);
+
                 const config = f.configuration as FacetWidgetConfig;
                 const fields = config.fields;
                 const size = config.size;
@@ -265,6 +272,7 @@ export default function Listener({ children, onChange }: ListenerProps) {
                       : conjunctsFrom(baseQueries);
 
                   return {
+                    table: tableName,
                     semantic_search: semanticQuery,
                     indexes: semanticQuery ? indexes : undefined,
                     limit: semanticQuery ? limit : 0,

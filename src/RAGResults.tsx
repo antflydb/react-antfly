@@ -8,6 +8,7 @@ export interface RAGResultsProps {
   answerBoxId: string;
   summarizer: ModelConfig;
   systemPrompt?: string;
+  table?: string; // Optional table override - auto-inherits from AnswerBox if not specified
   renderSummary?: (
     summary: string,
     isStreaming: boolean,
@@ -25,13 +26,14 @@ export default function RAGResults({
   answerBoxId,
   summarizer,
   systemPrompt,
+  table,
   renderSummary,
   showCitations = true,
   withCitations = false,
   showHits = false,
   fields,
 }: RAGResultsProps) {
-  const [{ widgets, url, headers }, dispatch] = useSharedContext();
+  const [{ widgets, url, table: defaultTable, headers }, dispatch] = useSharedContext();
   const [summary, setSummary] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -75,7 +77,10 @@ export default function RAGResults({
     const answerBoxSemanticQuery = answerBoxWidget?.semanticQuery;
     const answerBoxConfiguration = answerBoxWidget?.configuration;
 
-    // Build the RAG request
+    // Resolve table: prop > AnswerBox widget > default
+    const resolvedTable = table || answerBoxWidget?.table || defaultTable;
+
+    // Build the RAG request (table will be added by streamRAG)
     const ragRequest: RAGRequest = {
       queries: [{
         full_text_search: answerBoxQuery as Record<string, unknown> | undefined,
@@ -99,7 +104,7 @@ export default function RAGResults({
       setHits([]);
 
       try {
-        const controller = await streamRAG(url, ragRequest, headers || {}, {
+        const controller = await streamRAG(url, resolvedTable, ragRequest, headers || {}, {
           onHit: (hit) => {
             setHits((prev) => [...prev, hit]);
           },
@@ -146,6 +151,8 @@ export default function RAGResults({
     currentQuery,
     answerBoxWidget,
     url,
+    table,
+    defaultTable,
     headers,
     summarizer,
     systemPrompt,
@@ -162,9 +169,10 @@ export default function RAGResults({
       needsConfiguration: false,
       isFacet: false,
       wantResults: false,
+      table: table,
       value: summary,
     });
-  }, [dispatch, id, summary]);
+  }, [dispatch, id, table, summary]);
 
   // Cleanup on unmount
   useEffect(

@@ -10,6 +10,7 @@ export interface AnswerBoxProps {
   placeholder?: string;
   semanticIndexes?: string[];
   limit?: number;
+  table?: string; // Optional table override (Phase 1: single table only)
   children?: ReactNode;
   buttonLabel?: string;
   onSubmit?: (value: string) => void;
@@ -23,6 +24,7 @@ export default function AnswerBox({
   placeholder,
   semanticIndexes,
   limit,
+  table,
   children,
   buttonLabel = "Submit",
   onSubmit,
@@ -66,13 +68,14 @@ export default function AnswerBox({
         semanticQuery: isSemanticEnabled ? v : undefined,
         value: v,
         submittedAt: Date.now(), // Timestamp to track when this query was submitted
+        table: table,
         configuration: isSemanticEnabled
           ? { indexes: semanticIndexes || [], limit: limit || 10 }
           : undefined,
         result: undefined,
       });
     },
-    [dispatch, id, isSemanticEnabled, customQuery, queryFromValue, semanticIndexes, limit],
+    [dispatch, id, isSemanticEnabled, customQuery, queryFromValue, semanticIndexes, limit, table],
   );
 
   // Handle input changes (only update local state, don't trigger query)

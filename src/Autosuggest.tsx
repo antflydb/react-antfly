@@ -11,6 +11,7 @@ export interface AutosuggestProps {
   renderSuggestion?: (hit: QueryHit) => ReactNode;
   customQuery?: (value?: string, fields?: string[]) => unknown;
   semanticIndexes?: string[];
+  table?: string; // Optional table override (Phase 1: single table only)
   // Internal props passed from SearchBox
   searchValue?: string;
   onSuggestionSelect?: (hit: QueryHit) => void;
@@ -25,6 +26,7 @@ export default function Autosuggest({
   renderSuggestion,
   customQuery,
   semanticIndexes,
+  table,
   searchValue = "",
   onSuggestionSelect,
   containerRef,
@@ -106,6 +108,7 @@ export default function Autosuggest({
                 )
               : null,
         semanticQuery: isSemanticEnabled ? searchValue : undefined,
+        table: table,
         configuration: canQuery
           ? isSemanticEnabled
             ? {
@@ -136,6 +139,7 @@ export default function Autosuggest({
         isAutosuggest: true,
         isSemantic: isSemanticEnabled,
         wantResults: false,
+        table: table,
         result: { data: [], total: 0 },
       });
     }
@@ -150,6 +154,7 @@ export default function Autosuggest({
     isSemanticEnabled,
     effectiveReturnFields,
     semanticIndexes,
+    table,
     shouldShow,
   ]);
 

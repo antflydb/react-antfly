@@ -14,6 +14,7 @@ export interface Widget {
   isSemantic?: boolean;
   value?: unknown;
   submittedAt?: number; // Timestamp of when this widget was last submitted
+  table?: string | string[]; // Table override (single or multi-table support)
   configuration?: {
     fields?: string[];
     size?: number;
@@ -31,6 +32,7 @@ export interface Widget {
 
 export interface SharedState {
   url?: string;
+  table: string; // Required default table for all widgets
   listenerEffect?: (() => void) | null;
   widgets: Map<string, Widget>;
   headers?: Record<string, string>;
@@ -51,6 +53,7 @@ export type SharedAction =
       isSemantic?: boolean;
       value?: unknown;
       submittedAt?: number;
+      table?: string | string[]; // Table override
       configuration?: Widget["configuration"];
       result?: Widget["result"];
     }

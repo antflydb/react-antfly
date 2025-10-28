@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { Antfly, Results } from "../src";
-import { url } from "./utils";
+import { url, tableName } from "./utils";
 
 export default {
   title: "Results",
@@ -9,7 +9,7 @@ export default {
 
 export const Vanilla = () => {
   return (
-    <Antfly url={url}>
+    <Antfly url={url} table={tableName}>
       <Results
         id="result"
         items={(data) =>
@@ -26,7 +26,7 @@ export const Vanilla = () => {
 
 export const WithCustomPagination = () => {
   return (
-    <Antfly url={url}>
+    <Antfly url={url} table={tableName}>
       <Results
         id="result"
         items={(data) =>
@@ -48,7 +48,7 @@ export const WithCustomPagination = () => {
 
 export const WithCustomStats = () => {
   return (
-    <Antfly url={url}>
+    <Antfly url={url} table={tableName}>
       <Results
         id="result"
         items={(data) =>
@@ -73,7 +73,7 @@ export const SortableDmisDesc = () => {
   }, [sortKey, sortOrder]);
 
   return (
-    <Antfly url={url}>
+    <Antfly url={url} table={tableName}>
       Sort by:{" "}
       <select onChange={(e) => setSortKey(e.target.value)} value={sortKey}>
         {["AUTR", "DMIS", "DMAJ", "TICO"].map((e) => (

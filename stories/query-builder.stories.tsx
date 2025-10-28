@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Antfly, QueryBuilder, Results, fromUrlQueryString, toUrlQueryString } from "../src";
-import { url } from "./utils";
+import { url, tableName } from "./utils";
 
 export default {
   title: "QueryBuilder",
@@ -9,7 +9,7 @@ export default {
 
 export const Simple = () => {
   return (
-    <Antfly url={url}>
+    <Antfly url={url} table={tableName}>
       <QueryBuilder id="qb" fields={[{ value: "AUTR", text: "Author" }]} />
       <Results
         id="result"
@@ -21,7 +21,7 @@ export const Simple = () => {
 
 export const AutoComplete = () => {
   return (
-    <Antfly url={url}>
+    <Antfly url={url} table={tableName}>
       <QueryBuilder id="qb" fields={[{ value: "AUTR", text: "Author" }]} autoComplete={true} />
       <Results
         id="result"
@@ -51,7 +51,7 @@ export const CustomQueryAndOperators = () => {
     },
   ];
   return (
-    <Antfly url={url}>
+    <Antfly url={url} table={tableName}>
       <QueryBuilder
         id="qb"
         fields={[{ value: "AUTR", text: "Author" }]}
@@ -68,7 +68,7 @@ export const CustomQueryAndOperators = () => {
 
 export const MultipleFields = () => {
   return (
-    <Antfly url={url}>
+    <Antfly url={url} table={tableName}>
       <QueryBuilder
         id="qb"
         fields={[

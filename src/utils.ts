@@ -124,6 +124,31 @@ export const defer = (f: () => void): void => {
   queueMicrotask(f);
 };
 
+// Table resolution helpers for Option 3 (multi-table support)
+
+/**
+ * Normalize table parameter to array format (internal use)
+ * Supports future multi-table queries while maintaining backwards compatibility
+ */
+export function normalizeTable(table?: string | string[]): string[] {
+  if (!table) return [];
+  return Array.isArray(table) ? table : [table];
+}
+
+/**
+ * Resolve which table to use for a widget query
+ * Priority: widget.table > defaultTable
+ * Returns single table for Phase 1 (can be extended to return array in Phase 2)
+ */
+export function resolveTable(widgetTable: string | string[] | undefined, defaultTable: string): string {
+  if (widgetTable) {
+    // If widget has table override, use it (take first if array)
+    const tables = normalizeTable(widgetTable);
+    return tables[0] || defaultTable;
+  }
+  return defaultTable;
+}
+
 // RAG-related types and functions
 export interface RAGCallbacks {
   onHit?: (hit: QueryHit) => void;
@@ -136,39 +161,41 @@ export interface RAGCallbacks {
 
 /**
  * Stream RAG results from the Antfly /rag endpoint using Server-Sent Events or JSON
- * @param url - Base URL of the Antfly server (e.g., http://localhost:8080/api/v1/table/example)
- * @param request - RAG request containing query and summarizer config
+ * @param url - Base URL of the Antfly server (e.g., http://localhost:8080/api/v1)
+ * @param tableName - Required table name for the RAG query
+ * @param request - RAG request containing queries and summarizer config
  * @param headers - Optional HTTP headers for authentication
  * @param callbacks - Structured callbacks for RAG events (hit, summary, citation, complete, error, ragResult)
  * @returns AbortController to cancel the stream
  */
 export async function streamRAG(
   url: string,
+  tableName: string,
   request: RAGRequest,
   headers: Record<string, string> = {},
   callbacks: RAGCallbacks,
 ): Promise<AbortController> {
   try {
-    // Extract table name from URL if present (e.g., /api/v1/table/example -> example)
-    const tableMatch = url.match(/\/table\/([^/]+)/);
-    const tableName = tableMatch ? tableMatch[1] : undefined;
-
-    // Extract base URL (without /table/{tableName} suffix) for client initialization
-    const baseUrl = tableName ? url.replace(/\/table\/[^/]+$/, "") : url;
-
-    // Always create a fresh client with the correct base URL to avoid path duplication
+    // Always create a fresh client with the base URL
     // (don't reuse defaultClient as it may have been initialized with a different base URL)
     const client = new AntflyClient({
-      baseUrl,
+      baseUrl: url,
       headers,
     });
 
     // Determine if we should stream based on presence of streaming callbacks
     const shouldStream = !!(callbacks.onHit || callbacks.onSummary || callbacks.onCitation);
 
-    // Build the request with streaming flag if needed
+    // Add table to each query in the queries array
+    const queriesWithTable = (request.queries || []).map((query) => ({
+      ...query,
+      table: tableName,
+    }));
+
+    // Build the request with streaming flag and table-enriched queries
     const ragRequest = {
       ...request,
+      queries: queriesWithTable,
       with_streaming: shouldStream,
     };
 
@@ -203,10 +230,8 @@ export async function streamRAG(
         }
       : undefined;
 
-    // Use table-specific RAG if we have a table name, otherwise use global RAG
-    const result = tableName
-      ? await client.tables.rag(tableName, ragRequest, sdkCallbacks)
-      : await client.rag(ragRequest, sdkCallbacks);
+    // Use table-specific RAG endpoint
+    const result = await client.tables.rag(tableName, ragRequest, sdkCallbacks);
 
     // Handle non-streaming response (RAGResult)
     if (result && typeof result === "object" && "query_result" in result) {

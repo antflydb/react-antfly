@@ -12,6 +12,7 @@ export interface FacetProps {
   showFilter?: boolean;
   filterValueModifier?: (value: string) => string;
   itemsPerBlock?: number;
+  table?: string; // Optional table override (Phase 1: single table only)
   items?: (
     data: TermFacetResult[],
     options: {
@@ -30,6 +31,7 @@ export default function Facet({
   showFilter = true,
   filterValueModifier,
   itemsPerBlock,
+  table,
   items,
 }: FacetProps) {
   const [{ widgets }, dispatch] = useSharedContext();
@@ -55,9 +57,10 @@ export default function Facet({
       wantResults: false,
       query: disjunctsFrom(toTermQueries(fields, value)),
       value,
+      table: table,
       configuration: { size, filterValue, fields, filterValueModifier },
     });
-  }, [dispatch, id, size, filterValue, value, fields, filterValueModifier]);
+  }, [dispatch, id, size, filterValue, value, fields, filterValueModifier, table]);
 
   // If widget value was updated elsewhere (ex: from active filters deletion)
   // We have to update and dispatch the component.

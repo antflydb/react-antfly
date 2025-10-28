@@ -1,6 +1,6 @@
 import React from "react";
 import { Antfly, SearchBox, Results, Autosuggest } from "../src";
-import { customQuery, url } from "./utils";
+import { customQuery, url, tableName } from "./utils";
 
 export default {
   title: "SearchBox",
@@ -9,7 +9,7 @@ export default {
 
 export const WithDefaultQuery = () => {
   return (
-    <Antfly url={url}>
+    <Antfly url={url} table={tableName}>
       <h1>Search on AUTR field</h1>
       <pre>{`<SearchBox id="main" fields={["AUTR"]} />`}</pre>
       <SearchBox id="main" fields={["AUTR"]} />
@@ -30,7 +30,7 @@ export const WithDefaultQuery = () => {
 
 export const WithCustomQuery = () => {
   return (
-    <Antfly url={url}>
+    <Antfly url={url} table={tableName}>
       <h1>Search on TICO field with custom query</h1>
       <pre>{`<SearchBox id="main" customQuery={customQuery} />`}</pre>
       <SearchBox id="main" customQuery={customQuery} />
@@ -45,7 +45,7 @@ export const WithCustomQuery = () => {
 
 export const WithAutosuggest = () => {
   return (
-    <Antfly url={url}>
+    <Antfly url={url} table={tableName}>
       <h1>Search with Autocomplete</h1>
       <pre>{`<SearchBox id="main" fields={["AUTR"]}>
   <Autosuggest fields={["AUTR"]} limit={5} minChars={2} />
@@ -70,7 +70,7 @@ export const WithAutosuggest = () => {
 
 export const WithAutosuggestMultipleFields = () => {
   return (
-    <Antfly url={url}>
+    <Antfly url={url} table={tableName}>
       <h1>Search with Autocomplete on Multiple Fields</h1>
       <pre>{`<SearchBox id="main" fields={["AUTR", "TICO"]}>
   <Autosuggest fields={["AUTR", "TICO"]} limit={10} />
@@ -95,7 +95,7 @@ export const WithAutosuggestMultipleFields = () => {
 
 export const WithAutosuggestCustomRenderer = () => {
   return (
-    <Antfly url={url}>
+    <Antfly url={url} table={tableName}>
       <h1>Search with Custom Suggestion Rendering</h1>
       <pre>{`<SearchBox id="main" fields={["AUTR"]}>
   <Autosuggest

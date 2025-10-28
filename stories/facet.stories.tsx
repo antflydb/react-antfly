@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Antfly, SearchBox, Results, Facet } from "../src";
-import { url } from "./utils";
+import { url, tableName } from "./utils";
 
 export default {
   title: "Facet",
@@ -35,7 +35,7 @@ function CollapsableFacet({ title, ...rest }) {
 
 export const Collapsable = () => {
   return (
-    <Antfly url={url}>
+    <Antfly url={url} table={tableName}>
       <SearchBox id="main" fields={["TICO"]} />
       <CollapsableFacet id="autr" fields={["AUTR"]} />
       <Results
@@ -55,7 +55,7 @@ export const Collapsable = () => {
 
 export const Customized = () => {
   return (
-    <Antfly url={url}>
+    <Antfly url={url} table={tableName}>
       <Facet
         seeMore="SEE MORE CUSTOM"
         placeholder="MY PLACEHOLDER"
@@ -79,7 +79,7 @@ export const Customized = () => {
 
 export const ModifyFilterValue = () => {
   return (
-    <Antfly url={url}>
+    <Antfly url={url} table={tableName}>
       <Facet
         filterValueModifier={(v) => `${v}.*`}
         placeholder="type first letters"
@@ -102,7 +102,7 @@ export const ModifyFilterValue = () => {
 
 export const FacetWithCustomRenderItems = () => {
   return (
-    <Antfly url={url}>
+    <Antfly url={url} table={tableName}>
       <SearchBox id="main" fields={["TICO"]} />
       <Facet
         id="autr"
