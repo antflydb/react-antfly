@@ -230,8 +230,8 @@ export async function streamRAG(
         }
       : undefined;
 
-    // Use table-specific RAG endpoint
-    const result = await client.tables.rag(tableName, ragRequest, sdkCallbacks);
+    // Use global RAG endpoint (table is specified in queries array)
+    const result = await client.rag(ragRequest, sdkCallbacks);
 
     // Handle non-streaming response (RAGResult)
     if (result && typeof result === "object" && "query_result" in result) {
