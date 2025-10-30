@@ -10,7 +10,7 @@ import Listener from "./Listener";
 
 // Wrapper component to provide required context
 const TestWrapper = ({ children }: { children: React.ReactNode }) => {
-  return <Antfly url="http://localhost:8082/api/v1/test">{children}</Antfly>;
+  return <Antfly url="http://localhost:8082/api/v1" table="test">{children}</Antfly>;
 };
 
 describe("Listener", () => {
@@ -406,7 +406,7 @@ describe("Listener", () => {
       const onChange = vi.fn();
 
       const { container } = render(
-        <Antfly url="http://localhost:8082/api/v1/test">
+        <Antfly url="http://localhost:8082/api/v1" table="test">
           <Listener onChange={onChange}>
             <SearchBox id="search" fields={["title"]} />
           </Listener>
@@ -426,7 +426,7 @@ describe("Listener", () => {
       const onChange = vi.fn();
 
       const { container } = render(
-        <Antfly url="http://localhost:8082/api/v1/test">
+        <Antfly url="http://localhost:8082/api/v1" table="test">
           <Listener onChange={onChange}>
             <SearchBox id="search" fields={["title"]} />
             <Results id="results" items={(data) => <div>{data.length}</div>} />
@@ -451,7 +451,7 @@ describe("Listener", () => {
     it("should handle connection errors gracefully", async () => {
       // Using an invalid URL to simulate connection error
       const { container } = render(
-        <Antfly url="http://invalid-url-that-does-not-exist:9999/api">
+        <Antfly url="http://invalid-url-that-does-not-exist:9999/api" table="test">
           <SearchBox id="search" fields={["title"]} />
           <Results id="results" items={(data) => <div>{data.length}</div>} />
         </Antfly>,

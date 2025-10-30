@@ -70,6 +70,7 @@ export const WithUrlParams = () => {
   return (
     <Antfly
       url={url}
+      table={tableName}
       onChange={(values) => {
         setQueryString(toUrlQueryString(values));
       }}
@@ -90,7 +91,7 @@ export const WithUrlParams = () => {
 
 export const Wikipedia = () => {
   return (
-    <Antfly url={"http://localhost:8080/table/wikipedia"}>
+    <Antfly url={"http://localhost:8080"} table="wikipedia">
       <SearchBox id="main" semanticIndexes={["body_nomic"]} limit={10} />
       <ActiveFilters id="af" />
       <Results
@@ -112,7 +113,8 @@ export const Wikipedia = () => {
 export const MovieDatabase = () => {
   return (
     <Antfly
-      url={"https://localhost:8080/table/movies/query"}
+      url={"https://localhost:8080"}
+      table="movies"
       headers={{
         Authorization: "Basic " + window.btoa("Qq38oEj7D:a23804f8-f0c4-4dea-9a55-67739275e588"),
       }}

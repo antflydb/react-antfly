@@ -11,6 +11,17 @@ export declare function toTermQueries(fields?: string[], selectedValues?: string
 export declare function fromUrlQueryString(str?: string): Map<string, unknown>;
 export declare function toUrlQueryString(params: Map<string, unknown>): string;
 export declare const defer: (f: () => void) => void;
+/**
+ * Normalize table parameter to array format (internal use)
+ * Supports future multi-table queries while maintaining backwards compatibility
+ */
+export declare function normalizeTable(table?: string | string[]): string[];
+/**
+ * Resolve which table to use for a widget query
+ * Priority: widget.table > defaultTable
+ * Returns single table for Phase 1 (can be extended to return array in Phase 2)
+ */
+export declare function resolveTable(widgetTable: string | string[] | undefined, defaultTable: string): string;
 export interface RAGCallbacks {
     onHit?: (hit: QueryHit) => void;
     onSummary?: (chunk: string) => void;
@@ -21,11 +32,12 @@ export interface RAGCallbacks {
 }
 /**
  * Stream RAG results from the Antfly /rag endpoint using Server-Sent Events or JSON
- * @param url - Base URL of the Antfly server (e.g., http://localhost:8080/api/v1/table/example)
- * @param request - RAG request containing query and summarizer config
+ * @param url - Base URL of the Antfly server (e.g., http://localhost:8080/api/v1)
+ * @param tableName - Required table name for the RAG query
+ * @param request - RAG request containing queries and summarizer config
  * @param headers - Optional HTTP headers for authentication
  * @param callbacks - Structured callbacks for RAG events (hit, summary, citation, complete, error, ragResult)
  * @returns AbortController to cancel the stream
  */
-export declare function streamRAG(url: string, request: RAGRequest, headers: Record<string, string> | undefined, callbacks: RAGCallbacks): Promise<AbortController>;
+export declare function streamRAG(url: string, tableName: string, request: RAGRequest, headers: Record<string, string> | undefined, callbacks: RAGCallbacks): Promise<AbortController>;
 //# sourceMappingURL=utils.d.ts.map

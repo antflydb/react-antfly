@@ -30,6 +30,7 @@ export default function SearchBox({
   const [{ widgets }, dispatch] = useSharedContext();
   const [value, setValue] = useState(initialValue || "");
   const isExternalUpdate = useRef(false);
+  const [isSuggestOpen, setIsSuggestOpen] = useState(false);
   const [containerRefObject] = useState<{ current: HTMLDivElement | null }>({ current: null });
   const containerRef = useCallback(
     (node: HTMLDivElement | null) => {
@@ -110,13 +111,44 @@ export default function SearchBox({
       const newValue = e.target.value;
       setValue(newValue);
       update(newValue);
+      // If user is typing, autosuggest will open
+      if (newValue.trim()) {
+        setIsSuggestOpen(true);
+      }
     },
     [update],
+  );
+
+  // Handle clear button click
+  const handleClear = useCallback(() => {
+    setValue("");
+    update("");
+    setIsSuggestOpen(false);
+  }, [update]);
+
+  // Handle Esc key press - close autosuggest first, then clear on second press
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        if (isSuggestOpen) {
+          // First Esc: close autosuggest
+          setIsSuggestOpen(false);
+        } else if (value) {
+          // Second Esc: clear the input
+          handleClear();
+        }
+      }
+    },
+    [isSuggestOpen, value, handleClear],
   );
 
   // Handle suggestion selection from Autosuggest
   const handleSuggestionSelect = useCallback(
     (suggestion: QueryHit) => {
+      // Close autosuggest when a suggestion is selected
+      setIsSuggestOpen(false);
+
       // If the child component had its own onSuggestionSelect, call it first
       const childProps = React.isValidElement(children)
         ? (children as React.ReactElement<{ onSuggestionSelect?: (hit: QueryHit) => void }>).props
@@ -181,8 +213,19 @@ export default function SearchBox({
         type="text"
         value={value}
         onChange={handleChange}
+        onKeyDown={handleKeyDown}
         placeholder={placeholder || "search…"}
       />
+      {value && (
+        <button
+          type="button"
+          className="react-af-searchbox-clear"
+          onClick={handleClear}
+          aria-label="Clear search"
+        >
+          ×
+        </button>
+      )}
       {children &&
         React.Children.map(children, (child) => {
           if (React.isValidElement(child)) {
@@ -194,6 +237,8 @@ export default function SearchBox({
                 searchValue: value,
                 onSuggestionSelect: handleSuggestionSelect,
                 containerRef: containerRefObject,
+                isOpen: isSuggestOpen,
+                onClose: () => setIsSuggestOpen(false),
               });
             }
           }

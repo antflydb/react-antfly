@@ -310,7 +310,7 @@ describe("RAGResults", () => {
   describe("configuration options", () => {
     it("should use custom system prompt", async () => {
       const mockStreamRAG = vi.mocked(utils.streamRAG);
-      mockStreamRAG.mockImplementation(async (_url, request, _headers, callbacks) => {
+      mockStreamRAG.mockImplementation(async (_url, _table, request, _headers, callbacks) => {
         // Verify system prompt is in the request
         expect(request.system_prompt).toBe("You are a helpful assistant.");
         callbacks.onComplete?.();
@@ -344,9 +344,9 @@ describe("RAGResults", () => {
 
     it("should pass fields to query", async () => {
       const mockStreamRAG = vi.mocked(utils.streamRAG);
-      mockStreamRAG.mockImplementation(async (_url, request, _headers, callbacks) => {
+      mockStreamRAG.mockImplementation(async (_url, _table, request, _headers, callbacks) => {
         // Verify fields are in the request
-        expect(request.query.fields).toEqual(["title", "content"]);
+        expect(request.queries[0].fields).toEqual(["title", "content"]);
         callbacks.onComplete?.();
         return new AbortController();
       });

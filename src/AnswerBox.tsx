@@ -102,7 +102,30 @@ export default function AnswerBox({
     [value, update, onSubmit],
   );
 
-  // Handle Enter key press
+  // Handle clear button click
+  const handleClear = useCallback(() => {
+    setValue("");
+    // Clear the widget state
+    dispatch({
+      type: "setWidget",
+      key: id,
+      needsQuery: false,
+      needsConfiguration: false,
+      isFacet: false,
+      rootQuery: true,
+      isSemantic: isSemanticEnabled,
+      wantResults: false,
+      query: null,
+      semanticQuery: undefined,
+      value: "",
+      submittedAt: Date.now(),
+      table: table,
+      configuration: undefined,
+      result: undefined,
+    });
+  }, [dispatch, id, isSemanticEnabled, table]);
+
+  // Handle Enter and Esc key press
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
       if (e.key === "Enter") {
@@ -115,9 +138,12 @@ export default function AnswerBox({
 
         // Update widget state and trigger query
         update(value);
+      } else if (e.key === "Escape") {
+        e.preventDefault();
+        handleClear();
       }
     },
-    [value, update, onSubmit],
+    [value, update, onSubmit, handleClear],
   );
 
   // Destroy widget from context on unmount
@@ -133,7 +159,17 @@ export default function AnswerBox({
           onKeyDown={handleKeyDown}
           placeholder={placeholder || "Ask a question..."}
         />
-        <button type="submit" disabled={!value.trim()}>
+        {value && (
+          <button
+            type="button"
+            className="react-af-answerbox-clear"
+            onClick={handleClear}
+            aria-label="Clear input"
+          >
+            ×
+          </button>
+        )}
+        <button type="submit" className="react-af-answerbox-submit" disabled={!value.trim()}>
           {buttonLabel}
         </button>
       </form>

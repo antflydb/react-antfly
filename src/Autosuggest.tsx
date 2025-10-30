@@ -16,6 +16,7 @@ export interface AutosuggestProps {
   searchValue?: string;
   onSuggestionSelect?: (hit: QueryHit) => void;
   containerRef?: React.RefObject<HTMLDivElement | null>;
+  isOpen?: boolean;
 }
 
 export default function Autosuggest({
@@ -30,6 +31,7 @@ export default function Autosuggest({
   searchValue = "",
   onSuggestionSelect,
   containerRef,
+  isOpen: isOpenProp,
 }: AutosuggestProps) {
   const isSemanticEnabled = semanticIndexes && semanticIndexes.length > 0;
   // Default returnFields to fields if not specified
@@ -52,8 +54,14 @@ export default function Autosuggest({
   }, [widget?.result?.data, limit]);
 
   // Derive isOpen from searchValue, with ability to override
+  // Priority: isOpenProp (from parent) > isOpenOverride (internal) > shouldShow (default)
   const shouldShow = searchValue.length >= minChars;
-  const isOpen = isOpenOverride !== null ? isOpenOverride : shouldShow;
+  const isOpen =
+    isOpenProp !== undefined
+      ? isOpenProp
+      : isOpenOverride !== null
+        ? isOpenOverride
+        : shouldShow;
 
   // Update widget configuration when searchValue changes
   useEffect(() => {

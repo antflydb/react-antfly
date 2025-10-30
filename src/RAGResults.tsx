@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef, ReactNode } from "react";
 import { useSharedContext } from "./SharedContext";
-import { streamRAG } from "./utils";
+import { streamRAG, resolveTable } from "./utils";
 import { ModelConfig, RAGRequest, Citation, QueryHit } from "@antfly/sdk";
 
 export interface RAGResultsProps {
@@ -78,17 +78,20 @@ export default function RAGResults({
     const answerBoxConfiguration = answerBoxWidget?.configuration;
 
     // Resolve table: prop > AnswerBox widget > default
-    const resolvedTable = table || answerBoxWidget?.table || defaultTable;
+    const widgetTable = table || answerBoxWidget?.table;
+    const resolvedTable = resolveTable(widgetTable, defaultTable);
 
     // Build the RAG request (table will be added by streamRAG)
     const ragRequest: RAGRequest = {
-      queries: [{
-        full_text_search: answerBoxQuery as Record<string, unknown> | undefined,
-        semantic_search: answerBoxSemanticQuery,
-        indexes: answerBoxConfiguration?.indexes as string[] | undefined,
-        limit: (answerBoxConfiguration?.limit as number | undefined) || 10,
-        fields: fields || [],
-      }],
+      queries: [
+        {
+          full_text_search: answerBoxQuery as Record<string, unknown> | undefined,
+          semantic_search: answerBoxSemanticQuery,
+          indexes: answerBoxConfiguration?.indexes as string[] | undefined,
+          limit: (answerBoxConfiguration?.limit as number | undefined) || 10,
+          fields: fields || [],
+        },
+      ],
       summarizer,
       system_prompt: systemPrompt,
       with_citations: withCitations,

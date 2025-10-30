@@ -13,6 +13,7 @@ export interface Widget {
     isSemantic?: boolean;
     value?: unknown;
     submittedAt?: number;
+    table?: string | string[];
     configuration?: {
         fields?: string[];
         size?: number;
@@ -31,6 +32,7 @@ export interface Widget {
 }
 export interface SharedState {
     url?: string;
+    table: string;
     listenerEffect?: (() => void) | null;
     widgets: Map<string, Widget>;
     headers?: Record<string, string>;
@@ -49,6 +51,7 @@ export type SharedAction = {
     isSemantic?: boolean;
     value?: unknown;
     submittedAt?: number;
+    table?: string | string[];
     configuration?: Widget["configuration"];
     result?: Widget["result"];
 } | {
