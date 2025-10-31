@@ -6,6 +6,7 @@ export interface RAGResultsProps {
     summarizer: ModelConfig;
     systemPrompt?: string;
     table?: string;
+    filterQuery?: Record<string, unknown>;
     /**
      * Custom render function for the summary text. Allows developers to bring their own
      * markdown renderer (e.g., streamdown.ai, react-markdown, marked) and citation interaction.
@@ -45,5 +46,5 @@ export interface RAGResultsProps {
     showHits?: boolean;
     fields?: string[];
 }
-export default function RAGResults({ id, answerBoxId, summarizer, systemPrompt, table, renderSummary, showHits, fields, }: RAGResultsProps): import("react/jsx-runtime").JSX.Element;
+export default function RAGResults({ id, answerBoxId, summarizer, systemPrompt, table, filterQuery, renderSummary, showHits, fields, }: RAGResultsProps): import("react/jsx-runtime").JSX.Element;
 //# sourceMappingURL=RAGResults.d.ts.map

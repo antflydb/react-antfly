@@ -11,6 +11,7 @@ export interface AnswerBoxProps {
   semanticIndexes?: string[];
   limit?: number;
   table?: string; // Optional table override (Phase 1: single table only)
+  filterQuery?: Record<string, unknown>; // Filter query to constrain search results
   children?: ReactNode;
   buttonLabel?: string;
   onSubmit?: (value: string) => void;
@@ -25,6 +26,7 @@ export default function AnswerBox({
   semanticIndexes,
   limit,
   table,
+  filterQuery,
   children,
   buttonLabel = "Submit",
   onSubmit,
@@ -69,13 +71,14 @@ export default function AnswerBox({
         value: v,
         submittedAt: Date.now(), // Timestamp to track when this query was submitted
         table: table,
+        filterQuery: filterQuery,
         configuration: isSemanticEnabled
           ? { indexes: semanticIndexes || [], limit: limit || 10 }
           : undefined,
         result: undefined,
       });
     },
-    [dispatch, id, isSemanticEnabled, customQuery, queryFromValue, semanticIndexes, limit, table],
+    [dispatch, id, isSemanticEnabled, customQuery, queryFromValue, semanticIndexes, limit, table, filterQuery],
   );
 
   // Handle input changes (only update local state, don't trigger query)
@@ -120,10 +123,11 @@ export default function AnswerBox({
       value: "",
       submittedAt: Date.now(),
       table: table,
+      filterQuery: filterQuery,
       configuration: undefined,
       result: undefined,
     });
-  }, [dispatch, id, isSemanticEnabled, table]);
+  }, [dispatch, id, isSemanticEnabled, table, filterQuery]);
 
   // Handle Enter and Esc key press
   const handleKeyDown = useCallback(

@@ -607,4 +607,123 @@ describe("Integration Tests", () => {
       });
     });
   });
+
+  describe("filterQuery integration", () => {
+    it("should filter search results using filterQuery prop", async () => {
+      const msearchSpy = vi.spyOn(utils, "multiquery").mockResolvedValue({
+        responses: [
+          {
+            status: 200,
+            took: 10,
+            hits: { hits: [], total: 0 },
+          },
+        ],
+      });
+
+      const filterQuery = { match: "active", field: "status" };
+
+      const { container } = render(
+        <TestWrapper>
+          <SearchBox id="search" fields={["title"]} filterQuery={filterQuery} />
+          <Results
+            id="results"
+            filterQuery={filterQuery}
+            items={(data) => <div>Results: {data.length}</div>}
+          />
+        </TestWrapper>,
+      );
+
+      const input = container.querySelector("input") as HTMLInputElement;
+      await userEvent.type(input, "test");
+
+      await waitFor(() => {
+        expect(msearchSpy).toHaveBeenCalled();
+        const lastCall = msearchSpy.mock.calls[msearchSpy.mock.calls.length - 1];
+        const queries = lastCall[1];
+        // Results widget should have filterQuery
+        expect(queries[0].query.filter_query).toEqual(filterQuery);
+      });
+
+      msearchSpy.mockRestore();
+    });
+
+    it("should work with SearchBox, Autosuggest, and Results all having filterQuery", async () => {
+      const filterQuery = { match: "published", field: "state" };
+
+      const { container } = render(
+        <TestWrapper>
+          <SearchBox id="search" fields={["title"]} filterQuery={filterQuery}>
+            <Autosuggest fields={["title__keyword"]} minChars={2} filterQuery={filterQuery} />
+          </SearchBox>
+          <Results
+            id="results"
+            filterQuery={filterQuery}
+            items={(data) => <div>Found {data.length} results</div>}
+          />
+        </TestWrapper>,
+      );
+
+      const input = container.querySelector("input") as HTMLInputElement;
+      await userEvent.type(input, "test query");
+
+      // Should render without errors
+      expect(container.querySelector(".react-af-results")).toBeTruthy();
+    });
+
+    it("should handle different filterQuery values for different components", async () => {
+      const searchFilter = { match: "active", field: "status" };
+      const resultsFilter = {
+        conjuncts: [
+          { match: "active", field: "status" },
+          { min: 100, field: "price" },
+        ],
+      };
+
+      const { container } = render(
+        <TestWrapper>
+          <SearchBox id="search" fields={["title"]} filterQuery={searchFilter} />
+          <Results
+            id="results"
+            filterQuery={resultsFilter}
+            items={(data) => <div>Results: {data.length}</div>}
+          />
+        </TestWrapper>,
+      );
+
+      const input = container.querySelector("input") as HTMLInputElement;
+      await userEvent.type(input, "product");
+
+      expect(container).toBeTruthy();
+    });
+
+    it("should handle filterQuery with semantic search", async () => {
+      const filterQuery = { match: "active", field: "status" };
+
+      const { container } = render(
+        <TestWrapper>
+          <SearchBox
+            id="search"
+            semanticIndexes={["vector-index"]}
+            filterQuery={filterQuery}
+          >
+            <Autosuggest
+              semanticIndexes={["suggest-index"]}
+              minChars={2}
+              filterQuery={filterQuery}
+            />
+          </SearchBox>
+          <Results
+            id="results"
+            filterQuery={filterQuery}
+            items={(data) => <div>Results: {data.length}</div>}
+          />
+        </TestWrapper>,
+      );
+
+      const input = container.querySelector("input") as HTMLInputElement;
+      await userEvent.type(input, "semantic search");
+
+      expect(container).toBeTruthy();
+    });
+  });
 });

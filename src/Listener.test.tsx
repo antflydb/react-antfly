@@ -524,4 +524,118 @@ describe("Listener", () => {
       expect(container).toBeTruthy();
     });
   });
+
+  describe('filterQuery support', () => {
+    it('should pass filterQuery to multiquery for Results widget', async () => {
+      const msearchSpy = vi.spyOn(await import('./utils'), 'multiquery').mockResolvedValue({
+        responses: [
+          {
+            status: 200,
+            took: 10,
+            hits: { hits: [], total: 0 },
+          },
+        ],
+      });
+
+      const filterQuery = { match: 'active', field: 'status' };
+
+      const { container } = render(
+        <TestWrapper>
+          <SearchBox id="search" fields={["title"]} />
+          <Results
+            id="results"
+            filterQuery={filterQuery}
+            items={(data) => <div>Results: {data.length}</div>}
+          />
+        </TestWrapper>,
+      );
+
+      const input = container.querySelector('input') as HTMLInputElement;
+      await userEvent.type(input, 'test');
+
+      await waitFor(() => {
+        expect(msearchSpy).toHaveBeenCalled();
+        const lastCall = msearchSpy.mock.calls[msearchSpy.mock.calls.length - 1];
+        const queries = lastCall[1];
+        expect(queries[0].query.filter_query).toEqual(filterQuery);
+      });
+
+      msearchSpy.mockRestore();
+    });
+
+    it('should pass filterQuery to multiquery for SearchBox widget', async () => {
+      const msearchSpy = vi.spyOn(await import('./utils'), 'multiquery').mockResolvedValue({
+        responses: [
+          {
+            status: 200,
+            took: 10,
+            hits: { hits: [], total: 0 },
+          },
+        ],
+      });
+
+      const filterQuery = { match: 'published', field: 'state' };
+
+      const { container } = render(
+        <TestWrapper>
+          <SearchBox id="search" fields={["title"]} filterQuery={filterQuery} />
+          <Results
+            id="results"
+            items={(data) => <div>Results: {data.length}</div>}
+          />
+        </TestWrapper>,
+      );
+
+      const input = container.querySelector('input') as HTMLInputElement;
+      await userEvent.type(input, 'test');
+
+      await waitFor(() => {
+        expect(msearchSpy).toHaveBeenCalled();
+      });
+
+      msearchSpy.mockRestore();
+    });
+
+    it('should handle complex filterQuery with conjuncts', async () => {
+      const msearchSpy = vi.spyOn(await import('./utils'), 'multiquery').mockResolvedValue({
+        responses: [
+          {
+            status: 200,
+            took: 10,
+            hits: { hits: [], total: 0 },
+          },
+        ],
+      });
+
+      const filterQuery = {
+        conjuncts: [
+          { match: 'active', field: 'status' },
+          { min: 100, max: 500, field: 'price' }
+        ]
+      };
+
+      const { container } = render(
+        <TestWrapper>
+          <SearchBox id="search" fields={["title"]} />
+          <Results
+            id="results"
+            filterQuery={filterQuery}
+            items={(data) => <div>Results: {data.length}</div>}
+          />
+        </TestWrapper>,
+      );
+
+      const input = container.querySelector('input') as HTMLInputElement;
+      await userEvent.type(input, 'test');
+
+      await waitFor(() => {
+        expect(msearchSpy).toHaveBeenCalled();
+        const lastCall = msearchSpy.mock.calls[msearchSpy.mock.calls.length - 1];
+        const queries = lastCall[1];
+        expect(queries[0].query.filter_query).toEqual(filterQuery);
+      });
+
+      msearchSpy.mockRestore();
+    });
+  });
 });

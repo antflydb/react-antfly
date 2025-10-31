@@ -705,4 +705,86 @@ describe("Autosuggest", () => {
       expect(container).toBeTruthy();
     });
   });
+
+  describe('filterQuery prop', () => {
+    it('should accept filterQuery prop', () => {
+      const filterQuery = { match: 'active', field: 'status' };
+      const { container } = render(
+        <TestWrapper>
+          <Autosuggest
+            fields={['title__keyword']}
+            searchValue="test"
+            minChars={1}
+            filterQuery={filterQuery}
+          />
+        </TestWrapper>,
+      );
+
+      expect(container).toBeTruthy();
+    });
+
+    it('should work without filterQuery prop', () => {
+      const { container } = render(
+        <TestWrapper>
+          <Autosuggest fields={['title__keyword']} searchValue="test" minChars={1} />
+        </TestWrapper>,
+      );
+
+      expect(container).toBeTruthy();
+    });
+
+    it('should handle complex filterQuery with conjuncts', () => {
+      const filterQuery = {
+        conjuncts: [
+          { match: 'active', field: 'status' },
+          { min: 0, max: 1000, field: 'price' }
+        ]
+      };
+      const { container } = render(
+        <TestWrapper>
+          <Autosuggest
+            fields={['title__keyword', 'name__2gram']}
+            searchValue="prod"
+            minChars={1}
+            filterQuery={filterQuery}
+          />
+        </TestWrapper>,
+      );
+
+      expect(container).toBeTruthy();
+    });
+
+    it('should work with filterQuery and semantic indexes', () => {
+      const filterQuery = { match: 'active', field: 'status' };
+      const { container } = render(
+        <TestWrapper>
+          <Autosuggest
+            semanticIndexes={['vector-index']}
+            searchValue="test query"
+            minChars={1}
+            filterQuery={filterQuery}
+          />
+        </TestWrapper>,
+      );
+
+      expect(container).toBeTruthy();
+    });
+
+    it('should not show suggestions when below minChars even with filterQuery', () => {
+      const filterQuery = { match: 'active', field: 'status' };
+      const { container } = render(
+        <TestWrapper>
+          <Autosuggest
+            fields={['title__keyword']}
+            searchValue="a"
+            minChars={2}
+            filterQuery={filterQuery}
+          />
+        </TestWrapper>,
+      );
+
+      const suggestions = container.querySelector('.react-af-autosuggest');
+      expect(suggestions).toBeNull();
+    });
+  });
 });

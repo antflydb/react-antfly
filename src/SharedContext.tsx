@@ -15,6 +15,7 @@ export interface Widget {
   value?: unknown;
   submittedAt?: number; // Timestamp of when this widget was last submitted
   table?: string | string[]; // Table override (single or multi-table support)
+  filterQuery?: unknown; // Filter query to constrain search results
   configuration?: {
     fields?: string[];
     size?: number;
@@ -54,6 +55,7 @@ export type SharedAction =
       value?: unknown;
       submittedAt?: number;
       table?: string | string[]; // Table override
+      filterQuery?: unknown; // Filter query to constrain search results
       configuration?: Widget["configuration"];
       result?: Widget["result"];
     }

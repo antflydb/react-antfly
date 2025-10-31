@@ -8,9 +8,10 @@ export interface AnswerBoxProps {
     semanticIndexes?: string[];
     limit?: number;
     table?: string;
+    filterQuery?: Record<string, unknown>;
     children?: ReactNode;
     buttonLabel?: string;
     onSubmit?: (value: string) => void;
 }
-export default function AnswerBox({ customQuery, fields, id, initialValue, placeholder, semanticIndexes, limit, table, children, buttonLabel, onSubmit, }: AnswerBoxProps): import("react/jsx-runtime").JSX.Element;
+export default function AnswerBox({ customQuery, fields, id, initialValue, placeholder, semanticIndexes, limit, table, filterQuery, children, buttonLabel, onSubmit, }: AnswerBoxProps): import("react/jsx-runtime").JSX.Element;
 //# sourceMappingURL=AnswerBox.d.ts.map

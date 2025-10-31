@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef, ReactNode, useMemo, useId } from "react";
 import { useSharedContext } from "./SharedContext";
 import { QueryHit } from "@antfly/sdk";
-import { disjunctsFrom } from "./utils";
+import { disjunctsFrom, conjunctsFrom } from "./utils";
 
 export interface AutosuggestProps {
   fields?: string[];
@@ -12,6 +12,7 @@ export interface AutosuggestProps {
   customQuery?: (value?: string, fields?: string[]) => unknown;
   semanticIndexes?: string[];
   table?: string; // Optional table override (Phase 1: single table only)
+  filterQuery?: Record<string, unknown>; // Filter query to constrain autocomplete suggestions
   // Internal props passed from SearchBox
   searchValue?: string;
   onSuggestionSelect?: (hit: QueryHit) => void;
@@ -28,6 +29,7 @@ export default function Autosuggest({
   customQuery,
   semanticIndexes,
   table,
+  filterQuery,
   searchValue = "",
   onSuggestionSelect,
   containerRef,
@@ -87,6 +89,30 @@ export default function Autosuggest({
         customQuery !== undefined ||
         (Array.isArray(fields) && fields.length > 0);
 
+      // Build the base query
+      let baseQuery: unknown = null;
+      if (isSemanticEnabled) {
+        baseQuery = customQuery ? customQuery() : null;
+      } else if (customQuery) {
+        baseQuery = customQuery(searchValue, fields);
+      } else if (Array.isArray(fields) && fields.length > 0) {
+        baseQuery = disjunctsFrom(
+          fields.map((field) => {
+            // TODO (ajr) Do we want match_phrase or make a match_phrase_prefix?
+            // if (field.includes(" ")) return {};
+            if (field.endsWith("__keyword")) return { prefix: searchValue, field };
+            if (field.endsWith("__2gram")) return { match: searchValue, field };
+            return { match: searchValue, field };
+          }),
+        );
+      }
+
+      // Wrap with filterQuery if provided (for non-semantic queries)
+      const finalQuery =
+        !isSemanticEnabled && baseQuery && filterQuery
+          ? conjunctsFrom(new Map([["filter", filterQuery], ["query", baseQuery]]))
+          : baseQuery;
+
       // Register widget to fetch its own query results
       dispatch({
         type: "setWidget",
@@ -98,25 +124,10 @@ export default function Autosuggest({
         isAutosuggest: true,
         isSemantic: isSemanticEnabled,
         wantResults: canQuery,
-        query: isSemanticEnabled
-          ? customQuery
-            ? customQuery()
-            : null
-          : customQuery
-            ? customQuery(searchValue, fields)
-            : Array.isArray(fields) && fields.length > 0
-              ? disjunctsFrom(
-                  fields.map((field) => {
-                    // TODO (ajr) Do we want match_phrase or make a match_phrase_prefix?
-                    // if (field.includes(" ")) return {};
-                    if (field.endsWith("__keyword")) return { prefix: searchValue, field };
-                    if (field.endsWith("__2gram")) return { match: searchValue, field };
-                    return { match: searchValue, field };
-                  }),
-                )
-              : null,
+        query: finalQuery,
         semanticQuery: isSemanticEnabled ? searchValue : undefined,
         table: table,
+        filterQuery: filterQuery,
         configuration: canQuery
           ? isSemanticEnabled
             ? {
@@ -163,6 +174,7 @@ export default function Autosuggest({
     effectiveReturnFields,
     semanticIndexes,
     table,
+    filterQuery,
     shouldShow,
   ]);
 

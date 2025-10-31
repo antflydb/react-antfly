@@ -9,6 +9,7 @@ export interface RAGResultsProps {
   summarizer: ModelConfig;
   systemPrompt?: string;
   table?: string; // Optional table override - auto-inherits from AnswerBox if not specified
+  filterQuery?: Record<string, unknown>; // Filter query to constrain RAG retrieval
   /**
    * Custom render function for the summary text. Allows developers to bring their own
    * markdown renderer (e.g., streamdown.ai, react-markdown, marked) and citation interaction.
@@ -55,6 +56,7 @@ export default function RAGResults({
   summarizer,
   systemPrompt,
   table,
+  filterQuery,
   renderSummary,
   showHits = false,
   fields,
@@ -115,6 +117,7 @@ export default function RAGResults({
           indexes: answerBoxConfiguration?.indexes as string[] | undefined,
           limit: (answerBoxConfiguration?.limit as number | undefined) || 10,
           fields: fields || [],
+          filter_query: filterQuery,
         },
       ],
       summarizer,
@@ -180,6 +183,7 @@ export default function RAGResults({
     summarizer,
     systemPrompt,
     fields,
+    filterQuery,
   ]);
 
   // Register this component as a widget (for consistency with other components)

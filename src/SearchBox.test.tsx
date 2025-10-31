@@ -427,4 +427,60 @@ describe('SearchBox', () => {
       expect(container).toBeTruthy();
     });
   });
+
+  describe('filterQuery prop', () => {
+    it('should accept filterQuery prop', () => {
+      const filterQuery = { match: 'active', field: 'status' };
+      const { container } = render(
+        <TestWrapper>
+          <SearchBox id="test-search" fields={['title']} filterQuery={filterQuery} />
+        </TestWrapper>
+      );
+
+      expect(container).toBeTruthy();
+      const input = container.querySelector('input');
+      expect(input).toBeTruthy();
+    });
+
+    it('should work without filterQuery prop', () => {
+      const { container } = render(
+        <TestWrapper>
+          <SearchBox id="test-search" fields={['title']} />
+        </TestWrapper>
+      );
+
+      expect(container).toBeTruthy();
+    });
+
+    it('should handle complex filterQuery with conjuncts', () => {
+      const filterQuery = {
+        conjuncts: [
+          { match: 'active', field: 'status' },
+          { min: 100, field: 'price' }
+        ]
+      };
+      const { container } = render(
+        <TestWrapper>
+          <SearchBox id="test-search" fields={['title']} filterQuery={filterQuery} />
+        </TestWrapper>
+      );
+
+      expect(container).toBeTruthy();
+    });
+
+    it('should work with filterQuery and semantic search', () => {
+      const filterQuery = { match: 'active', field: 'status' };
+      const { container } = render(
+        <TestWrapper>
+          <SearchBox
+            id="test-search"
+            semanticIndexes={['vector-index']}
+            filterQuery={filterQuery}
+          />
+        </TestWrapper>
+      );
+
+      expect(container).toBeTruthy();
+    });
+  });
 });

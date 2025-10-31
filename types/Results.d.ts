@@ -10,6 +10,7 @@ export interface ResultsProps {
     sort?: unknown;
     fields?: string[];
     table?: string;
+    filterQuery?: Record<string, unknown>;
 }
-export default function Results({ itemsPerPage, initialPage, pagination, stats, items, id, sort, fields, table, }: ResultsProps): import("react/jsx-runtime").JSX.Element;
+export default function Results({ itemsPerPage, initialPage, pagination, stats, items, id, sort, fields, table, filterQuery, }: ResultsProps): import("react/jsx-runtime").JSX.Element;
 //# sourceMappingURL=Results.d.ts.map

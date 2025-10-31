@@ -189,18 +189,26 @@ export default function Listener({ children, onChange }: ListenerProps) {
                 // Resolve table for this widget
                 const tableName = resolveTable(r.table, table);
 
+                // Build the query object
+                const queryObj: Record<string, unknown> = {
+                  table: tableName,
+                  semantic_search: semanticQuery,
+                  indexes: semanticQuery ? indexes : undefined,
+                  full_text_search: conjunctsFrom(filteredQueries),
+                  limit: itemsPerPage,
+                  offset: (page - 1) * itemsPerPage,
+                  order_by: sort,
+                };
+                if (config.fields) {
+                  queryObj._source = config.fields;
+                }
+                if (r.filterQuery) {
+                  queryObj.filter_query = r.filterQuery;
+                }
+
                 // If there is no indexes, use the default one.
                 multiqueryData.push({
-                  query: {
-                    table: tableName,
-                    semantic_search: semanticQuery,
-                    indexes: semanticQuery ? indexes : undefined,
-                    full_text_search: conjunctsFrom(filteredQueries),
-                    limit: itemsPerPage,
-                    offset: (page - 1) * itemsPerPage,
-                    order_by: sort,
-                    ...(config.fields && { _source: config.fields }),
-                  },
+                  query: queryObj,
                   data: (result: QueryResult) => result.hits?.hits || [],
                   facetData: () => [],
                   total: (result: QueryResult) => result.hits?.total || 0,
@@ -271,7 +279,7 @@ export default function Listener({ children, onChange }: ListenerProps) {
                       ? conjunctsFrom(new Map([...facetOnlyQueries, [id, f.query]]))
                       : conjunctsFrom(baseQueries);
 
-                  return {
+                  const facetQueryObj: Record<string, unknown> = {
                     table: tableName,
                     semantic_search: semanticQuery,
                     indexes: semanticQuery ? indexes : undefined,
@@ -279,6 +287,11 @@ export default function Listener({ children, onChange }: ListenerProps) {
                     full_text_search: fullTextQuery,
                     facets: result,
                   };
+                  if (f.filterQuery) {
+                    facetQueryObj.filter_query = f.filterQuery;
+                  }
+
+                  return facetQueryObj;
                 }
                 multiqueryData.push({
                   query: aggsFromFields(),

@@ -476,4 +476,69 @@ describe('AnswerBox', () => {
       expect(container).toBeTruthy();
     });
   });
+
+  describe('filterQuery prop', () => {
+    it('should accept filterQuery prop', () => {
+      const filterQuery = { match: 'active', field: 'status' };
+      const { container } = render(
+        <TestWrapper>
+          <AnswerBox id="test-answer" fields={['content']} filterQuery={filterQuery} />
+        </TestWrapper>
+      );
+
+      expect(container).toBeTruthy();
+      const input = container.querySelector('input');
+      expect(input).toBeTruthy();
+    });
+
+    it('should work without filterQuery prop', () => {
+      const { container } = render(
+        <TestWrapper>
+          <AnswerBox id="test-answer" fields={['content']} />
+        </TestWrapper>
+      );
+
+      expect(container).toBeTruthy();
+    });
+
+    it('should handle complex filterQuery', async () => {
+      const filterQuery = {
+        conjuncts: [
+          { match: 'active', field: 'status' },
+          { match: 'published', field: 'state' }
+        ]
+      };
+      const { container } = render(
+        <TestWrapper>
+          <AnswerBox id="test-answer" fields={['content']} filterQuery={filterQuery} />
+        </TestWrapper>
+      );
+
+      const input = container.querySelector('input') as HTMLInputElement;
+      const submitButton = container.querySelector('button[type="submit"]') as HTMLButtonElement;
+
+      await userEvent.type(input, 'test question');
+      await userEvent.click(submitButton);
+
+      expect(container).toBeTruthy();
+    });
+
+    it('should maintain filterQuery after clear', async () => {
+      const filterQuery = { match: 'active', field: 'status' };
+      const { container } = render(
+        <TestWrapper>
+          <AnswerBox id="test-answer" fields={['content']} filterQuery={filterQuery} />
+        </TestWrapper>
+      );
+
+      const input = container.querySelector('input') as HTMLInputElement;
+      await userEvent.type(input, 'test');
+
+      const clearButton = container.querySelector('.react-af-answerbox-clear') as HTMLButtonElement;
+      expect(clearButton).toBeTruthy();
+
+      await userEvent.click(clearButton);
+      expect(input.value).toBe('');
+    });
+  });
 });
