@@ -1,4 +1,4 @@
-import { QueryHit, AntflyClient, QueryRequest, QueryResponses, RAGRequest, RAGResult, Citation } from '@antfly/sdk';
+import { QueryHit, AntflyClient, QueryRequest, QueryResponses, RAGRequest, RAGResult } from '@antfly/sdk';
 export interface MultiqueryRequest {
     query: QueryRequest;
 }
@@ -25,7 +25,6 @@ export declare function resolveTable(widgetTable: string | string[] | undefined,
 export interface RAGCallbacks {
     onHit?: (hit: QueryHit) => void;
     onSummary?: (chunk: string) => void;
-    onCitation?: (citation: Citation) => void;
     onComplete?: () => void;
     onError?: (error: Error | string) => void;
     onRAGResult?: (result: RAGResult) => void;

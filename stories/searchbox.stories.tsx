@@ -18,7 +18,7 @@ export const WithDefaultQuery = () => {
         items={(data) =>
           data.map(({ _source: s, _id }) => (
             <div key={_id}>
-              {s.TICO} - {s.AUTR}
+              {String(s?.TICO)} - {String(s?.AUTR)}
             </div>
           ))
         }
@@ -36,7 +36,7 @@ export const WithCustomQuery = () => {
       <SearchBox id="main" customQuery={customQuery} />
       <Results
         id="result"
-        items={(data) => data.map(({ _source: s, _id }) => <div key={_id}>{s.TICO}</div>)}
+        items={(data) => data.map(({ _source: s, _id }) => <div key={_id}>{String(s?.TICO)}</div>)}
         pagination={() => <></>}
       />
     </Antfly>
@@ -58,7 +58,7 @@ export const WithAutosuggest = () => {
         items={(data) =>
           data.map(({ _source: s, _id }) => (
             <div key={_id}>
-              {s.TICO} - {s.AUTR}
+              {String(s?.TICO)} - {String(s?.AUTR)}
             </div>
           ))
         }
@@ -83,7 +83,7 @@ export const WithAutosuggestMultipleFields = () => {
         items={(data) =>
           data.map(({ _source: s, _id }) => (
             <div key={_id}>
-              {s.TICO} - {s.AUTR}
+              {String(s?.TICO)} - {String(s?.AUTR)}
             </div>
           ))
         }
@@ -111,10 +111,10 @@ export const WithAutosuggestCustomRenderer = () => {
       <SearchBox id="main" fields={["AUTR"]}>
         <Autosuggest
           fields={["AUTR"]}
-          renderSuggestion={(term, count) => (
+          renderSuggestion={(hit: { _source?: Record<string, unknown>; _score: number }) => (
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <strong>{term}</strong>
-              <em>({count} results)</em>
+              <strong>{String(hit._source?.AUTR)}</strong>
+              <em>Score: {hit._score}</em>
             </div>
           )}
         />
@@ -124,7 +124,7 @@ export const WithAutosuggestCustomRenderer = () => {
         items={(data) =>
           data.map(({ _source: s, _id }) => (
             <div key={_id}>
-              {s.TICO} - {s.AUTR}
+              {String(s?.TICO)} - {String(s?.AUTR)}
             </div>
           ))
         }

@@ -12,9 +12,9 @@ export const Active = () => {
   return (
     <Antfly url={url} table={tableName}>
       <h1>Display active filters</h1>
-      <pre>{`<ActiveFilters id="active-filters" />`}</pre>
+      <pre>{`<ActiveFilters />`}</pre>
       Active Filters:
-      <ActiveFilters id="af" />
+      <ActiveFilters />
       <SearchBox id="main" fields={["TICO"]} initialValue={"chemin"} />
       <Facet id="autr" fields={["AUTR"]} initialValue={["auteur inconnu"]} />
       <Results
@@ -22,7 +22,7 @@ export const Active = () => {
         items={(data) =>
           data.map(({ _source: s, _id }) => (
             <div key={_id}>
-              {s.TICO} - {s.AUTR}
+              {String(s?.TICO)} - {String(s?.AUTR)}
             </div>
           ))
         }
@@ -40,13 +40,13 @@ export const ActiveFilterChangeComponentOrder = () => {
       Recherche:
       <SearchBox id="main" fields={["TICO"]} initialValue={"chemin"} />
       Filtres:
-      <ActiveFilters id="af" />
+      <ActiveFilters />
       <Results
         id="result"
         items={(data) =>
           data.map(({ _source: s, _id }) => (
             <div key={_id}>
-              {s.TICO} - {s.AUTR}
+              {String(s?.TICO)} - {String(s?.AUTR)}
             </div>
           ))
         }

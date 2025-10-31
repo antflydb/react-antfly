@@ -15,7 +15,7 @@ export const Vanilla = () => {
         items={(data) =>
           data.map(({ _source, _id, _score }) => (
             <div key={_id}>
-              <b>{_source.TICO}</b> - score: {_score} - id: {_id}
+              <b>{String(_source?.TICO)}</b> - score: {String(_score)} - id: {_id}
             </div>
           ))
         }
@@ -32,7 +32,7 @@ export const WithCustomPagination = () => {
         items={(data) =>
           data.map(({ _source, _id, _score }) => (
             <div key={_id}>
-              <b>{_source.TICO}</b> - score: {_score} - id: {_id}
+              <b>{String(_source?.TICO)}</b> - score: {String(_score)} - id: {_id}
             </div>
           ))
         }
@@ -54,7 +54,7 @@ export const WithCustomStats = () => {
         items={(data) =>
           data.map(({ _source, _id, _score }) => (
             <div key={_id}>
-              <b>{_source.TICO}</b> - score: {_score} - id: {_id}
+              <b>{String(_source?.TICO)}</b> - score: {String(_score)} - id: {_id}
             </div>
           ))
         }
@@ -92,7 +92,7 @@ export const SortableDmisDesc = () => {
         items={(data) =>
           data.map(({ _source, _id }) => (
             <div key={_id}>
-              {_source.DMIS} - {_source.TICO.substr(0, 50)}
+              {String(_source?.DMIS)} - {String(_source?.TICO)?.substr(0, 50)}
             </div>
           ))
         }

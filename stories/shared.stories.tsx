@@ -1,5 +1,6 @@
 import React from "react";
 import { Antfly, SearchBox, Results, CustomWidget } from "../src";
+import type { SharedState } from "../src";
 import { url, tableName } from "./utils";
 
 export default {
@@ -7,10 +8,10 @@ export default {
   component: CustomWidget,
 };
 
-function MyComponent({ ctx }) {
+function MyComponent({ ctx }: { ctx?: SharedState }) {
   let query;
-  if (ctx.widgets.get("main")) {
-    query = ctx.widgets.get("main").query;
+  if (ctx?.widgets.get("main")) {
+    query = ctx?.widgets.get("main")?.query;
   } else {
     query = "";
   }
@@ -22,11 +23,11 @@ export const Active = () => {
     <Antfly url={url} table={tableName}>
       <SearchBox id="main" fields={["AUTR"]} />
       <CustomWidget>
-        <MyComponent />
+        <MyComponent ctx={{} as SharedState} />
       </CustomWidget>
       <Results
         id="result"
-        items={(data) => data.map(({ _source: s, _id }) => <div key={_id}>{s.TICO}</div>)}
+        items={(data) => data.map(({ _source: s, _id }) => <div key={_id}>{String(s?.TICO)}</div>)}
         pagination={() => <></>}
       />
     </Antfly>

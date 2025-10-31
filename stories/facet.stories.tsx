@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Antfly, SearchBox, Results, Facet } from "../src";
+import { Antfly, SearchBox, Results, Facet, FacetProps } from "../src";
 import { url, tableName } from "./utils";
 
 export default {
@@ -7,7 +7,7 @@ export default {
   component: Facet,
 };
 
-function CollapsableFacet({ title, ...rest }) {
+function CollapsableFacet({ title, ...rest }: { title: string } & FacetProps) {
   const [collapsed, setCollapsed] = useState(true);
 
   function FacetWrapper() {
@@ -37,13 +37,13 @@ export const Collapsable = () => {
   return (
     <Antfly url={url} table={tableName}>
       <SearchBox id="main" fields={["TICO"]} />
-      <CollapsableFacet id="autr" fields={["AUTR"]} />
+      <CollapsableFacet title="Author" id="autr" fields={["AUTR"]} />
       <Results
         id="result"
         items={(data) =>
           data.map(({ _source: s, _id }) => (
             <div key={_id}>
-              {s.TICO} - {s.AUTR}
+              {String(s?.TICO)} - {String(s?.AUTR)}
             </div>
           ))
         }
@@ -68,7 +68,7 @@ export const Customized = () => {
         items={(data) =>
           data.map(({ _source, _id, _score }) => (
             <div key={_id}>
-              {_source.TICO} - score: {_score}
+              {String(_source?.TICO)} - score: {_score}
             </div>
           ))
         }
@@ -91,7 +91,7 @@ export const ModifyFilterValue = () => {
         items={(data) =>
           data.map(({ _source, _id, _score }) => (
             <div key={_id}>
-              {_source.TICO} - score: {_score}
+              {String(_source?.TICO)} - score: {_score}
             </div>
           ))
         }
@@ -112,9 +112,9 @@ export const FacetWithCustomRenderItems = () => {
             <div
               style={{ color: isChecked(item) ? "green" : "black" }}
               onClick={() => handleChange(item, !isChecked(item))}
-              key={item.key}
+              key={item.term}
             >
-              -`{">"}` {item.key}
+              -`{">"}` {item.term}
             </div>
           ));
         }}
@@ -124,7 +124,7 @@ export const FacetWithCustomRenderItems = () => {
         items={(data) =>
           data.map(({ _source: s, _id }) => (
             <div key={_id}>
-              {s.TICO} - {s.AUTR}
+              {String(s?.TICO)} - {String(s?.AUTR)}
             </div>
           ))
         }

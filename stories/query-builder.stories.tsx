@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Antfly, QueryBuilder, Results, fromUrlQueryString, toUrlQueryString } from "../src";
+import { Antfly, QueryBuilder, Results, fromUrlQueryString, toUrlQueryString, QueryBuilderRule } from "../src";
 import { url, tableName } from "./utils";
 
 export default {
@@ -13,7 +13,7 @@ export const Simple = () => {
       <QueryBuilder id="qb" fields={[{ value: "AUTR", text: "Author" }]} />
       <Results
         id="result"
-        items={(data) => data.map(({ _source, _id }) => <div key={_id}>{_source.TICO}</div>)}
+        items={(data) => data.map(({ _source, _id }) => <div key={_id}>{String(_source?.TICO)}</div>)}
       />
     </Antfly>
   );
@@ -25,24 +25,27 @@ export const AutoComplete = () => {
       <QueryBuilder id="qb" fields={[{ value: "AUTR", text: "Author" }]} autoComplete={true} />
       <Results
         id="result"
-        items={(data) => data.map(({ _source, _id }) => <div key={_id}>{_source.TICO}</div>)}
+        items={(data) => data.map(({ _source, _id }) => <div key={_id}>{String(_source?.TICO)}</div>)}
       />
     </Antfly>
   );
 };
 
 export const CustomQueryAndOperators = () => {
-  const regexify = (v) =>
+  const regexify = (v: string) =>
     `.*${v
       .replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&")
-      .replace(/([A-Z])/gi, (_w, x) => `[${x.toUpperCase()}${x.toLowerCase()}]`)}.*`;
+      .replace(/([A-Z])/gi, (_w: string, x: string) => `[${x.toUpperCase()}${x.toLowerCase()}]`)}.*`;
   const operators = [
     {
       value: "==",
       text: "contains (case insensitive)",
       useInput: true,
-      query: (key, value) => (value ? { field: key, regexp: regexify(value) } : null),
-      suggestionQuery: (field, value) => {
+      query: (key: string | string[], value?: string) => {
+        const field = Array.isArray(key) ? key[0] : key;
+        return value ? { field, regexp: regexify(value) } : null;
+      },
+      suggestionQuery: (field: string, value: string) => {
         return {
           query: { field, regexp: regexify(value) },
           size: 10,
@@ -60,7 +63,7 @@ export const CustomQueryAndOperators = () => {
       />
       <Results
         id="result"
-        items={(data) => data.map(({ _source, _id }) => <div key={_id}>{_source.TICO}</div>)}
+        items={(data) => data.map(({ _source, _id }) => <div key={_id}>{String(_source?.TICO)}</div>)}
       />
     </Antfly>
   );
@@ -73,7 +76,8 @@ export const MultipleFields = () => {
         id="qb"
         fields={[
           { value: "AUTR", text: "Author" },
-          { value: ["AUTR", "TICO"], text: "Author + TICO" },
+          "AUTR",
+          "TICO",
         ]}
         autoComplete={true}
       />
@@ -82,7 +86,7 @@ export const MultipleFields = () => {
         items={(data) =>
           data.map(({ _source, _id }) => (
             <div key={_id}>
-              {_source.AUTR} - {_source.TICO}
+              {String(_source?.AUTR)} - {String(_source?.TICO)}
             </div>
           ))
         }
@@ -101,13 +105,14 @@ export const ListenChangesWithUrlParams = () => {
   return (
     <Antfly
       url={url}
+      table={tableName}
       onChange={(values) => {
         setQueryString(toUrlQueryString(values));
       }}
     >
       <div style={{ wordBreak: "break-all" }}>Params: {queryString}</div>
       <QueryBuilder
-        initialValue={initialValues.get("qb")}
+        initialValue={initialValues.get("qb") as QueryBuilderRule[] | undefined}
         id="qb"
         fields={[
           { value: "x", text: "Should not be selected" },
@@ -116,7 +121,7 @@ export const ListenChangesWithUrlParams = () => {
       />
       <Results
         id="result"
-        items={(data) => data.map(({ _source, _id }) => <div key={_id}>{_source.TICO}</div>)}
+        items={(data) => data.map(({ _source, _id }) => <div key={_id}>{String(_source?.TICO)}</div>)}
       />
     </Antfly>
   );

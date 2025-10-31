@@ -19,7 +19,7 @@ export const Basic = () => {
         items={(data) =>
           data.map(({ _source: s, _id }) => (
             <div key={_id} style={{ padding: "10px", borderBottom: "1px solid #ccc" }}>
-              <strong>{s.TICO}</strong> - {s.AUTR}
+              <strong>{String(s?.TICO)}</strong> - {String(s?.AUTR)}
             </div>
           ))
         }
@@ -44,7 +44,7 @@ export const WithCustomPlaceholder = () => {
         items={(data) =>
           data.map(({ _source: s, _id }) => (
             <div key={_id} style={{ padding: "10px", borderBottom: "1px solid #ccc" }}>
-              {s.TICO}
+              {String(s?.TICO)}
             </div>
           ))
         }
@@ -69,7 +69,7 @@ export const WithCustomButtonLabel = () => {
         items={(data) =>
           data.map(({ _source: s, _id }) => (
             <div key={_id} style={{ padding: "10px", borderBottom: "1px solid #ccc" }}>
-              {s.AUTR}
+              {String(s?.AUTR)}
             </div>
           ))
         }
@@ -94,7 +94,7 @@ export const WithInitialValue = () => {
         items={(data) =>
           data.map(({ _source: s, _id }) => (
             <div key={_id} style={{ padding: "10px", borderBottom: "1px solid #ccc" }}>
-              {s.TICO}
+              {String(s?.TICO)}
             </div>
           ))
         }
@@ -126,7 +126,7 @@ export const WithOnSubmitCallback = () => {
         items={(data) =>
           data.map(({ _source: s, _id }) => (
             <div key={_id} style={{ padding: "10px", borderBottom: "1px solid #ccc" }}>
-              {s.TICO}
+              {String(s?.TICO)}
             </div>
           ))
         }
@@ -167,7 +167,7 @@ export const WithCustomQuery = () => {
         items={(data) =>
           data.map(({ _source: s, _id }) => (
             <div key={_id} style={{ padding: "10px", borderBottom: "1px solid #ccc" }}>
-              <strong>{s.TICO}</strong> - {s.AUTR}
+              <strong>{String(s?.TICO)}</strong> - {String(s?.AUTR)}
             </div>
           ))
         }
@@ -229,7 +229,7 @@ export const StyledExample = () => {
         items={(data) =>
           data.map(({ _source: s, _id }) => (
             <div key={_id} style={{ padding: "10px", borderBottom: "1px solid #ccc" }}>
-              {s.TICO}
+              {String(s?.TICO)}
             </div>
           ))
         }

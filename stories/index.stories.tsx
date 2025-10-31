@@ -30,7 +30,7 @@ export const BasicUsage = () => {
         items={(data) =>
           data.map(({ _source, _score, _id }) => (
             <div key={_id}>
-              <b>{_source.TICO}</b> - score: {_score}
+              <b>{String(_source?.TICO)}</b> - score: {String(_score)}
             </div>
           ))
         }
@@ -54,7 +54,7 @@ export const SemanticSearch = () => {
         items={(data) =>
           data.map(({ _source, _score, _id }) => (
             <div key={_id}>
-              <b>{_source.TICO}</b> - score: {_score}
+              <b>{String(_source?.TICO)}</b> - score: {String(_score)}
             </div>
           ))
         }
@@ -76,14 +76,14 @@ export const WithUrlParams = () => {
       }}
     >
       <div>Params: {queryString}</div>
-      <SearchBox id="main" fields={["TICO"]} initialValue={initialValues.get("main")} />
+      <SearchBox id="main" fields={["TICO"]} initialValue={initialValues.get("main") as string} />
       <hr />
       <Facet id="author" fields={["AUTR"]} />
-      <ActiveFilters id="af" />
+      <ActiveFilters />
       <Results
         id="result"
-        initialPage={initialValues.get("resultPage")}
-        items={(data) => data.map(({ _source, _id }) => <div key={_id}>{_source.TICO}</div>)}
+        initialPage={initialValues.get("resultPage") as number}
+        items={(data) => data.map(({ _source, _id }) => <div key={_id}>{String(_source?.TICO)}</div>)}
       />
     </Antfly>
   );
@@ -93,14 +93,14 @@ export const Wikipedia = () => {
   return (
     <Antfly url={"http://localhost:8080"} table="wikipedia">
       <SearchBox id="main" semanticIndexes={["body_nomic"]} limit={10} />
-      <ActiveFilters id="af" />
+      <ActiveFilters />
       <Results
         id="result"
         items={(data) =>
           data.map(({ _source, _id }) => (
             <div key={_id}>
-              <a href={_source.url} target="_blank" rel="noopener noreferrer">
-                {_source.title}
+              <a href={String(_source?.url)} target="_blank" rel="noopener noreferrer">
+                {String(_source?.title)}
               </a>
             </div>
           ))
@@ -125,9 +125,9 @@ export const MovieDatabase = () => {
         items={(data) =>
           data.map(({ _source, _score, _id }) => (
             <div key={_id}>
-              <img src={_source.poster_path} alt={_source.original_title} />
+              <img src={String(_source?.poster_path)} alt={String(_source?.original_title)} />
               <b>
-                {_source.original_title} - {_source.tagline}
+                {String(_source?.original_title)} - {String(_source?.tagline)}
               </b>{" "}
               - score: {_score}
             </div>

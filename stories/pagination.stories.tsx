@@ -1,11 +1,12 @@
 import React from "react";
-import { action } from "storybook/actions";
 import { Pagination } from "../src";
 
 export default {
   title: "Pagination",
   component: Pagination,
 };
+
+const action = (name: string) => (...args: unknown[]) => console.log(name, ...args);
 
 export const WithVariousStatus = () => {
   const paginations = [1, 3, 5, 12, 35, 38, 40].map((i) => (

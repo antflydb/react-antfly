@@ -1,13 +1,6 @@
 import qs from "qs";
 import type { RAGStreamCallbacks, QueryHit } from "@antfly/sdk";
-import {
-  AntflyClient,
-  QueryRequest,
-  QueryResponses,
-  RAGRequest,
-  RAGResult,
-  Citation,
-} from "@antfly/sdk";
+import { AntflyClient, QueryRequest, QueryResponses, RAGRequest, RAGResult } from "@antfly/sdk";
 
 export interface MultiqueryRequest {
   query: QueryRequest;
@@ -140,7 +133,10 @@ export function normalizeTable(table?: string | string[]): string[] {
  * Priority: widget.table > defaultTable
  * Returns single table for Phase 1 (can be extended to return array in Phase 2)
  */
-export function resolveTable(widgetTable: string | string[] | undefined, defaultTable: string): string {
+export function resolveTable(
+  widgetTable: string | string[] | undefined,
+  defaultTable: string,
+): string {
   if (widgetTable) {
     // If widget has table override, use it (take first if array)
     const tables = normalizeTable(widgetTable);
@@ -153,7 +149,6 @@ export function resolveTable(widgetTable: string | string[] | undefined, default
 export interface RAGCallbacks {
   onHit?: (hit: QueryHit) => void;
   onSummary?: (chunk: string) => void;
-  onCitation?: (citation: Citation) => void;
   onComplete?: () => void;
   onError?: (error: Error | string) => void;
   onRAGResult?: (result: RAGResult) => void;
@@ -184,7 +179,7 @@ export async function streamRAG(
     });
 
     // Determine if we should stream based on presence of streaming callbacks
-    const shouldStream = !!(callbacks.onHit || callbacks.onSummary || callbacks.onCitation);
+    const shouldStream = !!(callbacks.onHit || callbacks.onSummary);
 
     // Add table to each query in the queries array
     const queriesWithTable = (request.queries || []).map((query) => ({
@@ -210,11 +205,6 @@ export async function streamRAG(
           onSummary: callbacks.onSummary
             ? (chunk: string) => {
                 callbacks.onSummary!(chunk);
-              }
-            : undefined,
-          onCitation: callbacks.onCitation
-            ? (citation: Citation) => {
-                callbacks.onCitation!(citation);
               }
             : undefined,
           onDone: () => {

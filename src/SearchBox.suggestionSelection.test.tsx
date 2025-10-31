@@ -60,8 +60,8 @@ describe('SearchBox Suggestion Selection Logic', () => {
       };
 
       // Manually test the extraction logic
-      const fields = undefined;
-      const firstField = fields?.[0]?.replace(/__(2gram|keyword)$/, "");
+      const fields = undefined as string[] | undefined;
+      const firstField = fields?.[0]?.replace(/__(2gram|keyword)$/, "") as string | undefined;
       let valueToSet = '';
 
       if (firstField && mockSuggestion._source?.[firstField]) {
@@ -103,8 +103,8 @@ describe('SearchBox Suggestion Selection Logic', () => {
         },
       };
 
-      const fields = undefined;
-      const firstField = fields?.[0]?.replace(/__(2gram|keyword)$/, "");
+      const fields = undefined as string[] | undefined;
+      const firstField = fields?.[0]?.replace(/__(2gram|keyword)$/, "") as string | undefined;
       let valueToSet = '';
 
       if (firstField && mockSuggestion._source?.[firstField]) {
@@ -148,8 +148,8 @@ describe('SearchBox Suggestion Selection Logic', () => {
         },
       };
 
-      const fields = undefined;
-      const firstField = fields?.[0]?.replace(/__(2gram|keyword)$/, "");
+      const fields = undefined as string[] | undefined;
+      const firstField = fields?.[0]?.replace(/__(2gram|keyword)$/, "") as string | undefined;
       let valueToSet = '';
 
       if (firstField && mockSuggestion._source?.[firstField]) {
@@ -188,8 +188,8 @@ describe('SearchBox Suggestion Selection Logic', () => {
         _source: {},
       };
 
-      const fields = undefined;
-      const firstField = fields?.[0]?.replace(/__(2gram|keyword)$/, "");
+      const fields = undefined as string[] | undefined;
+      const firstField = fields?.[0]?.replace(/__(2gram|keyword)$/, "") as string | undefined;
       let valueToSet = '';
 
       if (firstField && mockSuggestion._source?.[firstField]) {
@@ -231,8 +231,8 @@ describe('SearchBox Suggestion Selection Logic', () => {
         },
       };
 
-      const fields = undefined;
-      const firstField = fields?.[0]?.replace(/__(2gram|keyword)$/, "");
+      const fields = undefined as string[] | undefined;
+      const firstField = fields?.[0]?.replace(/__(2gram|keyword)$/, "") as string | undefined;
       let valueToSet = '';
 
       if (firstField && mockSuggestion._source?.[firstField]) {

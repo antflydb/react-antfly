@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef, ReactNode } from "react";
 import { useSharedContext } from "./SharedContext";
 import { streamRAG, resolveTable } from "./utils";
-import { ModelConfig, RAGRequest, Citation, QueryHit } from "@antfly/sdk";
+import { ModelConfig, RAGRequest, QueryHit } from "@antfly/sdk";
 
 export interface RAGResultsProps {
   id: string;
@@ -9,13 +9,41 @@ export interface RAGResultsProps {
   summarizer: ModelConfig;
   systemPrompt?: string;
   table?: string; // Optional table override - auto-inherits from AnswerBox if not specified
-  renderSummary?: (
-    summary: string,
-    isStreaming: boolean,
-    citations?: Citation[],
-    hits?: QueryHit[],
-  ) => ReactNode;
+  /**
+   * Custom render function for the summary text. Allows developers to bring their own
+   * markdown renderer (e.g., streamdown.ai, react-markdown, marked) and citation interaction.
+   *
+   * @param summary - The RAG summary text (may contain inline citations like [doc_id doc1])
+   * @param isStreaming - Whether the summary is currently streaming
+   * @param hits - Optional search result hits if showHits is enabled
+   * @returns Rendered summary component
+   *
+   * @example With streamdown.ai
+   * ```tsx
+   * <RAGResults
+   *   renderSummary={(summary) => <StreamdownMarkdown>{summary}</StreamdownMarkdown>}
+   * />
+   * ```
+   *
+   * @example With custom parser
+   * ```tsx
+   * <RAGResults
+   *   renderSummary={(summary, streaming) => (
+   *     <CustomMarkdown text={summary} streaming={streaming} />
+   *   )}
+   * />
+   * ```
+   */
+  renderSummary?: (summary: string, isStreaming: boolean, hits?: QueryHit[]) => ReactNode;
+  /**
+   * @deprecated Citations are now inline in the summary text using [doc_id ...] format.
+   * Use renderSummary prop to customize how inline citations are displayed.
+   */
   showCitations?: boolean;
+  /**
+   * @deprecated with_citations is no longer supported by the backend.
+   * Citations are always included inline in the markdown summary.
+   */
   withCitations?: boolean;
   showHits?: boolean;
   fields?: string[];
@@ -28,8 +56,6 @@ export default function RAGResults({
   systemPrompt,
   table,
   renderSummary,
-  showCitations = true,
-  withCitations = false,
   showHits = false,
   fields,
 }: RAGResultsProps) {
@@ -37,7 +63,6 @@ export default function RAGResults({
   const [summary, setSummary] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [citations, setCitations] = useState<Citation[]>([]);
   const [hits, setHits] = useState<QueryHit[]>([]);
   const abortControllerRef = useRef<AbortController | null>(null);
   const previousSubmissionRef = useRef<number | undefined>(undefined);
@@ -94,7 +119,7 @@ export default function RAGResults({
       ],
       summarizer,
       system_prompt: systemPrompt,
-      with_citations: withCitations,
+      // Note: with_citations is deprecated - citations are now inline in markdown summary
     };
 
     // Start streaming
@@ -103,7 +128,6 @@ export default function RAGResults({
       setSummary("");
       setError(null);
       setIsStreaming(true);
-      setCitations([]);
       setHits([]);
 
       try {
@@ -113,9 +137,6 @@ export default function RAGResults({
           },
           onSummary: (chunk) => {
             setSummary((prev) => prev + chunk);
-          },
-          onCitation: (citation) => {
-            setCitations((prev) => [...prev, citation]);
           },
           onComplete: () => {
             setIsStreaming(false);
@@ -128,7 +149,6 @@ export default function RAGResults({
           onRAGResult: (result) => {
             // Non-streaming response
             setSummary(result.summary_result?.summary || "");
-            setCitations(result.summary_result?.citations || []);
             setHits(result.query_results?.[0]?.hits?.hits || []);
             setIsStreaming(false);
           },
@@ -159,7 +179,6 @@ export default function RAGResults({
     headers,
     summarizer,
     systemPrompt,
-    withCitations,
     fields,
   ]);
 
@@ -188,9 +207,9 @@ export default function RAGResults({
     [dispatch, id],
   );
 
-  // Default render function
+  // Default render function - plain text with inline citations
   const defaultRender = useCallback(
-    (summaryText: string, streaming: boolean, citationList?: Citation[], hitList?: QueryHit[]) => (
+    (summaryText: string, streaming: boolean, hitList?: QueryHit[]) => (
       <div className="react-af-rag-results">
         {error && (
           <div className="react-af-rag-error" style={{ color: "red" }}>
@@ -208,19 +227,6 @@ export default function RAGResults({
             {streaming && <span className="react-af-rag-streaming"> ...</span>}
           </div>
         )}
-        {showCitations && citationList && citationList.length > 0 && (
-          <details className="react-af-rag-citations">
-            <summary>Citations ({citationList.length})</summary>
-            <ul>
-              {citationList.map((citation, idx) => (
-                <li key={citation.id || idx}>
-                  <strong>Document:</strong> {citation.id}
-                  <div className="react-af-rag-citation-content">{citation.quote}</div>
-                </li>
-              ))}
-            </ul>
-          </details>
-        )}
         {showHits && hitList && hitList.length > 0 && (
           <details className="react-af-rag-hits">
             <summary>Search Results ({hitList.length})</summary>
@@ -236,14 +242,14 @@ export default function RAGResults({
         )}
       </div>
     ),
-    [error, showCitations, showHits],
+    [error, showHits],
   );
 
   return (
     <>
       {renderSummary
-        ? renderSummary(summary, isStreaming, citations, hits)
-        : defaultRender(summary, isStreaming, citations, hits)}
+        ? renderSummary(summary, isStreaming, hits)
+        : defaultRender(summary, isStreaming, hits)}
     </>
   );
 }
