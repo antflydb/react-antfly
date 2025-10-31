@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useCallback, useRef, ReactNode } from "react";
 import { useSharedContext } from "./SharedContext";
 import { streamRAG, resolveTable } from "./utils";
-import { ModelConfig, RAGRequest, QueryHit } from "@antfly/sdk";
+import { GeneratorConfig, RAGRequest, QueryHit } from "@antfly/sdk";
 
 export interface RAGResultsProps {
   id: string;
   answerBoxId: string;
-  summarizer: ModelConfig;
+  summarizer: GeneratorConfig;
   systemPrompt?: string;
   table?: string; // Optional table override - auto-inherits from AnswerBox if not specified
   filterQuery?: Record<string, unknown>; // Filter query to constrain RAG retrieval

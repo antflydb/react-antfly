@@ -1,9 +1,9 @@
 import { ReactNode } from 'react';
-import { ModelConfig, QueryHit } from '@antfly/sdk';
+import { GeneratorConfig, QueryHit } from '@antfly/sdk';
 export interface RAGResultsProps {
     id: string;
     answerBoxId: string;
-    summarizer: ModelConfig;
+    summarizer: GeneratorConfig;
     systemPrompt?: string;
     table?: string;
     filterQuery?: Record<string, unknown>;
