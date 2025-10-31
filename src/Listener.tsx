@@ -205,6 +205,9 @@ export default function Listener({ children, onChange }: ListenerProps) {
                 if (r.filterQuery) {
                   queryObj.filter_query = r.filterQuery;
                 }
+                if (r.exclusionQuery) {
+                  queryObj.exclusion_query = r.exclusionQuery;
+                }
 
                 // If there is no indexes, use the default one.
                 multiqueryData.push({
@@ -289,6 +292,9 @@ export default function Listener({ children, onChange }: ListenerProps) {
                   };
                   if (f.filterQuery) {
                     facetQueryObj.filter_query = f.filterQuery;
+                  }
+                  if (f.exclusionQuery) {
+                    facetQueryObj.exclusion_query = f.exclusionQuery;
                   }
 
                   return facetQueryObj;

@@ -13,6 +13,7 @@ export interface AutosuggestProps {
   semanticIndexes?: string[];
   table?: string; // Optional table override (Phase 1: single table only)
   filterQuery?: Record<string, unknown>; // Filter query to constrain autocomplete suggestions
+  exclusionQuery?: Record<string, unknown>; // Exclusion query to exclude matches
   // Internal props passed from SearchBox
   searchValue?: string;
   onSuggestionSelect?: (hit: QueryHit) => void;
@@ -30,6 +31,7 @@ export default function Autosuggest({
   semanticIndexes,
   table,
   filterQuery,
+  exclusionQuery,
   searchValue = "",
   onSuggestionSelect,
   containerRef,
@@ -128,6 +130,7 @@ export default function Autosuggest({
         semanticQuery: isSemanticEnabled ? searchValue : undefined,
         table: table,
         filterQuery: filterQuery,
+        exclusionQuery: exclusionQuery,
         configuration: canQuery
           ? isSemanticEnabled
             ? {
@@ -175,6 +178,7 @@ export default function Autosuggest({
     semanticIndexes,
     table,
     filterQuery,
+    exclusionQuery,
     shouldShow,
   ]);
 

@@ -12,6 +12,7 @@ export interface AnswerBoxProps {
   limit?: number;
   table?: string; // Optional table override (Phase 1: single table only)
   filterQuery?: Record<string, unknown>; // Filter query to constrain search results
+  exclusionQuery?: Record<string, unknown>; // Exclusion query to exclude matches
   children?: ReactNode;
   buttonLabel?: string;
   onSubmit?: (value: string) => void;
@@ -27,6 +28,7 @@ export default function AnswerBox({
   limit,
   table,
   filterQuery,
+  exclusionQuery,
   children,
   buttonLabel = "Submit",
   onSubmit,
@@ -72,13 +74,14 @@ export default function AnswerBox({
         submittedAt: Date.now(), // Timestamp to track when this query was submitted
         table: table,
         filterQuery: filterQuery,
+        exclusionQuery: exclusionQuery,
         configuration: isSemanticEnabled
           ? { indexes: semanticIndexes || [], limit: limit || 10 }
           : undefined,
         result: undefined,
       });
     },
-    [dispatch, id, isSemanticEnabled, customQuery, queryFromValue, semanticIndexes, limit, table, filterQuery],
+    [dispatch, id, isSemanticEnabled, customQuery, queryFromValue, semanticIndexes, limit, table, filterQuery, exclusionQuery],
   );
 
   // Handle input changes (only update local state, don't trigger query)
@@ -124,10 +127,11 @@ export default function AnswerBox({
       submittedAt: Date.now(),
       table: table,
       filterQuery: filterQuery,
+      exclusionQuery: exclusionQuery,
       configuration: undefined,
       result: undefined,
     });
-  }, [dispatch, id, isSemanticEnabled, table, filterQuery]);
+  }, [dispatch, id, isSemanticEnabled, table, filterQuery, exclusionQuery]);
 
   // Handle Enter and Esc key press
   const handleKeyDown = useCallback(

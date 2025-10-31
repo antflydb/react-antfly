@@ -15,6 +15,7 @@ export interface Widget {
     submittedAt?: number;
     table?: string | string[];
     filterQuery?: unknown;
+    exclusionQuery?: unknown;
     configuration?: {
         fields?: string[];
         size?: number;
@@ -54,6 +55,7 @@ export type SharedAction = {
     submittedAt?: number;
     table?: string | string[];
     filterQuery?: unknown;
+    exclusionQuery?: unknown;
     configuration?: Widget["configuration"];
     result?: Widget["result"];
 } | {

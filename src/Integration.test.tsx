@@ -726,4 +726,143 @@ describe("Integration Tests", () => {
       expect(container).toBeTruthy();
     });
   });
+
+  describe("exclusionQuery integration", () => {
+    it("should exclude results using exclusionQuery prop", async () => {
+      const msearchSpy = vi.spyOn(utils, "multiquery").mockResolvedValue({
+        responses: [
+          {
+            status: 200,
+            took: 10,
+            hits: { hits: [], total: 0 },
+          },
+        ],
+      });
+
+      const exclusionQuery = { match: "archived", field: "status" };
+
+      const { container } = render(
+        <TestWrapper>
+          <SearchBox id="search" fields={["title"]} exclusionQuery={exclusionQuery} />
+          <Results
+            id="results"
+            exclusionQuery={exclusionQuery}
+            items={(data) => <div>Results: {data.length}</div>}
+          />
+        </TestWrapper>,
+      );
+
+      const input = container.querySelector("input") as HTMLInputElement;
+      await userEvent.type(input, "test");
+
+      await waitFor(() => {
+        expect(msearchSpy).toHaveBeenCalled();
+        const lastCall = msearchSpy.mock.calls[msearchSpy.mock.calls.length - 1];
+        const queries = lastCall[1];
+        // Results widget should have exclusionQuery
+        expect(queries[0].query.exclusion_query).toEqual(exclusionQuery);
+      });
+
+      msearchSpy.mockRestore();
+    });
+
+    it("should work with both filterQuery and exclusionQuery", async () => {
+      const msearchSpy = vi.spyOn(utils, "multiquery").mockResolvedValue({
+        responses: [
+          {
+            status: 200,
+            took: 10,
+            hits: { hits: [], total: 0 },
+          },
+        ],
+      });
+
+      const filterQuery = { match: "active", field: "status" };
+      const exclusionQuery = { match: "spam", field: "category" };
+
+      const { container } = render(
+        <TestWrapper>
+          <SearchBox
+            id="search"
+            fields={["title"]}
+            filterQuery={filterQuery}
+            exclusionQuery={exclusionQuery}
+          />
+          <Results
+            id="results"
+            filterQuery={filterQuery}
+            exclusionQuery={exclusionQuery}
+            items={(data) => <div>Results: {data.length}</div>}
+          />
+        </TestWrapper>,
+      );
+
+      const input = container.querySelector("input") as HTMLInputElement;
+      await userEvent.type(input, "test");
+
+      await waitFor(() => {
+        expect(msearchSpy).toHaveBeenCalled();
+        const lastCall = msearchSpy.mock.calls[msearchSpy.mock.calls.length - 1];
+        const queries = lastCall[1];
+        // Results widget should have both filterQuery and exclusionQuery
+        expect(queries[0].query.filter_query).toEqual(filterQuery);
+        expect(queries[0].query.exclusion_query).toEqual(exclusionQuery);
+      });
+
+      msearchSpy.mockRestore();
+    });
+
+    it("should work with SearchBox, Autosuggest, and Results all having exclusionQuery", async () => {
+      const exclusionQuery = { match: "deleted", field: "state" };
+
+      const { container } = render(
+        <TestWrapper>
+          <SearchBox id="search" fields={["title"]} exclusionQuery={exclusionQuery}>
+            <Autosuggest fields={["title__keyword"]} minChars={2} exclusionQuery={exclusionQuery} />
+          </SearchBox>
+          <Results
+            id="results"
+            exclusionQuery={exclusionQuery}
+            items={(data) => <div>Found {data.length} results</div>}
+          />
+        </TestWrapper>,
+      );
+
+      const input = container.querySelector("input") as HTMLInputElement;
+      await userEvent.type(input, "test query");
+
+      // Should render without errors
+      expect(container.querySelector(".react-af-results")).toBeTruthy();
+    });
+
+    it("should handle exclusionQuery with semantic search", async () => {
+      const exclusionQuery = { match: "archived", field: "status" };
+
+      const { container } = render(
+        <TestWrapper>
+          <SearchBox
+            id="search"
+            semanticIndexes={["vector-index"]}
+            exclusionQuery={exclusionQuery}
+          >
+            <Autosuggest
+              semanticIndexes={["suggest-index"]}
+              minChars={2}
+              exclusionQuery={exclusionQuery}
+            />
+          </SearchBox>
+          <Results
+            id="results"
+            exclusionQuery={exclusionQuery}
+            items={(data) => <div>Results: {data.length}</div>}
+          />
+        </TestWrapper>,
+      );
+
+      const input = container.querySelector("input") as HTMLInputElement;
+      await userEvent.type(input, "semantic search");
+
+      expect(container).toBeTruthy();
+    });
+  });
 });

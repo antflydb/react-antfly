@@ -43,6 +43,7 @@ export default function Antfly({ children, url, table, onChange, headers = {} }:
           submittedAt: action.submittedAt,
           table: action.table,
           filterQuery: action.filterQuery,
+          exclusionQuery: action.exclusionQuery,
           configuration: action.configuration,
           result: action.result,
         };

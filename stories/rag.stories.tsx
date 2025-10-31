@@ -1,4 +1,4 @@
-import { Antfly, AnswerBox, RAGResults, Results, ModelConfig } from "../src";
+import { Antfly, AnswerBox, RAGResults, Results, GeneratorConfig } from "../src";
 import { url, tableName } from "./utils";
 import { Streamdown } from "streamdown";
 
@@ -8,7 +8,7 @@ export default {
 };
 
 // Mock summarizer configuration - replace with your actual config
-const mockSummarizer: ModelConfig = {
+const mockSummarizer: GeneratorConfig = {
   provider: "ollama",
   model: "gemma3:4b",
   // provider: "openai",
@@ -486,16 +486,19 @@ export const StyledRAGExample = () => {
 };
 
 export const MultipleLanguageModels = () => {
-  const gpt4Summarizer: ModelConfig = {
+  const gpt4Summarizer: GeneratorConfig = {
     provider: "openai",
     model: "gpt-4",
-    api_key: (import.meta as { env?: Record<string, string> }).env?.VITE_OPENAI_API_KEY || "your-api-key",
+    api_key:
+      (import.meta as { env?: Record<string, string> }).env?.VITE_OPENAI_API_KEY || "your-api-key",
   };
 
-  const claudeSummarizer: ModelConfig = {
+  const claudeSummarizer: GeneratorConfig = {
     provider: "openai" as "openai" | "ollama", // anthropic not yet supported in type
     model: "claude-3-sonnet-20240229",
-    api_key: (import.meta as { env?: Record<string, string> }).env?.VITE_ANTHROPIC_API_KEY || "your-api-key",
+    api_key:
+      (import.meta as { env?: Record<string, string> }).env?.VITE_ANTHROPIC_API_KEY ||
+      "your-api-key",
   };
 
   return (

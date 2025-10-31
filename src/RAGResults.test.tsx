@@ -5,16 +5,20 @@ import React from "react";
 import RAGResults from "./RAGResults";
 import AnswerBox from "./AnswerBox";
 import Antfly from "./Antfly";
-import type { ModelConfig } from "@antfly/sdk";
+import type { GeneratorConfig } from "@antfly/sdk";
 import * as utils from "./utils";
 
 // Wrapper component to provide required context
 const TestWrapper = ({ children }: { children: React.ReactNode }) => {
-  return <Antfly url="http://localhost:8082/api/v1" table="test">{children}</Antfly>;
+  return (
+    <Antfly url="http://localhost:8082/api/v1" table="test">
+      {children}
+    </Antfly>
+  );
 };
 
 // Mock ModelConfig for testing
-const mockSummarizer: ModelConfig = {
+const mockSummarizer: GeneratorConfig = {
   provider: "openai",
   model: "gpt-4",
   api_key: "test-key",
@@ -185,12 +189,10 @@ describe("RAGResults", () => {
   describe("error handling", () => {
     it("should display error when fetch fails", async () => {
       const mockStreamRAG = vi.mocked(utils.streamRAG);
-      mockStreamRAG.mockImplementation(
-        async (_url, _table, _request, _headers, callbacks) => {
-          callbacks.onError?.(new Error("Network error"));
-          return new AbortController();
-        },
-      );
+      mockStreamRAG.mockImplementation(async (_url, _table, _request, _headers, callbacks) => {
+        callbacks.onError?.(new Error("Network error"));
+        return new AbortController();
+      });
 
       const { container } = render(
         <TestWrapper>
@@ -216,12 +218,10 @@ describe("RAGResults", () => {
 
     it("should handle HTTP error responses", async () => {
       const mockStreamRAG = vi.mocked(utils.streamRAG);
-      mockStreamRAG.mockImplementation(
-        async (_url, _table, _request, _headers, callbacks) => {
-          callbacks.onError?.(new Error("RAG request failed: 500 Internal Server Error"));
-          return new AbortController();
-        },
-      );
+      mockStreamRAG.mockImplementation(async (_url, _table, _request, _headers, callbacks) => {
+        callbacks.onError?.(new Error("RAG request failed: 500 Internal Server Error"));
+        return new AbortController();
+      });
 
       const { container } = render(
         <TestWrapper>
@@ -247,12 +247,10 @@ describe("RAGResults", () => {
 
     it("should handle error chunks in stream", async () => {
       const mockStreamRAG = vi.mocked(utils.streamRAG);
-      mockStreamRAG.mockImplementation(
-        async (_url, _table, _request, _headers, callbacks) => {
-          callbacks.onError?.(new Error("Something went wrong"));
-          return new AbortController();
-        },
-      );
+      mockStreamRAG.mockImplementation(async (_url, _table, _request, _headers, callbacks) => {
+        callbacks.onError?.(new Error("Something went wrong"));
+        return new AbortController();
+      });
 
       const { container } = render(
         <TestWrapper>

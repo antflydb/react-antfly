@@ -19,6 +19,7 @@ export interface ResultsProps {
   fields?: string[];
   table?: string; // Optional table override (Phase 1: single table only)
   filterQuery?: Record<string, unknown>; // Filter query to constrain search results
+  exclusionQuery?: Record<string, unknown>; // Exclusion query to exclude matches
 }
 
 export default function Results({
@@ -32,6 +33,7 @@ export default function Results({
   fields,
   table,
   filterQuery,
+  exclusionQuery,
 }: ResultsProps) {
   const [{ widgets }, dispatch] = useSharedContext();
   const [page, setPage] = useState(initialPage);
@@ -96,10 +98,11 @@ export default function Results({
       isSemantic: isSemanticSearchActive,
       table: table,
       filterQuery: filterQuery,
+      exclusionQuery: exclusionQuery,
       configuration: { itemsPerPage, page, sort, fields },
       // Don't pass result here - it should only be set by the Listener after fetching
     });
-  }, [dispatch, id, itemsPerPage, page, sort, fields, table, filterQuery, isSemanticSearchActive]); // Remove data and total to prevent loops
+  }, [dispatch, id, itemsPerPage, page, sort, fields, table, filterQuery, exclusionQuery, isSemanticSearchActive]); // Remove data and total to prevent loops
 
   // Destroy widget from context (remove from the list to unapply its effects)
   useEffect(() => () => dispatch({ type: "deleteWidget", key: id }), [dispatch, id]);

@@ -13,6 +13,7 @@ export interface SearchBoxProps {
   limit?: number;
   table?: string; // Optional table override (Phase 1: single table only)
   filterQuery?: Record<string, unknown>; // Filter query to constrain search results
+  exclusionQuery?: Record<string, unknown>; // Exclusion query to exclude matches
   children?: ReactNode;
 }
 
@@ -26,6 +27,7 @@ export default function SearchBox({
   limit,
   table,
   filterQuery,
+  exclusionQuery,
   children,
 }: SearchBoxProps) {
   const isSemanticEnabled = semanticIndexes && semanticIndexes.length > 0;
@@ -79,13 +81,14 @@ export default function SearchBox({
         value: v,
         table: table,
         filterQuery: filterQuery,
+        exclusionQuery: exclusionQuery,
         configuration: isSemanticEnabled
           ? { indexes: semanticIndexes || [], limit: limit || 10 }
           : undefined,
         result: undefined,
       });
     },
-    [dispatch, id, isSemanticEnabled, customQuery, queryFromValue, semanticIndexes, limit, table, filterQuery],
+    [dispatch, id, isSemanticEnabled, customQuery, queryFromValue, semanticIndexes, limit, table, filterQuery, exclusionQuery],
   );
 
   // Update external query on mount - always initialize the widget

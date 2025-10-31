@@ -483,4 +483,77 @@ describe('SearchBox', () => {
       expect(container).toBeTruthy();
     });
   });
+
+  describe('exclusionQuery prop', () => {
+    it('should accept exclusionQuery prop', () => {
+      const exclusionQuery = { match: 'archived', field: 'status' };
+      const { container } = render(
+        <TestWrapper>
+          <SearchBox id="test-search" fields={['title']} exclusionQuery={exclusionQuery} />
+        </TestWrapper>
+      );
+
+      expect(container).toBeTruthy();
+      const input = container.querySelector('input');
+      expect(input).toBeTruthy();
+    });
+
+    it('should work without exclusionQuery prop', () => {
+      const { container } = render(
+        <TestWrapper>
+          <SearchBox id="test-search" fields={['title']} />
+        </TestWrapper>
+      );
+
+      expect(container).toBeTruthy();
+    });
+
+    it('should handle complex exclusionQuery with disjuncts', () => {
+      const exclusionQuery = {
+        disjuncts: [
+          { match: 'deleted', field: 'status' },
+          { match: 'spam', field: 'category' }
+        ]
+      };
+      const { container } = render(
+        <TestWrapper>
+          <SearchBox id="test-search" fields={['title']} exclusionQuery={exclusionQuery} />
+        </TestWrapper>
+      );
+
+      expect(container).toBeTruthy();
+    });
+
+    it('should work with both filterQuery and exclusionQuery', () => {
+      const filterQuery = { match: 'active', field: 'status' };
+      const exclusionQuery = { match: 'spam', field: 'category' };
+      const { container } = render(
+        <TestWrapper>
+          <SearchBox
+            id="test-search"
+            fields={['title']}
+            filterQuery={filterQuery}
+            exclusionQuery={exclusionQuery}
+          />
+        </TestWrapper>
+      );
+
+      expect(container).toBeTruthy();
+    });
+
+    it('should work with exclusionQuery and semantic search', () => {
+      const exclusionQuery = { match: 'archived', field: 'status' };
+      const { container } = render(
+        <TestWrapper>
+          <SearchBox
+            id="test-search"
+            semanticIndexes={['vector-index']}
+            exclusionQuery={exclusionQuery}
+          />
+        </TestWrapper>
+      );
+
+      expect(container).toBeTruthy();
+    });
+  });
 });

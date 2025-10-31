@@ -10,10 +10,11 @@ export interface AutosuggestProps {
     semanticIndexes?: string[];
     table?: string;
     filterQuery?: Record<string, unknown>;
+    exclusionQuery?: Record<string, unknown>;
     searchValue?: string;
     onSuggestionSelect?: (hit: QueryHit) => void;
     containerRef?: React.RefObject<HTMLDivElement | null>;
     isOpen?: boolean;
 }
-export default function Autosuggest({ fields, returnFields, limit, minChars, renderSuggestion, customQuery, semanticIndexes, table, filterQuery, searchValue, onSuggestionSelect, containerRef, isOpen: isOpenProp, }: AutosuggestProps): import("react/jsx-runtime").JSX.Element | null;
+export default function Autosuggest({ fields, returnFields, limit, minChars, renderSuggestion, customQuery, semanticIndexes, table, filterQuery, exclusionQuery, searchValue, onSuggestionSelect, containerRef, isOpen: isOpenProp, }: AutosuggestProps): import("react/jsx-runtime").JSX.Element | null;
 //# sourceMappingURL=Autosuggest.d.ts.map
