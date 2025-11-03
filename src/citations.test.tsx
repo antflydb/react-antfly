@@ -4,7 +4,6 @@ import {
   replaceCitations,
   renderAsMarkdownLinks,
   renderAsSequentialLinks,
-  type Citation,
 } from './citations';
 
 describe('parseCitations', () => {

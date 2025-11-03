@@ -18,6 +18,7 @@ interface AutosuggestContextValue {
 
 const AutosuggestContext = createContext<AutosuggestContextValue | null>(null);
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAutosuggestContext() {
   const context = useContext(AutosuggestContext);
   if (!context) {
@@ -150,7 +151,7 @@ export default function Autosuggest({
       });
     }
     return data;
-  }, [widget?.result?.facetData, facetConfigs]);
+  }, [widget, facetConfigs]);
 
   // Derive isOpen from searchValue, with ability to override
   // Priority: isOpenProp (from parent) > isOpenOverride (internal) > shouldShow (default)
@@ -436,12 +437,16 @@ export default function Autosuggest({
     [searchValue, suggestions, facetData, selectedIndex, handleSelect, widget?.result, registerItem, unregisterItem, fields],
   );
 
+  // Reset item indices when isOpen changes
+  useEffect(() => {
+    if (isOpen) {
+      nextIndexRef.current = 0;
+      itemsRef.current.clear();
+    }
+  }, [isOpen]);
+
   // If using children (composable mode)
   if (children) {
-    // Reset item index on re-render
-    nextIndexRef.current = 0;
-    itemsRef.current.clear();
-
     if (!isOpen) {
       return null;
     }
@@ -527,17 +532,18 @@ export function AutosuggestResults({
 
   // Register items for keyboard navigation
   useEffect(() => {
+    const itemIndices = itemIndicesRef.current;
     displayResults.forEach((hit) => {
       const itemId = `result-${hit._id}`;
       const index = registerItem(itemId);
-      itemIndicesRef.current.set(hit._id, index);
+      itemIndices.set(hit._id, index);
     });
 
     return () => {
       displayResults.forEach((hit) => {
         const itemId = `result-${hit._id}`;
         unregisterItem(itemId);
-        itemIndicesRef.current.delete(hit._id);
+        itemIndices.delete(hit._id);
       });
     };
   }, [displayResults, registerItem, unregisterItem]);
@@ -592,7 +598,8 @@ export function AutosuggestResults({
         </div>
       )}
       <ul className="react-af-autosuggest-results-list">
-        {displayResults.map((hit) => {
+        {/* eslint-disable-next-line react-hooks/refs */}
+        {displayResults.map((hit, idx) => {
           const itemIndex = itemIndicesRef.current.get(hit._id);
           const isSelected = itemIndex === selectedIndex;
           const itemClass = `react-af-autosuggest-result-item ${itemClassName || ""} ${
@@ -601,7 +608,7 @@ export function AutosuggestResults({
 
           return (
             <li key={hit._id} className={itemClass} onClick={() => handleClick(hit)}>
-              {renderItem ? renderItem(hit, itemIndex || 0) : defaultRenderItem(hit)}
+              {renderItem ? renderItem(hit, idx) : defaultRenderItem(hit)}
             </li>
           );
         })}
@@ -640,12 +647,10 @@ export function AutosuggestFacets({
   // Track item indices for keyboard navigation
   const itemIndicesRef = useRef<Map<string, number>>(new Map());
 
-  // Get facet terms for this field
-  const rawTerms = facetData.get(field) || [];
-
   // Sort facet terms
   const sortedTerms = useMemo(() => {
-    let terms = [...rawTerms];
+    const rawTerms = facetData.get(field) || [];
+    const terms = [...rawTerms];
     switch (order) {
       case "count":
         terms.sort((a, b) => b.count - a.count);
@@ -661,7 +666,7 @@ export function AutosuggestFacets({
         break;
     }
     return terms;
-  }, [rawTerms, order]);
+  }, [facetData, field, order]);
 
   // Filter and limit terms
   const displayTerms = useMemo(() => {
@@ -674,17 +679,18 @@ export function AutosuggestFacets({
   useEffect(() => {
     if (!clickable) return;
 
+    const itemIndices = itemIndicesRef.current;
     displayTerms.forEach((term) => {
       const itemId = `facet-${field}-${term.term}`;
       const index = registerItem(itemId);
-      itemIndicesRef.current.set(term.term, index);
+      itemIndices.set(term.term, index);
     });
 
     return () => {
       displayTerms.forEach((term) => {
         const itemId = `facet-${field}-${term.term}`;
         unregisterItem(itemId);
-        itemIndicesRef.current.delete(term.term);
+        itemIndices.delete(term.term);
       });
     };
   }, [displayTerms, clickable, field, registerItem, unregisterItem]);
@@ -748,6 +754,7 @@ export function AutosuggestFacets({
       )}
       {label && <div className="react-af-autosuggest-facet-section-label">{label}</div>}
       <ul className="react-af-autosuggest-facets-list">
+        {/* eslint-disable-next-line react-hooks/refs */}
         {displayTerms.map((facet, index) => {
           const itemIndex = itemIndicesRef.current.get(facet.term);
           const isSelected = itemIndex === selectedIndex;

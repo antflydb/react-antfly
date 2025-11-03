@@ -1,9 +1,8 @@
-import { describe, it, expect, vi, beforeEach, afterEach, afterAll, beforeAll } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { describe, it, expect, vi, afterEach, afterAll, beforeAll } from "vitest";
+import { render, waitFor } from "@testing-library/react";
 import React from "react";
 import Autosuggest, { AutosuggestResults, AutosuggestFacets } from "./Autosuggest";
 import Antfly from "./Antfly";
-import userEvent from "@testing-library/user-event";
 import { QueryHit, TermFacetResult } from "@antfly/sdk";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
@@ -677,7 +676,7 @@ describe("Composable Autosuggest", () => {
     });
 
     it("should ignore renderSuggestion when children are present", () => {
-      const legacyRender = vi.fn((hit: QueryHit) => <div>Legacy</div>);
+      const legacyRender = vi.fn(() => <div>Legacy</div>);
 
       const { container } = render(
         <TestWrapper>
