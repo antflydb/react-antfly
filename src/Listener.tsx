@@ -151,40 +151,46 @@ export default function Listener({ children, onChange }: ListenerProps) {
                   return; // Skip widgets without proper configuration
                 }
                 const { itemsPerPage, page, sort } = config;
-                // Join semanticQueries as a string, excluding autosuggest widgets except this one
-                const nonAutosuggestSemanticQueries = [...semanticQueries.entries()]
-                  .filter(([widgetId]) => {
-                    const widget = widgets.get(widgetId);
-                    // Include this widget's own semantic query
-                    if (widgetId === id) return true;
-                    // Exclude other autosuggest widgets
-                    return !widget?.isAutosuggest;
-                  })
-                  .map(([, v]) => v);
+                // For autosuggest widgets, only include their own semantic query (complete isolation)
+                // For other widgets, exclude other autosuggest widgets
+                const filteredSemanticQueries = r.isAutosuggest
+                  ? [...semanticQueries.entries()].filter(([widgetId]) => widgetId === id)
+                  : [...semanticQueries.entries()].filter(([widgetId]) => {
+                      const widget = widgets.get(widgetId);
+                      // Include this widget's own semantic query
+                      if (widgetId === id) return true;
+                      // Exclude other autosuggest widgets
+                      return !widget?.isAutosuggest;
+                    });
+
+                const nonAutosuggestSemanticQueries = filteredSemanticQueries.map(([, v]) => v);
                 const semanticQuery = nonAutosuggestSemanticQueries.map((v) => v.query).join(" ");
                 // Get the first indexes configured for the widget
                 const indexes = nonAutosuggestSemanticQueries
                   .map((v) => v.indexes)
                   .filter((i) => i && Array.isArray(i) && i.length > 0)[0];
 
-                // If this widget is a root query, filter out other root queries
-                const filteredQueries = r.rootQuery
-                  ? new Map(
-                      [...queries].filter(([queryId]) => {
-                        const w = widgets.get(queryId);
-                        // Always include this widget's own query
-                        if (queryId === id) return true;
-                        // Include non-root queries (facets), but exclude autosuggest widgets
-                        return !w?.rootQuery && !w?.isAutosuggest;
-                      }),
-                    )
-                  : new Map(
-                      [...queries].filter(([queryId]) => {
-                        const w = widgets.get(queryId);
-                        // For non-root query widgets, exclude only autosuggest widgets
-                        return !w?.isAutosuggest;
-                      }),
-                    );
+                // If this widget is an autosuggest, only include its own query (complete isolation)
+                // Otherwise, if it's a root query, filter out other root queries
+                const filteredQueries = r.isAutosuggest
+                  ? new Map([...queries].filter(([queryId]) => queryId === id))
+                  : r.rootQuery
+                    ? new Map(
+                        [...queries].filter(([queryId]) => {
+                          const w = widgets.get(queryId);
+                          // Always include this widget's own query
+                          if (queryId === id) return true;
+                          // Include non-root queries (facets), but exclude autosuggest widgets
+                          return !w?.rootQuery && !w?.isAutosuggest;
+                        }),
+                      )
+                    : new Map(
+                        [...queries].filter(([queryId]) => {
+                          const w = widgets.get(queryId);
+                          // For non-root query widgets, exclude only autosuggest widgets
+                          return !w?.isAutosuggest;
+                        }),
+                      );
 
                 // Resolve table for this widget
                 const tableName = resolveTable(r.table, table);

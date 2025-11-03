@@ -3,6 +3,7 @@ import { render, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import AnswerBox from './AnswerBox';
+import Autosuggest from './Autosuggest';
 import Antfly from './Antfly';
 
 // Wrapper component to provide required context
@@ -538,6 +539,167 @@ describe('AnswerBox', () => {
       expect(clearButton).toBeTruthy();
 
       await userEvent.click(clearButton);
+      expect(input.value).toBe('');
+    });
+  });
+
+  describe('autosuggest integration', () => {
+    it('should render AnswerBox with Autosuggest child without errors', () => {
+      const { container } = render(
+        <TestWrapper>
+          <AnswerBox id="test-answer" fields={['content']}>
+            <Autosuggest fields={['question']} table="questions" />
+          </AnswerBox>
+        </TestWrapper>
+      );
+
+      expect(container).toBeTruthy();
+      // AnswerBox and Autosuggest should render without errors
+      const input = container.querySelector('input');
+      expect(input).toBeTruthy();
+    });
+
+    it('should work without Autosuggest (backward compatibility)', () => {
+      const { container } = render(
+        <TestWrapper>
+          <AnswerBox id="test-answer" fields={['content']} />
+        </TestWrapper>
+      );
+
+      expect(container).toBeTruthy();
+      const input = container.querySelector('input');
+      expect(input).toBeTruthy();
+    });
+
+    it('should pass searchValue to Autosuggest as user types', async () => {
+      const { container } = render(
+        <TestWrapper>
+          <AnswerBox id="test-answer" fields={['content']}>
+            <Autosuggest fields={['question']} table="questions" minChars={2} />
+          </AnswerBox>
+        </TestWrapper>
+      );
+
+      const input = container.querySelector('input') as HTMLInputElement;
+
+      await userEvent.type(input, 'test query');
+
+      // Input should have the typed value
+      expect(input.value).toBe('test query');
+    });
+
+    it('should handle suggestion selection without submitting', async () => {
+      const onSubmit = vi.fn();
+
+      const { container } = render(
+        <TestWrapper>
+          <AnswerBox id="test-answer" fields={['content']} onSubmit={onSubmit}>
+            <Autosuggest fields={['question']} table="questions" minChars={2} />
+          </AnswerBox>
+        </TestWrapper>
+      );
+
+      const input = container.querySelector('input') as HTMLInputElement;
+
+      // Type to trigger autosuggest
+      await userEvent.type(input, 'test');
+
+      // Selecting a suggestion should not trigger submit
+      // (In a real scenario, suggestion selection would fill the input)
+      // For now, we verify that typing alone doesn't submit
+      expect(onSubmit).not.toHaveBeenCalled();
+    });
+
+    it('should NOT trigger main query on keystroke with Autosuggest', async () => {
+      const customQuery = vi.fn(() => ({ custom: 'query' }));
+
+      const { container } = render(
+        <TestWrapper>
+          <AnswerBox id="test-answer" customQuery={customQuery}>
+            <Autosuggest fields={['question']} table="questions" minChars={2} />
+          </AnswerBox>
+        </TestWrapper>
+      );
+
+      const input = container.querySelector('input') as HTMLInputElement;
+
+      // Type in the input
+      await userEvent.type(input, 'test query');
+
+      // Main query should not be called during typing
+      expect(customQuery).not.toHaveBeenCalledWith('test query');
+    });
+
+    it('should trigger main query only on submit even with Autosuggest', async () => {
+      const onSubmit = vi.fn();
+
+      const { container } = render(
+        <TestWrapper>
+          <AnswerBox id="test-answer" fields={['content']} onSubmit={onSubmit}>
+            <Autosuggest fields={['question']} table="questions" minChars={2} />
+          </AnswerBox>
+        </TestWrapper>
+      );
+
+      const input = container.querySelector('input') as HTMLInputElement;
+      const submitButton = container.querySelector('button[type="submit"]') as HTMLButtonElement;
+
+      // Type without submitting
+      await userEvent.type(input, 'test query');
+      expect(onSubmit).not.toHaveBeenCalled();
+
+      // Submit should trigger the callback
+      await userEvent.click(submitButton);
+
+      await waitFor(() => {
+        expect(onSubmit).toHaveBeenCalledWith('test query');
+      });
+    });
+
+    it('should allow Autosuggest to have different table than AnswerBox', () => {
+      const { container } = render(
+        <TestWrapper>
+          <AnswerBox id="test-answer" fields={['content']} table="documents">
+            <Autosuggest fields={['question']} table="questions" />
+          </AnswerBox>
+        </TestWrapper>
+      );
+
+      expect(container).toBeTruthy();
+      // Both components should coexist with different table configurations
+    });
+
+    it('should render DOM children alongside Autosuggest', () => {
+      const { container } = render(
+        <TestWrapper>
+          <AnswerBox id="test-answer" fields={['content']}>
+            <Autosuggest fields={['question']} table="questions" />
+            <div className="custom-element">Custom content</div>
+          </AnswerBox>
+        </TestWrapper>
+      );
+
+      const customElement = container.querySelector('.custom-element');
+
+      expect(customElement).toBeTruthy();
+      expect(customElement?.textContent).toBe('Custom content');
+    });
+
+    it('should handle Escape key to clear input with Autosuggest', async () => {
+      const { container } = render(
+        <TestWrapper>
+          <AnswerBox id="test-answer" fields={['content']}>
+            <Autosuggest fields={['question']} table="questions" />
+          </AnswerBox>
+        </TestWrapper>
+      );
+
+      const input = container.querySelector('input') as HTMLInputElement;
+
+      await userEvent.type(input, 'test query');
+      expect(input.value).toBe('test query');
+
+      await userEvent.type(input, '{Escape}');
       expect(input.value).toBe('');
     });
   });

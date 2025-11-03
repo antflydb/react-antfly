@@ -11,7 +11,8 @@ import { default as Autosuggest } from './Autosuggest';
 import { default as AnswerBox } from './AnswerBox';
 import { default as RAGResults } from './RAGResults';
 import { fromUrlQueryString, toUrlQueryString, multiquery, initializeAntflyClient, getAntflyClient, streamRAG } from './utils';
-export { Antfly, Results, SearchBox, Facet, Pagination, Listener, fromUrlQueryString, toUrlQueryString, ActiveFilters, QueryBuilder, CustomWidget, Autosuggest, AnswerBox, RAGResults, multiquery as msearch, initializeAntflyClient, getAntflyClient, streamRAG, };
+import { parseCitations, replaceCitations, renderAsMarkdownLinks, renderAsSequentialLinks } from './citations';
+export { Antfly, Results, SearchBox, Facet, Pagination, Listener, fromUrlQueryString, toUrlQueryString, ActiveFilters, QueryBuilder, CustomWidget, Autosuggest, AnswerBox, RAGResults, multiquery as msearch, initializeAntflyClient, getAntflyClient, streamRAG, parseCitations, replaceCitations, renderAsMarkdownLinks, renderAsSequentialLinks, };
 export type { AntflyProps } from './Antfly';
 export type { ResultsProps } from './Results';
 export type { SearchBoxProps } from './SearchBox';
@@ -28,4 +29,5 @@ export type { Operator, Combinator } from './QueryBuilder/utils';
 export type { SharedState, SharedAction, Widget } from './SharedContext';
 export type { MultiqueryRequest, RAGCallbacks } from './utils';
 export type { RAGRequest, RAGResult, SummarizeResult, GeneratorConfig } from '@antfly/sdk';
+export type { Citation, CitationRenderOptions } from './citations';
 //# sourceMappingURL=index.d.ts.map

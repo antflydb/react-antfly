@@ -1,4 +1,4 @@
-import { Antfly, AnswerBox, RAGResults, Results, GeneratorConfig } from "../src";
+import { Antfly, AnswerBox, RAGResults, Results, GeneratorConfig, Autosuggest, replaceCitations, renderAsMarkdownLinks } from "../src";
 import { url, tableName } from "./utils";
 import { Streamdown } from "streamdown";
 
@@ -373,6 +373,54 @@ export const StyledRAGExample = () => {
           color: #999;
           font-style: italic;
         }
+
+        /* Autosuggest styles */
+        .react-af-answerbox {
+          position: relative;
+        }
+        .react-af-autosuggest {
+          position: absolute;
+          top: 100%;
+          left: 0;
+          right: 0;
+          background: white;
+          border: 2px solid #4a90e2;
+          border-top: none;
+          border-radius: 0 0 8px 8px;
+          max-height: 300px;
+          overflow-y: auto;
+          list-style: none;
+          padding: 0;
+          margin: 0;
+          box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+          z-index: 1000;
+        }
+        .react-af-autosuggest-item {
+          padding: 12px 14px;
+          cursor: pointer;
+          border-bottom: 1px solid #f0f0f0;
+          transition: background 0.2s;
+        }
+        .react-af-autosuggest-item:last-child {
+          border-bottom: none;
+        }
+        .react-af-autosuggest-item:hover,
+        .react-af-autosuggest-item-selected {
+          background: #f0f8ff;
+        }
+        .rag-autosuggest-item {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+        }
+        .rag-autosuggest-item strong {
+          color: #333;
+          font-size: 14px;
+        }
+        .rag-autosuggest-item small {
+          color: #666;
+          font-size: 12px;
+        }
       `}</style>
 
       <div className="rag-container">
@@ -382,7 +430,20 @@ export const StyledRAGExample = () => {
           placeholder="Ask me anything about the books..."
           buttonLabel="Get AI Answer"
           fields={["TICO", "AUTR", "DESC"]}
-        />
+        >
+          <Autosuggest
+            fields={["TICO", "AUTR"]}
+            returnFields={["TICO", "AUTR", "DESC"]}
+            limit={5}
+            minChars={2}
+            renderSuggestion={(hit) => (
+              <div className="rag-autosuggest-item">
+                <strong>{String(hit._source?.TICO || "")}</strong>
+                <small>{String(hit._source?.AUTR || "")}</small>
+              </div>
+            )}
+          />
+        </AnswerBox>
 
         <RAGResults
           id="rag-answer"
@@ -392,14 +453,10 @@ export const StyledRAGExample = () => {
           showHits={true}
           systemPrompt="You are a knowledgeable librarian. Provide helpful, detailed answers about books."
           renderSummary={(summary, isStreaming, hits) => {
-            // Convert [doc_id X] citations to markdown links before passing to Streamdown
-            const convertCitationsToMarkdownLinks = (text: string) => {
-              return text.replace(/\[doc_id\s+(\w+)\]/g, (match, docId) => {
-                return `[[${docId}]](#hit-${docId})`;
-              });
-            };
-
-            const summaryWithLinks = summary ? convertCitationsToMarkdownLinks(summary) : "";
+            // Convert [doc_id X] or [doc_id X, Y, Z] citations to markdown links before passing to Streamdown
+            const summaryWithLinks = summary ? replaceCitations(summary, {
+              renderCitation: renderAsMarkdownLinks
+            }) : "";
 
             // Handle click events on citation links to scroll instead of navigate
             const handleCitationClick = (e: React.MouseEvent<HTMLDivElement>) => {

@@ -36,6 +36,15 @@ export default function AnswerBox({
   const isSemanticEnabled = semanticIndexes && semanticIndexes.length > 0;
   const [, dispatch] = useSharedContext();
   const [value, setValue] = useState(() => initialValue || "");
+  const [isSuggestOpen, setIsSuggestOpen] = useState(false);
+  const [containerRefObject] = useState<{ current: HTMLDivElement | null }>({ current: null });
+  const containerRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      // eslint-disable-next-line react-hooks/immutability
+      containerRefObject.current = node;
+    },
+    [containerRefObject],
+  );
 
   // Build a query from a value.
   const queryFromValue = useCallback(
@@ -88,14 +97,21 @@ export default function AnswerBox({
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       setValue(e.target.value);
+      // Open autosuggest if there are children (Autosuggest component)
+      if (children && e.target.value) {
+        setIsSuggestOpen(true);
+      }
     },
-    [],
+    [children],
   );
 
   // Handle form submission
   const handleSubmit = useCallback(
     (e: React.FormEvent) => {
       e.preventDefault();
+
+      // Close autosuggest dropdown on submit
+      setIsSuggestOpen(false);
 
       // Call custom onSubmit callback if provided
       if (onSubmit) {
@@ -133,11 +149,61 @@ export default function AnswerBox({
     });
   }, [dispatch, id, isSemanticEnabled, table, filterQuery, exclusionQuery]);
 
+  // Handle autosuggest selection (fills input without submitting)
+  const handleSuggestionSelect = useCallback((hit: unknown) => {
+    // Extract text from the hit
+    let suggestionText = "";
+
+    if (hit && typeof hit === "object") {
+      const suggestion = hit as { _source?: Record<string, unknown>; _id?: string };
+
+      // Try to use fields from the AnswerBox configuration
+      const firstField = fields?.[0]?.replace(/__(2gram|keyword)$/, "");
+
+      if (firstField && suggestion._source?.[firstField]) {
+        suggestionText = String(suggestion._source[firstField]);
+      } else if (!fields || fields.length === 0) {
+        // When no fields specified, try common field names
+        const commonTextFields = ["question", "title", "name", "label", "text", "description", "content"];
+        const sourceFields = suggestion._source ? Object.keys(suggestion._source) : [];
+
+        for (const commonField of commonTextFields) {
+          if (suggestion._source?.[commonField]) {
+            suggestionText = String(suggestion._source[commonField]);
+            break;
+          }
+        }
+
+        // If no common field found, use first available field
+        if (!suggestionText && sourceFields.length > 0) {
+          const firstAvailableField = sourceFields[0];
+          const fieldValue = suggestion._source?.[firstAvailableField];
+          if (fieldValue && typeof fieldValue !== "object") {
+            suggestionText = String(fieldValue);
+          }
+        }
+
+        // Last resort: use _id
+        if (!suggestionText && suggestion._id) {
+          suggestionText = String(suggestion._id);
+        }
+      }
+    }
+
+    if (suggestionText) {
+      setValue(suggestionText);
+      setIsSuggestOpen(false);
+    }
+  }, [fields]);
+
   // Handle Enter and Esc key press
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
       if (e.key === "Enter") {
         e.preventDefault();
+
+        // Close autosuggest dropdown on submit
+        setIsSuggestOpen(false);
 
         // Call custom onSubmit callback if provided
         if (onSubmit) {
@@ -158,7 +224,7 @@ export default function AnswerBox({
   useEffect(() => () => dispatch({ type: "deleteWidget", key: id }), [dispatch, id]);
 
   return (
-    <div className="react-af-answerbox">
+    <div className="react-af-answerbox" ref={containerRef}>
       <form onSubmit={handleSubmit}>
         <input
           type="text"
@@ -181,7 +247,24 @@ export default function AnswerBox({
           {buttonLabel}
         </button>
       </form>
-      {children}
+      {children &&
+        React.Children.map(children, (child) => {
+          if (React.isValidElement(child)) {
+            // Only clone props onto custom components (not native DOM elements)
+            if (typeof child.type === "function" || typeof child.type === "object") {
+              return React.cloneElement(child as React.ReactElement<Record<string, unknown>>, {
+                // Pass searchValue only when autosuggest should be open
+                // This prevents autosuggest from querying after form submission
+                searchValue: isSuggestOpen ? value : "",
+                onSuggestionSelect: handleSuggestionSelect,
+                containerRef: containerRefObject,
+                isOpen: isSuggestOpen,
+                onClose: () => setIsSuggestOpen(false),
+              });
+            }
+          }
+          return child;
+        })}
     </div>
   );
 }

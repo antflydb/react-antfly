@@ -18,6 +18,12 @@ import {
   getAntflyClient,
   streamRAG,
 } from "./utils";
+import {
+  parseCitations,
+  replaceCitations,
+  renderAsMarkdownLinks,
+  renderAsSequentialLinks,
+} from "./citations";
 
 export {
   Antfly,
@@ -38,6 +44,10 @@ export {
   initializeAntflyClient,
   getAntflyClient,
   streamRAG,
+  parseCitations,
+  replaceCitations,
+  renderAsMarkdownLinks,
+  renderAsSequentialLinks,
 };
 
 // Export types for users of the library
@@ -57,3 +67,4 @@ export type { Operator, Combinator } from "./QueryBuilder/utils";
 export type { SharedState, SharedAction, Widget } from "./SharedContext";
 export type { MultiqueryRequest, RAGCallbacks } from "./utils";
 export type { RAGRequest, RAGResult, SummarizeResult, GeneratorConfig } from "@antfly/sdk";
+export type { Citation, CitationRenderOptions } from "./citations";
