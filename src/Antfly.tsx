@@ -34,6 +34,7 @@ export default function Antfly({ children, url, table, onChange, headers = {} }:
           needsConfiguration: action.needsConfiguration,
           isFacet: action.isFacet,
           wantResults: action.wantResults,
+          wantFacets: action.wantFacets,
           query: action.query,
           rootQuery: action.rootQuery,
           semanticQuery: action.semanticQuery,
@@ -44,6 +45,7 @@ export default function Antfly({ children, url, table, onChange, headers = {} }:
           table: action.table,
           filterQuery: action.filterQuery,
           exclusionQuery: action.exclusionQuery,
+          facetOptions: action.facetOptions,
           configuration: action.configuration,
           result: action.result,
         };

@@ -182,11 +182,11 @@ export default function AnswerBox({
             suggestionText = String(fieldValue);
           }
         }
+      }
 
-        // Last resort: use _id
-        if (!suggestionText && suggestion._id) {
-          suggestionText = String(suggestion._id);
-        }
+      // For facet selections (hits with empty _source), use _id as the term
+      if (!suggestionText && suggestion._id) {
+        suggestionText = String(suggestion._id);
       }
     }
 

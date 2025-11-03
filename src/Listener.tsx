@@ -214,12 +214,29 @@ export default function Listener({ children, onChange }: ListenerProps) {
                 if (r.exclusionQuery) {
                   queryObj.exclusion_query = r.exclusionQuery;
                 }
+                // Add facet options if present (for autosuggest facets)
+                if (r.facetOptions && r.facetOptions.length > 0) {
+                  const facets: Record<string, { field: string; size: number }> = {};
+                  r.facetOptions.forEach((opt: { field: string; size?: number }) => {
+                    facets[opt.field] = { field: opt.field, size: opt.size || 5 };
+                  });
+                  queryObj.facets = facets;
+                }
 
                 // If there is no indexes, use the default one.
                 multiqueryData.push({
                   query: queryObj,
                   data: (result: QueryResult) => result.hits?.hits || [],
-                  facetData: () => [],
+                  facetData: (result: QueryResult) => {
+                    // Extract facet data if facets were requested
+                    // For widgets with facetOptions (like autosuggest), return array of arrays
+                    if (r.facetOptions && r.facetOptions.length > 0 && result.facets) {
+                      return r.facetOptions.map((opt: { field: string }) => {
+                        return result.facets?.[opt.field]?.terms || [];
+                      }) as unknown as TermFacetResult[];
+                    }
+                    return [];
+                  },
                   total: (result: QueryResult) => result.hits?.total || 0,
                   id,
                 });

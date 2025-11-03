@@ -42,7 +42,7 @@ export const BasicUsage = () => {
 export const SemanticSearch = () => {
   return (
     <Antfly url={url} table={tableName}>
-      <SearchBox id="main" semanticIndexes={["tico_gemma"]} limit={10} />
+      <SearchBox id="main" semanticIndexes={["tico_embeddings"]} limit={10} />
       <div style={{ display: "inline-block" }}>
         <Facet id="author" fields={["AUTR"]} />
       </div>
@@ -83,7 +83,9 @@ export const WithUrlParams = () => {
       <Results
         id="result"
         initialPage={initialValues.get("resultPage") as number}
-        items={(data) => data.map(({ _source, _id }) => <div key={_id}>{String(_source?.TICO)}</div>)}
+        items={(data) =>
+          data.map(({ _source, _id }) => <div key={_id}>{String(_source?.TICO)}</div>)
+        }
       />
     </Antfly>
   );
@@ -92,7 +94,7 @@ export const WithUrlParams = () => {
 export const Wikipedia = () => {
   return (
     <Antfly url={"http://localhost:8080"} table="wikipedia">
-      <SearchBox id="main" semanticIndexes={["body_nomic"]} limit={10} />
+      <SearchBox id="main" semanticIndexes={["tico_embeddings"]} limit={10} />
       <ActiveFilters />
       <Results
         id="result"

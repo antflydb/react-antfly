@@ -8,6 +8,7 @@ export interface Widget {
     rootQuery?: boolean;
     isAutosuggest?: boolean;
     wantResults?: boolean;
+    wantFacets?: boolean;
     query?: unknown;
     semanticQuery?: string;
     isSemantic?: boolean;
@@ -16,6 +17,10 @@ export interface Widget {
     table?: string | string[];
     filterQuery?: unknown;
     exclusionQuery?: unknown;
+    facetOptions?: Array<{
+        field: string;
+        size?: number;
+    }>;
     configuration?: {
         fields?: string[];
         size?: number;
@@ -25,7 +30,7 @@ export interface Widget {
     };
     result?: {
         data?: QueryHit[];
-        facetData?: TermFacetResult[];
+        facetData?: TermFacetResult[] | TermFacetResult[][];
         total?: number | {
             value: number;
         };
@@ -48,6 +53,7 @@ export type SharedAction = {
     rootQuery?: boolean;
     isAutosuggest?: boolean;
     wantResults?: boolean;
+    wantFacets?: boolean;
     query?: unknown;
     semanticQuery?: string;
     isSemantic?: boolean;
@@ -56,6 +62,10 @@ export type SharedAction = {
     table?: string | string[];
     filterQuery?: unknown;
     exclusionQuery?: unknown;
+    facetOptions?: Array<{
+        field: string;
+        size?: number;
+    }>;
     configuration?: Widget["configuration"];
     result?: Widget["result"];
 } | {

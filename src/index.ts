@@ -1,3 +1,4 @@
+import "./style.css";
 import Antfly from "./Antfly";
 import Results from "./Results";
 import SearchBox from "./SearchBox";
@@ -7,7 +8,7 @@ import Listener from "./Listener";
 import ActiveFilters from "./ActiveFilters";
 import QueryBuilder from "./QueryBuilder/QueryBuilder";
 import CustomWidget from "./CustomWidget";
-import Autosuggest from "./Autosuggest";
+import Autosuggest, { AutosuggestResults, AutosuggestFacets } from "./Autosuggest";
 import AnswerBox from "./AnswerBox";
 import RAGResults from "./RAGResults";
 import {
@@ -23,6 +24,7 @@ import {
   replaceCitations,
   renderAsMarkdownLinks,
   renderAsSequentialLinks,
+  getCitedDocumentIds,
 } from "./citations";
 
 export {
@@ -38,6 +40,8 @@ export {
   QueryBuilder,
   CustomWidget,
   Autosuggest,
+  AutosuggestResults,
+  AutosuggestFacets,
   AnswerBox,
   RAGResults,
   multiquery as msearch,
@@ -48,6 +52,7 @@ export {
   replaceCitations,
   renderAsMarkdownLinks,
   renderAsSequentialLinks,
+  getCitedDocumentIds,
 };
 
 // Export types for users of the library
@@ -58,7 +63,7 @@ export type { FacetProps } from "./Facet";
 export type { PaginationProps } from "./Pagination";
 export type { ActiveFiltersProps, ActiveFilter } from "./ActiveFilters";
 export type { CustomWidgetProps } from "./CustomWidget";
-export type { AutosuggestProps } from "./Autosuggest";
+export type { AutosuggestProps, AutosuggestResultsProps, AutosuggestFacetsProps } from "./Autosuggest";
 export type { AnswerBoxProps } from "./AnswerBox";
 export type { RAGResultsProps } from "./RAGResults";
 export type { QueryBuilderProps, QueryBuilderRule, FieldOption } from "./QueryBuilder/QueryBuilder";

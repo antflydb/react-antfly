@@ -207,3 +207,33 @@ export function renderAsSequentialLinks(ids: string[], allCitationIds: string[])
     return `[[${sequentialNum}]](#hit-${id})`;
   }).join(', ');
 }
+
+/**
+ * Extract all cited document IDs from a summary text.
+ * Useful for filtering search results to only show documents that were cited.
+ *
+ * @param summary - The RAG summary text containing citations
+ * @returns Array of unique document IDs in order of first appearance
+ *
+ * @example
+ * ```typescript
+ * const summary = "The system uses [doc_id 1] and [2, 3].";
+ * const citedIds = getCitedDocumentIds(summary);
+ * // Returns: ["1", "2", "3"]
+ *
+ * // Filter hits to only cited documents
+ * const citedHits = hits.filter(hit => citedIds.includes(hit._id));
+ * ```
+ */
+export function getCitedDocumentIds(summary: string): string[] {
+  const citations = parseCitations(summary);
+  const uniqueIds = new Set<string>();
+
+  for (const citation of citations) {
+    for (const id of citation.ids) {
+      uniqueIds.add(id);
+    }
+  }
+
+  return Array.from(uniqueIds);
+}

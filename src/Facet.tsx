@@ -44,7 +44,11 @@ export default function Facet({
   // Data from internal queries (Antfly queries are performed via Listener)
   const widget = widgets.get(id);
   const { result } = widget || {};
-  const data: TermFacetResult[] = (result && result.facetData) || [];
+  // Facet component always expects a single array, not array of arrays
+  const rawFacetData = result?.facetData;
+  const data: TermFacetResult[] = (rawFacetData && Array.isArray(rawFacetData) && !Array.isArray(rawFacetData[0]))
+    ? rawFacetData as TermFacetResult[]
+    : [];
 
   // Update widgets properties on state change.
   useEffect(() => {

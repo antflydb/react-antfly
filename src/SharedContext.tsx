@@ -9,6 +9,7 @@ export interface Widget {
   rootQuery?: boolean;
   isAutosuggest?: boolean;
   wantResults?: boolean;
+  wantFacets?: boolean; // Whether widget wants facet data
   query?: unknown;
   semanticQuery?: string;
   isSemantic?: boolean;
@@ -17,6 +18,7 @@ export interface Widget {
   table?: string | string[]; // Table override (single or multi-table support)
   filterQuery?: unknown; // Filter query to constrain search results
   exclusionQuery?: unknown; // Exclusion query to exclude matches
+  facetOptions?: Array<{ field: string; size?: number }>; // Facet configurations
   configuration?: {
     fields?: string[];
     size?: number;
@@ -26,7 +28,7 @@ export interface Widget {
   };
   result?: {
     data?: QueryHit[];
-    facetData?: TermFacetResult[];
+    facetData?: TermFacetResult[] | TermFacetResult[][]; // Can be array of arrays for multiple facets
     total?: number | { value: number };
     error?: string;
   };
@@ -50,6 +52,7 @@ export type SharedAction =
       rootQuery?: boolean;
       isAutosuggest?: boolean;
       wantResults?: boolean;
+      wantFacets?: boolean;
       query?: unknown;
       semanticQuery?: string;
       isSemantic?: boolean;
@@ -58,6 +61,7 @@ export type SharedAction =
       table?: string | string[]; // Table override
       filterQuery?: unknown; // Filter query to constrain search results
       exclusionQuery?: unknown; // Exclusion query to exclude matches
+      facetOptions?: Array<{ field: string; size?: number }>;
       configuration?: Widget["configuration"];
       result?: Widget["result"];
     }

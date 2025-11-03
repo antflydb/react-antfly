@@ -1,7 +1,30 @@
-import React, { useState, useEffect, useCallback, useRef, ReactNode, useMemo, useId } from "react";
+import React, { useState, useEffect, useCallback, useRef, ReactNode, useMemo, useId, createContext, useContext, Children } from "react";
 import { useSharedContext } from "./SharedContext";
-import { QueryHit } from "@antfly/sdk";
+import { QueryHit, TermFacetResult } from "@antfly/sdk";
 import { disjunctsFrom, conjunctsFrom } from "./utils";
+
+// Context for sharing state between Autosuggest parent and children
+interface AutosuggestContextValue {
+  query: string;
+  results: QueryHit[];
+  facetData: Map<string, TermFacetResult[]>;
+  selectedIndex: number;
+  handleSelect: (value: string) => void;
+  isLoading: boolean;
+  registerItem: (id: string) => number;
+  unregisterItem: (id: string) => void;
+  fields?: string[];
+}
+
+const AutosuggestContext = createContext<AutosuggestContextValue | null>(null);
+
+export function useAutosuggestContext() {
+  const context = useContext(AutosuggestContext);
+  if (!context) {
+    throw new Error("Component must be used within Autosuggest");
+  }
+  return context;
+}
 
 export interface AutosuggestProps {
   fields?: string[];
@@ -19,6 +42,42 @@ export interface AutosuggestProps {
   onSuggestionSelect?: (hit: QueryHit) => void;
   containerRef?: React.RefObject<HTMLDivElement | null>;
   isOpen?: boolean;
+  // Composable children
+  children?: ReactNode;
+  layout?: "vertical" | "horizontal" | "grid" | "custom";
+  className?: string;
+  dropdownClassName?: string;
+}
+
+export interface AutosuggestResultsProps {
+  limit?: number;
+  renderItem?: (hit: QueryHit, index: number) => ReactNode;
+  onSelect?: (hit: QueryHit) => void;
+  filter?: (hit: QueryHit) => boolean;
+  className?: string;
+  itemClassName?: string;
+  selectedItemClassName?: string;
+  header?: ReactNode | ((count: number) => ReactNode);
+  footer?: ReactNode;
+  emptyMessage?: ReactNode;
+}
+
+export interface AutosuggestFacetsProps {
+  field: string;
+  size?: number;
+  label?: string;
+  order?: "count" | "term" | "reverse_count" | "reverse_term";
+  renderItem?: (facet: TermFacetResult, index: number) => ReactNode;
+  renderSection?: (field: string, label: string, terms: TermFacetResult[]) => ReactNode;
+  onSelect?: (facet: TermFacetResult) => void;
+  clickable?: boolean;
+  filter?: (facet: TermFacetResult) => boolean;
+  className?: string;
+  itemClassName?: string;
+  sectionClassName?: string;
+  header?: ReactNode | ((field: string, label: string) => ReactNode);
+  footer?: ReactNode;
+  emptyMessage?: ReactNode;
 }
 
 export default function Autosuggest({
@@ -36,6 +95,10 @@ export default function Autosuggest({
   onSuggestionSelect,
   containerRef,
   isOpen: isOpenProp,
+  children,
+  layout = "vertical",
+  className,
+  dropdownClassName,
 }: AutosuggestProps) {
   const isSemanticEnabled = semanticIndexes && semanticIndexes.length > 0;
   // Default returnFields to fields if not specified
@@ -43,12 +106,29 @@ export default function Autosuggest({
   const [{ widgets }, dispatch] = useSharedContext();
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [isOpenOverride, setIsOpenOverride] = useState<boolean | null>(null);
-  const suggestionsRef = useRef<HTMLUListElement>(null);
+  const suggestionsRef = useRef<HTMLUListElement | HTMLDivElement>(null);
   const justSelectedRef = useRef(false);
   const prevSearchValueRef = useRef(searchValue);
   const id = `autosuggest-${useId()}`;
 
-  // Get suggestions from widget result
+  // Item registration for keyboard navigation
+  const itemsRef = useRef<Map<string, number>>(new Map());
+  const nextIndexRef = useRef(0);
+
+  // Scan children to collect facet configurations
+  const facetConfigs = useMemo(() => {
+    if (!children) return [];
+    const configs: Array<{ field: string; size: number }> = [];
+    Children.forEach(children, (child) => {
+      if (React.isValidElement(child) && child.type === AutosuggestFacets) {
+        const props = child.props as AutosuggestFacetsProps;
+        configs.push({ field: props.field, size: props.size || 5 });
+      }
+    });
+    return configs;
+  }, [children]);
+
+  // Get suggestions and facet data from widget result
   const widget = widgets.get(id);
 
   // Use hits directly as suggestions
@@ -56,6 +136,21 @@ export default function Autosuggest({
     const rawData = (widget?.result?.data as QueryHit[]) || [];
     return rawData.slice(0, limit);
   }, [widget?.result?.data, limit]);
+
+  // Extract facet data from widget result
+  const facetData = useMemo(() => {
+    const data = new Map<string, TermFacetResult[]>();
+    if (widget?.result?.facetData) {
+      // facetData is an array of arrays, one per facet configuration
+      facetConfigs.forEach((config, index) => {
+        const facetTerms = widget.result?.facetData?.[index] as TermFacetResult[] | undefined;
+        if (facetTerms) {
+          data.set(config.field, facetTerms);
+        }
+      });
+    }
+    return data;
+  }, [widget?.result?.facetData, facetConfigs]);
 
   // Derive isOpen from searchValue, with ability to override
   // Priority: isOpenProp (from parent) > isOpenOverride (internal) > shouldShow (default)
@@ -115,6 +210,14 @@ export default function Autosuggest({
           ? conjunctsFrom(new Map([["filter", filterQuery], ["query", baseQuery]]))
           : baseQuery;
 
+      // Build facet options if facet children are present
+      const facetOptions = facetConfigs.length > 0
+        ? facetConfigs.map((config) => ({
+            field: config.field,
+            size: config.size,
+          }))
+        : undefined;
+
       // Register widget to fetch its own query results
       dispatch({
         type: "setWidget",
@@ -126,11 +229,13 @@ export default function Autosuggest({
         isAutosuggest: true,
         isSemantic: isSemanticEnabled,
         wantResults: canQuery,
+        wantFacets: facetConfigs.length > 0,
         query: finalQuery,
         semanticQuery: isSemanticEnabled ? searchValue : undefined,
         table: table,
         filterQuery: filterQuery,
         exclusionQuery: exclusionQuery,
+        facetOptions: facetOptions,
         configuration: canQuery
           ? isSemanticEnabled
             ? {
@@ -180,20 +285,64 @@ export default function Autosuggest({
     filterQuery,
     exclusionQuery,
     shouldShow,
+    facetConfigs,
   ]);
 
   // Cleanup on unmount
   useEffect(() => () => dispatch({ type: "deleteWidget", key: id }), [dispatch, id]);
 
+  // Item registration callbacks for child components
+  const registerItem = useCallback((itemId: string): number => {
+    if (!itemsRef.current.has(itemId)) {
+      const index = nextIndexRef.current++;
+      itemsRef.current.set(itemId, index);
+      return index;
+    }
+    return itemsRef.current.get(itemId)!;
+  }, []);
+
+  const unregisterItem = useCallback((itemId: string) => {
+    itemsRef.current.delete(itemId);
+  }, []);
+
+  // Handle selection (for child components)
+  const handleSelect = useCallback(
+    (value: string) => {
+      justSelectedRef.current = true;
+      // For backward compatibility, create a minimal QueryHit if using children
+      if (onSuggestionSelect && children) {
+        // Find the actual hit if it's from suggestions
+        const hit = suggestions.find((s) => s._id === value);
+        if (hit) {
+          onSuggestionSelect(hit);
+        } else {
+          // It's a facet term, create a minimal hit
+          onSuggestionSelect({ _id: value, _score: 0, _source: {} });
+        }
+      }
+      setIsOpenOverride(false);
+      setSelectedIndex(-1);
+    },
+    [onSuggestionSelect, suggestions, children],
+  );
+
+  // Total number of navigable items (for composable mode)
+  const totalItems = useMemo(() => {
+    if (!children) return suggestions.length;
+    return nextIndexRef.current;
+  }, [children, suggestions.length]);
+
   // Handle keyboard navigation
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
-      if (!isOpen || suggestions.length === 0) return;
+      if (!isOpen) return;
+      const maxItems = children ? totalItems : suggestions.length;
+      if (maxItems === 0) return;
 
       switch (e.key) {
         case "ArrowDown":
           e.preventDefault();
-          setSelectedIndex((prev) => (prev < suggestions.length - 1 ? prev + 1 : prev));
+          setSelectedIndex((prev) => (prev < maxItems - 1 ? prev + 1 : prev));
           break;
         case "ArrowUp":
           e.preventDefault();
@@ -201,10 +350,14 @@ export default function Autosuggest({
           break;
         case "Enter":
           e.preventDefault();
-          if (selectedIndex >= 0 && selectedIndex < suggestions.length) {
-            justSelectedRef.current = true;
-            onSuggestionSelect?.(suggestions[selectedIndex]);
-            setIsOpenOverride(false);
+          if (selectedIndex >= 0 && selectedIndex < maxItems) {
+            if (!children) {
+              // Legacy mode
+              justSelectedRef.current = true;
+              onSuggestionSelect?.(suggestions[selectedIndex]);
+              setIsOpenOverride(false);
+            }
+            // In composable mode, child components handle Enter via their own logic
           }
           break;
         case "Escape":
@@ -214,7 +367,7 @@ export default function Autosuggest({
           break;
       }
     },
-    [isOpen, suggestions, selectedIndex, onSuggestionSelect],
+    [isOpen, suggestions, selectedIndex, onSuggestionSelect, children, totalItems],
   );
 
   // Attach keyboard event listener
@@ -267,12 +420,61 @@ export default function Autosuggest({
     return <span className="react-af-autosuggest-term">{value ? String(value) : hit._id}</span>;
   };
 
+  // Context value for child components
+  const contextValue: AutosuggestContextValue = useMemo(
+    () => ({
+      query: searchValue,
+      results: suggestions,
+      facetData,
+      selectedIndex,
+      handleSelect,
+      isLoading: widget?.result === undefined,
+      registerItem,
+      unregisterItem,
+      fields,
+    }),
+    [searchValue, suggestions, facetData, selectedIndex, handleSelect, widget?.result, registerItem, unregisterItem, fields],
+  );
+
+  // If using children (composable mode)
+  if (children) {
+    // Reset item index on re-render
+    nextIndexRef.current = 0;
+    itemsRef.current.clear();
+
+    if (!isOpen) {
+      return null;
+    }
+
+    // Hide if there are no results and no facets
+    const hasResults = suggestions.length > 0;
+    const hasFacets = Array.from(facetData.values()).some(terms => terms.length > 0);
+
+    if (!hasResults && !hasFacets) {
+      return null;
+    }
+
+    // Build the layout classes and container
+    const layoutClass = layout !== "custom" ? `react-af-autosuggest-layout-${layout}` : "";
+    const containerClass = `react-af-autosuggest-container ${layoutClass} ${className || ""}`.trim();
+    const dropdownClass = `react-af-autosuggest-dropdown ${dropdownClassName || ""}`.trim();
+
+    return (
+      <AutosuggestContext.Provider value={contextValue}>
+        <div className={containerClass} ref={suggestionsRef as React.RefObject<HTMLDivElement | null>}>
+          <div className={dropdownClass}>{children}</div>
+        </div>
+      </AutosuggestContext.Provider>
+    );
+  }
+
+  // Legacy mode (no children)
   if (!isOpen || suggestions.length === 0) {
     return null;
   }
 
   return (
-    <ul className="react-af-autosuggest" ref={suggestionsRef}>
+    <ul className="react-af-autosuggest" ref={suggestionsRef as React.RefObject<HTMLUListElement>}>
       {suggestions.map((hit, index) => (
         <li
           key={hit._id}
@@ -286,5 +488,286 @@ export default function Autosuggest({
         </li>
       ))}
     </ul>
+  );
+}
+
+// AutosuggestResults Component
+export function AutosuggestResults({
+  limit,
+  renderItem,
+  onSelect: onSelectProp,
+  filter,
+  className,
+  itemClassName,
+  selectedItemClassName,
+  header,
+  footer,
+  emptyMessage,
+}: AutosuggestResultsProps) {
+  const {
+    results,
+    selectedIndex,
+    handleSelect,
+    registerItem,
+    unregisterItem,
+    fields,
+  } = useAutosuggestContext();
+
+  // Track item indices for keyboard navigation
+  const itemIndicesRef = useRef<Map<string, number>>(new Map());
+
+  // Filter and limit results
+  const displayResults = useMemo(() => {
+    let filtered = filter ? results.filter(filter) : results;
+    if (limit) {
+      filtered = filtered.slice(0, limit);
+    }
+    return filtered;
+  }, [results, filter, limit]);
+
+  // Register items for keyboard navigation
+  useEffect(() => {
+    displayResults.forEach((hit) => {
+      const itemId = `result-${hit._id}`;
+      const index = registerItem(itemId);
+      itemIndicesRef.current.set(hit._id, index);
+    });
+
+    return () => {
+      displayResults.forEach((hit) => {
+        const itemId = `result-${hit._id}`;
+        unregisterItem(itemId);
+        itemIndicesRef.current.delete(hit._id);
+      });
+    };
+  }, [displayResults, registerItem, unregisterItem]);
+
+  // Handle click
+  const handleClick = useCallback(
+    (hit: QueryHit) => {
+      if (onSelectProp) {
+        onSelectProp(hit);
+      }
+      handleSelect(hit._id);
+    },
+    [onSelectProp, handleSelect],
+  );
+
+  // Handle Enter key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Enter" && selectedIndex >= 0) {
+        const hit = displayResults.find((h) => itemIndicesRef.current.get(h._id) === selectedIndex);
+        if (hit) {
+          e.preventDefault();
+          handleClick(hit);
+        }
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [selectedIndex, displayResults, handleClick]);
+
+  // Default renderer
+  const defaultRenderItem = (hit: QueryHit) => {
+    const firstField = fields?.[0]?.replace(/__(2gram|keyword)$/, "");
+    const value = firstField ? hit._source?.[firstField] : undefined;
+    return <span className="react-af-autosuggest-term">{value ? String(value) : hit._id}</span>;
+  };
+
+  if (displayResults.length === 0 && emptyMessage) {
+    return <div className="react-af-autosuggest-results-empty">{emptyMessage}</div>;
+  }
+
+  if (displayResults.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className={`react-af-autosuggest-results ${className || ""}`.trim()}>
+      {header && (
+        <div className="react-af-autosuggest-results-header">
+          {typeof header === "function" ? header(displayResults.length) : header}
+        </div>
+      )}
+      <ul className="react-af-autosuggest-results-list">
+        {displayResults.map((hit) => {
+          const itemIndex = itemIndicesRef.current.get(hit._id);
+          const isSelected = itemIndex === selectedIndex;
+          const itemClass = `react-af-autosuggest-result-item ${itemClassName || ""} ${
+            isSelected ? selectedItemClassName || "react-af-autosuggest-item-selected" : ""
+          }`.trim();
+
+          return (
+            <li key={hit._id} className={itemClass} onClick={() => handleClick(hit)}>
+              {renderItem ? renderItem(hit, itemIndex || 0) : defaultRenderItem(hit)}
+            </li>
+          );
+        })}
+      </ul>
+      {footer && <div className="react-af-autosuggest-results-footer">{footer}</div>}
+    </div>
+  );
+}
+
+// AutosuggestFacets Component
+export function AutosuggestFacets({
+  field,
+  size = 5,
+  label,
+  order = "count",
+  renderItem,
+  renderSection,
+  onSelect: onSelectProp,
+  clickable = true,
+  filter,
+  className,
+  itemClassName,
+  sectionClassName,
+  header,
+  footer,
+  emptyMessage,
+}: AutosuggestFacetsProps) {
+  const {
+    facetData,
+    selectedIndex,
+    handleSelect,
+    registerItem,
+    unregisterItem,
+  } = useAutosuggestContext();
+
+  // Track item indices for keyboard navigation
+  const itemIndicesRef = useRef<Map<string, number>>(new Map());
+
+  // Get facet terms for this field
+  const rawTerms = facetData.get(field) || [];
+
+  // Sort facet terms
+  const sortedTerms = useMemo(() => {
+    let terms = [...rawTerms];
+    switch (order) {
+      case "count":
+        terms.sort((a, b) => b.count - a.count);
+        break;
+      case "reverse_count":
+        terms.sort((a, b) => a.count - b.count);
+        break;
+      case "term":
+        terms.sort((a, b) => a.term.localeCompare(b.term));
+        break;
+      case "reverse_term":
+        terms.sort((a, b) => b.term.localeCompare(a.term));
+        break;
+    }
+    return terms;
+  }, [rawTerms, order]);
+
+  // Filter and limit terms
+  const displayTerms = useMemo(() => {
+    let filtered = filter ? sortedTerms.filter(filter) : sortedTerms;
+    filtered = filtered.slice(0, size);
+    return filtered;
+  }, [sortedTerms, filter, size]);
+
+  // Register items for keyboard navigation
+  useEffect(() => {
+    if (!clickable) return;
+
+    displayTerms.forEach((term) => {
+      const itemId = `facet-${field}-${term.term}`;
+      const index = registerItem(itemId);
+      itemIndicesRef.current.set(term.term, index);
+    });
+
+    return () => {
+      displayTerms.forEach((term) => {
+        const itemId = `facet-${field}-${term.term}`;
+        unregisterItem(itemId);
+        itemIndicesRef.current.delete(term.term);
+      });
+    };
+  }, [displayTerms, clickable, field, registerItem, unregisterItem]);
+
+  // Handle click
+  const handleClick = useCallback(
+    (facet: TermFacetResult) => {
+      if (!clickable) return;
+      if (onSelectProp) {
+        onSelectProp(facet);
+      }
+      handleSelect(facet.term);
+    },
+    [clickable, onSelectProp, handleSelect],
+  );
+
+  // Handle Enter key
+  useEffect(() => {
+    if (!clickable) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Enter" && selectedIndex >= 0) {
+        const facet = displayTerms.find((t) => itemIndicesRef.current.get(t.term) === selectedIndex);
+        if (facet) {
+          e.preventDefault();
+          handleClick(facet);
+        }
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [clickable, selectedIndex, displayTerms, handleClick]);
+
+  // Default renderer
+  const defaultRenderItem = (facet: TermFacetResult) => (
+    <span className="react-af-autosuggest-facet-term">
+      {facet.term} <span className="react-af-autosuggest-facet-count">({facet.count})</span>
+    </span>
+  );
+
+  if (displayTerms.length === 0 && emptyMessage) {
+    return <div className="react-af-autosuggest-facets-empty">{emptyMessage}</div>;
+  }
+
+  if (displayTerms.length === 0) {
+    return null;
+  }
+
+  // Use custom section renderer if provided
+  if (renderSection) {
+    return <div className={className}>{renderSection(field, label || field, displayTerms)}</div>;
+  }
+
+  return (
+    <div className={`react-af-autosuggest-facets ${sectionClassName || ""} ${className || ""}`.trim()}>
+      {header && (
+        <div className="react-af-autosuggest-facets-header">
+          {typeof header === "function" ? header(field, label || field) : header}
+        </div>
+      )}
+      {label && <div className="react-af-autosuggest-facet-section-label">{label}</div>}
+      <ul className="react-af-autosuggest-facets-list">
+        {displayTerms.map((facet, index) => {
+          const itemIndex = itemIndicesRef.current.get(facet.term);
+          const isSelected = itemIndex === selectedIndex;
+          const itemClass = `react-af-autosuggest-facet-item ${itemClassName || ""} ${
+            isSelected ? "react-af-autosuggest-item-selected" : ""
+          } ${clickable ? "react-af-autosuggest-facet-item-clickable" : ""}`.trim();
+
+          return (
+            <li
+              key={facet.term}
+              className={itemClass}
+              onClick={() => handleClick(facet)}
+              style={{ cursor: clickable ? "pointer" : "default" }}
+            >
+              {renderItem ? renderItem(facet, index) : defaultRenderItem(facet)}
+            </li>
+          );
+        })}
+      </ul>
+      {footer && <div className="react-af-autosuggest-facets-footer">{footer}</div>}
+    </div>
   );
 }
