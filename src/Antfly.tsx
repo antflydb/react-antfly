@@ -28,6 +28,9 @@ export default function Antfly({ children, url, table, onChange, headers = {} }:
   const reducer = (state: SharedState, action: SharedAction): SharedState => {
     switch (action.type) {
       case "setWidget": {
+        // Get existing widget to preserve result when isLoading
+        const existingWidget = state.widgets.get(action.key);
+
         const widget = {
           id: action.key,
           needsQuery: action.needsQuery,
@@ -46,8 +49,14 @@ export default function Antfly({ children, url, table, onChange, headers = {} }:
           filterQuery: action.filterQuery,
           exclusionQuery: action.exclusionQuery,
           facetOptions: action.facetOptions,
+          isLoading: action.isLoading,
           configuration: action.configuration,
-          result: action.result,
+          // Preserve previous result if isLoading and no new result provided
+          result: action.result !== undefined
+            ? action.result
+            : (action.isLoading && existingWidget?.result)
+              ? existingWidget.result
+              : undefined,
         };
         // Create a new Map to maintain immutability
         const newWidgets = new Map(state.widgets);

@@ -19,6 +19,7 @@ export interface Widget {
   filterQuery?: unknown; // Filter query to constrain search results
   exclusionQuery?: unknown; // Exclusion query to exclude matches
   facetOptions?: Array<{ field: string; size?: number }>; // Facet configurations
+  isLoading?: boolean; // Whether this widget is currently fetching results
   configuration?: {
     fields?: string[];
     size?: number;
@@ -62,6 +63,7 @@ export type SharedAction =
       filterQuery?: unknown; // Filter query to constrain search results
       exclusionQuery?: unknown; // Exclusion query to exclude matches
       facetOptions?: Array<{ field: string; size?: number }>;
+      isLoading?: boolean; // Whether this widget is currently fetching results
       configuration?: Widget["configuration"];
       result?: Widget["result"];
     }

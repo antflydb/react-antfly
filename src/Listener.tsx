@@ -386,6 +386,7 @@ export default function Listener({ children, onChange }: ListenerProps) {
                             total: 0,
                             error: (result as ErrorResult).message,
                           };
+                          widget.isLoading = false;
                           dispatch({ type: "setWidget", key: id, ...widget });
                         }
                       });
@@ -405,12 +406,14 @@ export default function Listener({ children, onChange }: ListenerProps) {
                               total: 0,
                               error: response.error || "Query failed",
                             };
+                            widget.isLoading = false;
                           } else {
                             widget.result = {
                               data: multiqueryData[key].data(response),
                               facetData: multiqueryData[key].facetData(response),
                               total: multiqueryData[key].total(response),
                             };
+                            widget.isLoading = false;
                           }
                           // Update widget
                           dispatch({ type: "setWidget", key: multiqueryData[key].id, ...widget });
@@ -429,6 +432,7 @@ export default function Listener({ children, onChange }: ListenerProps) {
                           total: 0,
                           error: "Unexpected error occurred",
                         };
+                        widget.isLoading = false;
                         dispatch({ type: "setWidget", key: id, ...widget });
                       }
                     });

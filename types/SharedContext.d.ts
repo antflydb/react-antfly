@@ -21,6 +21,7 @@ export interface Widget {
         field: string;
         size?: number;
     }>;
+    isLoading?: boolean;
     configuration?: {
         fields?: string[];
         size?: number;
@@ -66,6 +67,7 @@ export type SharedAction = {
         field: string;
         size?: number;
     }>;
+    isLoading?: boolean;
     configuration?: Widget["configuration"];
     result?: Widget["result"];
 } | {

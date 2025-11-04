@@ -253,7 +253,9 @@ export default function Autosuggest({
                 page: 1,
               }
           : undefined,
-        result: undefined,
+        // Don't clear result to prevent flashing - keep previous results visible while loading
+        // result: undefined,
+        isLoading: true, // Mark as loading to keep component mounted
       });
     } else {
       // Clear suggestions when search value is too short
@@ -429,12 +431,12 @@ export default function Autosuggest({
       facetData,
       selectedIndex,
       handleSelect,
-      isLoading: widget?.result === undefined,
+      isLoading: widget?.isLoading === true,
       registerItem,
       unregisterItem,
       fields,
     }),
-    [searchValue, suggestions, facetData, selectedIndex, handleSelect, widget?.result, registerItem, unregisterItem, fields],
+    [searchValue, suggestions, facetData, selectedIndex, handleSelect, widget?.isLoading, registerItem, unregisterItem, fields],
   );
 
   // Reset item indices when isOpen changes
@@ -451,11 +453,17 @@ export default function Autosuggest({
       return null;
     }
 
-    // Hide if there are no results and no facets
+    // Hide if there are no results and no facets (but keep visible if loading to prevent flash)
     const hasResults = suggestions.length > 0;
     const hasFacets = Array.from(facetData.values()).some(terms => terms.length > 0);
+    const isLoading = contextValue.isLoading;
 
-    if (!hasResults && !hasFacets) {
+    // Debug logging
+    console.log('Autosuggest render check:', { hasResults, hasFacets, isLoading, suggestionsLength: suggestions.length });
+
+    // Don't hide if we're loading - keep showing previous results
+    if (!hasResults && !hasFacets && !isLoading) {
+      console.log('Autosuggest returning null - hiding component');
       return null;
     }
 
