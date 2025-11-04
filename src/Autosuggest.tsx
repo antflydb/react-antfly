@@ -458,12 +458,8 @@ export default function Autosuggest({
     const hasFacets = Array.from(facetData.values()).some(terms => terms.length > 0);
     const isLoading = contextValue.isLoading;
 
-    // Debug logging
-    console.log('Autosuggest render check:', { hasResults, hasFacets, isLoading, suggestionsLength: suggestions.length });
-
     // Don't hide if we're loading - keep showing previous results
     if (!hasResults && !hasFacets && !isLoading) {
-      console.log('Autosuggest returning null - hiding component');
       return null;
     }
 

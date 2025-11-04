@@ -16,6 +16,8 @@ export interface AnswerBoxProps {
   children?: ReactNode;
   buttonLabel?: string;
   onSubmit?: (value: string) => void;
+  onInputChange?: (value: string) => void;
+  onEscape?: (clearInput: () => void) => boolean; // Receives clearInput function, return true to prevent default clear behavior
 }
 
 export default function AnswerBox({
@@ -32,6 +34,8 @@ export default function AnswerBox({
   children,
   buttonLabel = "Submit",
   onSubmit,
+  onInputChange,
+  onEscape,
 }: AnswerBoxProps) {
   const isSemanticEnabled = semanticIndexes && semanticIndexes.length > 0;
   const [, dispatch] = useSharedContext();
@@ -96,13 +100,20 @@ export default function AnswerBox({
   // Handle input changes (only update local state, don't trigger query)
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      setValue(e.target.value);
+      const newValue = e.target.value;
+      setValue(newValue);
+
+      // Call onInputChange callback if provided
+      if (onInputChange) {
+        onInputChange(newValue);
+      }
+
       // Open autosuggest if there are children (Autosuggest component)
-      if (children && e.target.value) {
+      if (children && newValue) {
         setIsSuggestOpen(true);
       }
     },
-    [children],
+    [children, onInputChange],
   );
 
   // Handle form submission
@@ -127,6 +138,10 @@ export default function AnswerBox({
   // Handle clear button click
   const handleClear = useCallback(() => {
     setValue("");
+    // Notify parent that input was cleared
+    if (onInputChange) {
+      onInputChange("");
+    }
     // Clear the widget state
     dispatch({
       type: "setWidget",
@@ -147,7 +162,7 @@ export default function AnswerBox({
       configuration: undefined,
       result: undefined,
     });
-  }, [dispatch, id, isSemanticEnabled, table, filterQuery, exclusionQuery]);
+  }, [dispatch, id, isSemanticEnabled, table, filterQuery, exclusionQuery, onInputChange]);
 
   // Handle autosuggest selection (fills input without submitting)
   const handleSuggestionSelect = useCallback((hit: unknown) => {
@@ -196,6 +211,14 @@ export default function AnswerBox({
     }
   }, [fields]);
 
+  // Simple function to clear just the input value (no widget state reset)
+  const clearInputOnly = useCallback(() => {
+    setValue("");
+    if (onInputChange) {
+      onInputChange("");
+    }
+  }, [onInputChange]);
+
   // Handle Enter and Esc key press
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -213,11 +236,21 @@ export default function AnswerBox({
         // Update widget state and trigger query
         update(value);
       } else if (e.key === "Escape") {
+        // Allow parent to handle escape if onEscape is provided
+        if (onEscape) {
+          const shouldPreventDefault = onEscape(clearInputOnly);
+          if (shouldPreventDefault) {
+            e.preventDefault();
+            return;
+          }
+        }
+
+        // Default behavior: clear the input
         e.preventDefault();
         handleClear();
       }
     },
-    [value, update, onSubmit, handleClear],
+    [value, update, onSubmit, onEscape, handleClear, clearInputOnly],
   );
 
   // Destroy widget from context on unmount
