@@ -1,7 +1,34 @@
-import React, { useState, useEffect, useCallback, useRef, ReactNode } from "react";
+/* eslint-disable react-refresh/only-export-components */
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+  ReactNode,
+  createContext,
+  useContext,
+  useMemo,
+} from "react";
 import { useSharedContext } from "./SharedContext";
 import { streamRAG, resolveTable } from "./utils";
-import { GeneratorConfig, RAGRequest, QueryHit } from "@antfly/sdk";
+import { GeneratorConfig, RAGRequest, QueryHit, RAGResult } from "@antfly/sdk";
+
+// Context for sharing RAG data with child components (e.g., AnswerFeedback)
+interface RAGResultsContextValue {
+  query: string;
+  result: RAGResult | null;
+  isStreaming: boolean;
+}
+
+const RAGResultsContext = createContext<RAGResultsContextValue | null>(null);
+
+export function useRAGResultsContext() {
+  const context = useContext(RAGResultsContext);
+  if (!context) {
+    throw new Error("useRAGResultsContext must be used within a RAGResults component");
+  }
+  return context;
+}
 
 export interface RAGResultsProps {
   id: string;
@@ -49,6 +76,7 @@ export interface RAGResultsProps {
   withCitations?: boolean;
   showHits?: boolean;
   fields?: string[];
+  children?: ReactNode;
 }
 
 export default function RAGResults({
@@ -62,6 +90,7 @@ export default function RAGResults({
   renderSummary,
   showHits = false,
   fields,
+  children,
 }: RAGResultsProps) {
   const [{ widgets, url, table: defaultTable, headers }, dispatch] = useSharedContext();
   const [summary, setSummary] = useState("");
@@ -253,11 +282,37 @@ export default function RAGResults({
     [error, showHits],
   );
 
+  // Build context value for child components (e.g., AnswerFeedback)
+  const contextValue = useMemo<RAGResultsContextValue>(() => {
+    const result: RAGResult | null = summary
+      ? ({
+          summary_result: { summary },
+          query_results: [
+            {
+              hits: {
+                hits,
+                total: { value: hits.length, relation: "eq" },
+              },
+              took: 0,
+              status: 200,
+            },
+          ],
+        } as unknown as RAGResult)
+      : null;
+
+    return {
+      query: currentQuery || "",
+      result,
+      isStreaming,
+    };
+  }, [currentQuery, summary, hits, isStreaming]);
+
   return (
-    <>
+    <RAGResultsContext.Provider value={contextValue}>
       {renderSummary
         ? renderSummary(summary, isStreaming, hits)
         : defaultRender(summary, isStreaming, hits)}
-    </>
+      {children}
+    </RAGResultsContext.Provider>
   );
 }

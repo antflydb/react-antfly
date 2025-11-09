@@ -102,6 +102,10 @@ npm run storybook
 - It comes with **no style** so it's the developers responsibility to implement their own.
 - **35.32KB gzipped** for the whole lib, compatible with old browsers: >0.03% usage.
 
+## Documentation
+
+- **[Answer Feedback](docs/feedback.md)** - Collect user ratings and comments on AI-generated answers
+
 ## Acknowledgements
 
 This work is based off the awesome work by [react-elasticsearch](https://github.com/betagouv/react-elasticsearch).

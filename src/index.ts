@@ -10,7 +10,13 @@ import QueryBuilder from "./QueryBuilder/QueryBuilder";
 import CustomWidget from "./CustomWidget";
 import Autosuggest, { AutosuggestResults, AutosuggestFacets } from "./Autosuggest";
 import AnswerBox from "./AnswerBox";
-import RAGResults from "./RAGResults";
+import RAGResults, { useRAGResultsContext } from "./RAGResults";
+import AnswerFeedback from "./AnswerFeedback";
+import {
+  renderThumbsUpDown,
+  renderStars,
+  renderNumeric,
+} from "./feedback-renderers";
 import {
   fromUrlQueryString,
   toUrlQueryString,
@@ -44,6 +50,11 @@ export {
   AutosuggestFacets,
   AnswerBox,
   RAGResults,
+  useRAGResultsContext,
+  AnswerFeedback,
+  renderThumbsUpDown,
+  renderStars,
+  renderNumeric,
   multiquery as msearch,
   initializeAntflyClient,
   getAntflyClient,
@@ -66,6 +77,7 @@ export type { CustomWidgetProps } from "./CustomWidget";
 export type { AutosuggestProps, AutosuggestResultsProps, AutosuggestFacetsProps } from "./Autosuggest";
 export type { AnswerBoxProps } from "./AnswerBox";
 export type { RAGResultsProps } from "./RAGResults";
+export type { AnswerFeedbackProps, FeedbackResult } from "./AnswerFeedback";
 export type { QueryBuilderProps, QueryBuilderRule, FieldOption } from "./QueryBuilder/QueryBuilder";
 export type { RuleProps } from "./QueryBuilder/Rule";
 export type { Operator, Combinator } from "./QueryBuilder/utils";

@@ -456,10 +456,11 @@ export default function Autosuggest({
     // Hide if there are no results and no facets (but keep visible if loading to prevent flash)
     const hasResults = suggestions.length > 0;
     const hasFacets = Array.from(facetData.values()).some(terms => terms.length > 0);
-    const isLoading = contextValue.isLoading;
+    // Extract isLoading from widget directly instead of from contextValue to avoid ref access warning
+    const isCurrentlyLoading = widget?.isLoading === true;
 
     // Don't hide if we're loading - keep showing previous results
-    if (!hasResults && !hasFacets && !isLoading) {
+    if (!hasResults && !hasFacets && !isCurrentlyLoading) {
       return null;
     }
 
