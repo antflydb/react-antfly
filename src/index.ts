@@ -10,7 +10,10 @@ import QueryBuilder from "./QueryBuilder/QueryBuilder";
 import CustomWidget from "./CustomWidget";
 import Autosuggest, { AutosuggestResults, AutosuggestFacets } from "./Autosuggest";
 import AnswerBox from "./AnswerBox";
+import RAGBox from "./RAGBox";
 import RAGResults, { useRAGResultsContext } from "./RAGResults";
+import AnswerResults from "./AnswerResults";
+import { useAnswerResultsContext } from "./AnswerResultsContext";
 import AnswerFeedback from "./AnswerFeedback";
 import {
   renderThumbsUpDown,
@@ -24,6 +27,7 @@ import {
   initializeAntflyClient,
   getAntflyClient,
   streamRAG,
+  streamAnswer,
 } from "./utils";
 import {
   parseCitations,
@@ -49,8 +53,11 @@ export {
   AutosuggestResults,
   AutosuggestFacets,
   AnswerBox,
+  RAGBox,
   RAGResults,
   useRAGResultsContext,
+  AnswerResults,
+  useAnswerResultsContext,
   AnswerFeedback,
   renderThumbsUpDown,
   renderStars,
@@ -59,6 +66,7 @@ export {
   initializeAntflyClient,
   getAntflyClient,
   streamRAG,
+  streamAnswer,
   parseCitations,
   replaceCitations,
   renderAsMarkdownLinks,
@@ -76,12 +84,22 @@ export type { ActiveFiltersProps, ActiveFilter } from "./ActiveFilters";
 export type { CustomWidgetProps } from "./CustomWidget";
 export type { AutosuggestProps, AutosuggestResultsProps, AutosuggestFacetsProps } from "./Autosuggest";
 export type { AnswerBoxProps } from "./AnswerBox";
+export type { RAGBoxProps } from "./RAGBox";
 export type { RAGResultsProps } from "./RAGResults";
+export type { AnswerResultsProps } from "./AnswerResults";
+export type { AnswerResultsContextValue } from "./AnswerResultsContext";
 export type { AnswerFeedbackProps, FeedbackResult } from "./AnswerFeedback";
 export type { QueryBuilderProps, QueryBuilderRule, FieldOption } from "./QueryBuilder/QueryBuilder";
 export type { RuleProps } from "./QueryBuilder/Rule";
 export type { Operator, Combinator } from "./QueryBuilder/utils";
 export type { SharedState, SharedAction, Widget } from "./SharedContext";
-export type { MultiqueryRequest, RAGCallbacks } from "./utils";
-export type { RAGRequest, RAGResult, SummarizeResult, GeneratorConfig } from "@antfly/sdk";
+export type { MultiqueryRequest, RAGCallbacks, AnswerCallbacks } from "./utils";
+export type {
+  RAGRequest,
+  RAGResult,
+  SummarizeResult,
+  GeneratorConfig,
+  AnswerAgentRequest,
+  AnswerAgentResult,
+} from "@antfly/sdk";
 export type { Citation, CitationRenderOptions } from "./citations";

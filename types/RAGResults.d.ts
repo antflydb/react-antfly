@@ -1,10 +1,11 @@
-import { ReactNode } from 'react';
+import { default as React, ReactNode } from 'react';
 import { GeneratorConfig, QueryHit, RAGResult } from '@antfly/sdk';
-interface RAGResultsContextValue {
+export interface RAGResultsContextValue {
     query: string;
     result: RAGResult | null;
     isStreaming: boolean;
 }
+export declare const RAGResultsContext: React.Context<RAGResultsContextValue | null>;
 export declare function useRAGResultsContext(): RAGResultsContextValue;
 export interface RAGResultsProps {
     id: string;
@@ -55,5 +56,4 @@ export interface RAGResultsProps {
     children?: ReactNode;
 }
 export default function RAGResults({ id, answerBoxId, summarizer, systemPrompt, table, filterQuery, exclusionQuery, renderSummary, showHits, fields, children, }: RAGResultsProps): import("react/jsx-runtime").JSX.Element;
-export {};
 //# sourceMappingURL=RAGResults.d.ts.map

@@ -6,12 +6,36 @@ import AnswerFeedback from "./AnswerFeedback";
 import { renderThumbsUpDown, renderStars, renderNumeric } from "./feedback-renderers";
 import { RAGResult } from "@antfly/sdk";
 
-// Create a mock context that matches RAGResultsContextValue
-const RAGResultsContext = createContext<{
-  query: string;
-  result: RAGResult | null;
-  isStreaming: boolean;
-} | null>(null);
+// Mock RAGResults module with proper context export
+vi.mock("./RAGResults", () => {
+  const mockContext = createContext<{
+    query: string;
+    result: RAGResult | null;
+    isStreaming: boolean;
+  } | null>(null);
+
+  return {
+    RAGResultsContext: mockContext,
+    useRAGResultsContext: () => {
+      const context = useContext(mockContext);
+      if (!context) {
+        throw new Error("useRAGResultsContext must be used within a RAGResults component");
+      }
+      return context;
+    },
+  };
+});
+
+// Mock AnswerResultsContext module (returns null since we're testing RAG context)
+vi.mock("./AnswerResultsContext", () => ({
+  AnswerResultsContext: createContext(null),
+  useAnswerResultsContext: () => {
+    throw new Error("useAnswerResultsContext must be used within an AnswerResults component");
+  },
+}));
+
+// Import the mocked context after mocking
+const { RAGResultsContext } = await import("./RAGResults");
 
 // Mock context provider for testing
 const MockRAGResultsProvider = ({
@@ -47,17 +71,6 @@ const MockRAGResultsProvider = ({
     </RAGResultsContext.Provider>
   );
 };
-
-// Mock useRAGResultsContext hook
-vi.mock("./RAGResults", () => ({
-  useRAGResultsContext: () => {
-    const context = useContext(RAGResultsContext);
-    if (!context) {
-      throw new Error("useRAGResultsContext must be used within a RAGResults component");
-    }
-    return context;
-  },
-}));
 
 describe("AnswerFeedback", () => {
   describe("basic rendering", () => {

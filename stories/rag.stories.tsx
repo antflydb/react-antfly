@@ -1,6 +1,6 @@
 import {
   Antfly,
-  AnswerBox,
+  RAGBox,
   RAGResults,
   Results,
   GeneratorConfig,
@@ -33,49 +33,14 @@ export const BasicRAG = () => {
     <Antfly url={url} table={tableName}>
       <h1>Basic RAG Example</h1>
       <p>Ask a question and get an AI-generated summary based on search results.</p>
-      <pre>{`<AnswerBox id="question" fields={["TICO", "AUTR"]} />
+      <pre>{`<RAGBox id="question" fields={["TICO", "AUTR"]} />
 <RAGResults
   id="rag-answer"
   answerBoxId="question"
   summarizer={mockSummarizer}
 />`}</pre>
 
-      <AnswerBox id="question" fields={["TICO", "AUTR"]} placeholder="Ask a question..." />
-
-      <div style={{ marginTop: "20px" }}>
-        <RAGResults id="rag-answer" answerBoxId="question" summarizer={mockSummarizer} />
-      </div>
-    </Antfly>
-  );
-};
-
-/**
- * @deprecated This example uses deprecated props (withCitations, showCitations).
- * Citations are now inline in the markdown summary using [doc_id ...] format.
- * See StyledRAGExample for how to parse and display inline citations.
- */
-export const WithCitations = () => {
-  return (
-    <Antfly url={url} table={tableName}>
-      <h1>RAG with Inline Citations</h1>
-      <p>Citations are now embedded inline in the summary text using [doc_id ...] format.</p>
-      <p style={{ color: "#666", fontSize: "14px" }}>
-        <strong>Note:</strong> The <code>withCitations</code> and <code>showCitations</code> props
-        are deprecated. See the "Styled RAG Example" story for how to parse inline citations.
-      </p>
-      <pre>{`<AnswerBox id="question" fields={["TICO", "AUTR"]} />
-<RAGResults
-  id="rag-answer"
-  answerBoxId="question"
-  summarizer={mockSummarizer}
-/>
-// Citations are automatically inline in the summary`}</pre>
-
-      <AnswerBox
-        id="question"
-        fields={["TICO", "AUTR"]}
-        placeholder="Ask a question to see inline citations..."
-      />
+      <RAGBox id="question" fields={["TICO", "AUTR"]} placeholder="Ask a question..." />
 
       <div style={{ marginTop: "20px" }}>
         <RAGResults id="rag-answer" answerBoxId="question" summarizer={mockSummarizer} />
@@ -89,7 +54,7 @@ export const WithSystemPrompt = () => {
     <Antfly url={url} table={tableName}>
       <h1>RAG with Custom System Prompt</h1>
       <p>Guide the AI's behavior with a custom system prompt.</p>
-      <pre>{`<AnswerBox id="question" fields={["TICO"]} />
+      <pre>{`<RAGBox id="question" fields={["TICO"]} />
 <RAGResults
   id="rag-answer"
   answerBoxId="question"
@@ -97,7 +62,7 @@ export const WithSystemPrompt = () => {
   systemPrompt="You are a literary expert. Provide concise, scholarly answers."
 />`}</pre>
 
-      <AnswerBox id="question" fields={["TICO"]} placeholder="Ask about literature..." />
+      <RAGBox id="question" fields={["TICO"]} placeholder="Ask about literature..." />
 
       <div style={{ marginTop: "20px" }}>
         <RAGResults
@@ -133,7 +98,7 @@ export const WithCustomRendering = () => {
   )}
 />`}</pre>
 
-      <AnswerBox id="question" fields={["TICO", "AUTR"]} placeholder="Ask a question..." />
+      <RAGBox id="question" fields={["TICO", "AUTR"]} placeholder="Ask a question..." />
 
       <div style={{ marginTop: "20px" }}>
         <RAGResults
@@ -171,7 +136,7 @@ export const RAGWithSearchResults = () => {
       <p>
         Combine AI-generated summaries with traditional search results for the best of both worlds.
       </p>
-      <pre>{`<AnswerBox id="question" fields={["TICO", "AUTR"]} />
+      <pre>{`<RAGBox id="question" fields={["TICO", "AUTR"]} />
 
 {/* AI Summary with inline citations */}
 <RAGResults
@@ -186,7 +151,7 @@ export const RAGWithSearchResults = () => {
   items={(data) => data.map(hit => ...)}
 />`}</pre>
 
-      <AnswerBox
+      <RAGBox
         id="question"
         fields={["TICO", "AUTR"]}
         placeholder="Ask a question..."
@@ -229,7 +194,7 @@ export const StyledRAGExample = () => {
   // Helper function to parse summary text and convert [doc_id X] to clickable links
   return (
     <Antfly url={url} table={tableName}>
-      <h1>Styled RAG Interface with Streamdown.ai</h1>
+      <h1>Styled RAG Interface</h1>
       <p style={{ marginBottom: "20px", fontSize: "16px", lineHeight: "1.6" }}>
         This example demonstrates a fully-styled RAG interface using{" "}
         <a href="https://streamdown.ai/" target="_blank" rel="noopener noreferrer">
@@ -243,19 +208,19 @@ export const StyledRAGExample = () => {
           max-width: 1200px;
           margin: 0 auto;
         }
-        .react-af-answerbox form {
+        .react-af-ragbox form {
           display: flex;
           gap: 10px;
           margin: 20px 0;
         }
-        .react-af-answerbox input {
+        .react-af-ragbox input {
           flex: 1;
           padding: 14px;
           border: 2px solid #4a90e2;
           border-radius: 8px;
           font-size: 16px;
         }
-        .react-af-answerbox button {
+        .react-af-ragbox button {
           padding: 14px 28px;
           background: #4a90e2;
           color: white;
@@ -265,7 +230,7 @@ export const StyledRAGExample = () => {
           font-weight: 600;
           cursor: pointer;
         }
-        .react-af-answerbox button:hover:not(:disabled) {
+        .react-af-ragbox button:hover:not(:disabled) {
           background: #357abd;
         }
         .rag-summary-section {
@@ -387,7 +352,7 @@ export const StyledRAGExample = () => {
         }
 
         /* Autosuggest styles */
-        .react-af-answerbox {
+        .react-af-ragbox {
           position: relative;
         }
 
@@ -533,7 +498,7 @@ export const StyledRAGExample = () => {
       `}</style>
 
       <div className="rag-container">
-        <AnswerBox
+        <RAGBox
           id="question"
           semanticIndexes={["tico_embeddings"]}
           placeholder="Ask me anything about the books..."
@@ -569,7 +534,7 @@ export const StyledRAGExample = () => {
               )}
             />
           </Autosuggest>
-        </AnswerBox>
+        </RAGBox>
 
         <RAGResults
           id="rag-answer"
@@ -850,7 +815,7 @@ export const ComposableAutosuggestWithFacets = () => {
         </div>
 
         <div className="composable-demo-answerbox">
-          <AnswerBox
+          <RAGBox
             id="composable-question"
             fields={["TICO", "AUTR"]}
             placeholder="Start typing to see suggestions and facets..."
@@ -873,7 +838,7 @@ export const ComposableAutosuggestWithFacets = () => {
                 order="count"
               />
             </Autosuggest>
-          </AnswerBox>
+          </RAGBox>
         </div>
 
         <div style={{ marginTop: "40px" }}>
@@ -956,7 +921,7 @@ export const MultipleLanguageModels = () => {
       <h1>Compare Different Language Models</h1>
       <p>See how different models respond to the same question.</p>
 
-      <AnswerBox id="question" fields={["TICO", "AUTR"]} placeholder="Ask a question..." />
+      <RAGBox id="question" fields={["TICO", "AUTR"]} placeholder="Ask a question..." />
 
       <div
         style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginTop: "20px" }}

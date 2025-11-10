@@ -206,7 +206,7 @@ export default function Listener({ children, onChange }: ListenerProps) {
                   order_by: sort,
                 };
                 if (config.fields) {
-                  queryObj._source = config.fields;
+                  queryObj.fields = config.fields;
                 }
                 if (r.filterQuery) {
                   queryObj.filter_query = r.filterQuery;

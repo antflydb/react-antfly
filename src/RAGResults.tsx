@@ -14,13 +14,13 @@ import { streamRAG, resolveTable } from "./utils";
 import { GeneratorConfig, RAGRequest, QueryHit, RAGResult } from "@antfly/sdk";
 
 // Context for sharing RAG data with child components (e.g., AnswerFeedback)
-interface RAGResultsContextValue {
+export interface RAGResultsContextValue {
   query: string;
   result: RAGResult | null;
   isStreaming: boolean;
 }
 
-const RAGResultsContext = createContext<RAGResultsContextValue | null>(null);
+export const RAGResultsContext = createContext<RAGResultsContextValue | null>(null);
 
 export function useRAGResultsContext() {
   const context = useContext(RAGResultsContext);

@@ -1,6 +1,14 @@
 import qs from "qs";
-import type { RAGStreamCallbacks, QueryHit } from "@antfly/sdk";
-import { AntflyClient, QueryRequest, QueryResponses, RAGRequest, RAGResult } from "@antfly/sdk";
+import type { RAGStreamCallbacks, AnswerAgentStreamCallbacks, QueryHit } from "@antfly/sdk";
+import {
+  AntflyClient,
+  QueryRequest,
+  QueryResponses,
+  RAGRequest,
+  RAGResult,
+  AnswerAgentRequest,
+  AnswerAgentResult,
+} from "@antfly/sdk";
 
 export interface MultiqueryRequest {
   query: QueryRequest;
@@ -253,6 +261,143 @@ export async function streamRAG(
       }
     } else if (callbacks.onError) {
       callbacks.onError(new Error("Unknown error occurred during RAG streaming"));
+    }
+    return new AbortController();
+  }
+}
+
+// Answer Agent-related types and functions
+export interface AnswerCallbacks {
+  onClassification?: (data: {
+    route_type: "question" | "search";
+    improved_query: string;
+    semantic_query: string;
+    confidence: number;
+  }) => void;
+  onHit?: (hit: QueryHit) => void;
+  onReasoning?: (chunk: string) => void;
+  onAnswer?: (chunk: string) => void;
+  onFollowUpQuestion?: (question: string) => void;
+  onComplete?: () => void;
+  onError?: (error: Error | string) => void;
+  onAnswerAgentResult?: (result: AnswerAgentResult) => void;
+}
+
+/**
+ * Stream Answer Agent results from the Antfly /agents/answer endpoint using Server-Sent Events or JSON
+ * @param url - Base URL of the Antfly server (e.g., http://localhost:8080/api/v1)
+ * @param request - Answer agent request containing query and generator config
+ * @param headers - Optional HTTP headers for authentication
+ * @param callbacks - Structured callbacks for answer events (classification, keywords, query, hits, reasoning, answer, follow-up, complete, error)
+ * @returns AbortController to cancel the stream
+ */
+export async function streamAnswer(
+  url: string,
+  request: AnswerAgentRequest,
+  headers: Record<string, string> = {},
+  callbacks: AnswerCallbacks,
+): Promise<AbortController> {
+  try {
+    // Always create a fresh client with the base URL
+    const client = new AntflyClient({
+      baseUrl: url,
+      headers,
+    });
+
+    // Determine if we should stream based on presence of streaming callbacks
+    const shouldStream = !!(
+      callbacks.onClassification ||
+      callbacks.onHit ||
+      callbacks.onReasoning ||
+      callbacks.onAnswer ||
+      callbacks.onFollowUpQuestion
+    );
+
+    // Build the request with streaming flag
+    const answerRequest = {
+      ...request,
+      with_streaming: shouldStream,
+    };
+
+    // Build SDK callbacks if streaming
+    const sdkCallbacks: AnswerAgentStreamCallbacks | undefined = shouldStream
+      ? {
+          onClassification: callbacks.onClassification
+            ? (data: {
+                route_type: "question" | "search";
+                improved_query: string;
+                semantic_query: string;
+                confidence: number;
+              }) => {
+                callbacks.onClassification!(data);
+              }
+            : undefined,
+          onHit: callbacks.onHit
+            ? (hit: QueryHit) => {
+                callbacks.onHit!(hit);
+              }
+            : undefined,
+          onReasoning: callbacks.onReasoning
+            ? (chunk: string) => {
+                callbacks.onReasoning!(chunk);
+              }
+            : undefined,
+          onAnswer: callbacks.onAnswer
+            ? (chunk: string) => {
+                callbacks.onAnswer!(chunk);
+              }
+            : undefined,
+          onFollowUpQuestion: callbacks.onFollowUpQuestion
+            ? (question: string) => {
+                callbacks.onFollowUpQuestion!(question);
+              }
+            : undefined,
+          onDone: () => {
+            if (callbacks.onComplete) {
+              callbacks.onComplete();
+            }
+          },
+          onError: (error: string) => {
+            if (callbacks.onError) {
+              callbacks.onError(error);
+            }
+          },
+        }
+      : undefined;
+
+    // Call the answer agent endpoint
+    const result = await client.answerAgent(answerRequest, sdkCallbacks);
+
+    // Handle non-streaming response (AnswerAgentResult)
+    if (result && typeof result === "object" && "answer" in result) {
+      if (callbacks.onAnswerAgentResult) {
+        callbacks.onAnswerAgentResult(result as AnswerAgentResult);
+      }
+      if (callbacks.onComplete) {
+        callbacks.onComplete();
+      }
+      return new AbortController(); // Return a dummy controller for consistency
+    }
+
+    // Handle streaming response (AbortController)
+    if (result && typeof result === "object" && "abort" in result) {
+      return result as AbortController;
+    }
+
+    // Fallback
+    if (callbacks.onComplete) {
+      callbacks.onComplete();
+    }
+    return new AbortController();
+  } catch (error) {
+    if (error instanceof Error) {
+      if (error.name === "AbortError") {
+        // Stream was aborted - this is expected behavior
+      } else if (callbacks.onError) {
+        callbacks.onError(error);
+      }
+    } else if (callbacks.onError) {
+      callbacks.onError(new Error("Unknown error occurred during Answer Agent streaming"));
     }
     return new AbortController();
   }

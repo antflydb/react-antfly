@@ -1,6 +1,7 @@
-import React, { useState, useCallback, ReactNode } from "react";
-import { useRAGResultsContext } from "./RAGResults";
-import { RAGResult } from "@antfly/sdk";
+import React, { useState, useCallback, ReactNode, useContext, useEffect, useRef } from "react";
+import { RAGResultsContext } from "./RAGResults";
+import { AnswerResultsContext } from "./AnswerResultsContext";
+import { RAGResult, AnswerAgentResult } from "@antfly/sdk";
 
 export interface FeedbackResult {
   rating: number;
@@ -43,13 +44,22 @@ export interface AnswerFeedbackProps {
 
   /**
    * Callback invoked when the user submits feedback.
-   * Provides the feedback result along with the complete RAG context.
+   * Provides the feedback result along with the complete context (RAG or Answer Agent).
    *
    * @param data.feedback - The user's feedback (rating, scale, optional comment)
-   * @param data.result - The RAG result (summary + search hits)
+   * @param data.result - The result (RAG or Answer Agent)
    * @param data.query - The original query string
+   * @param data.context - Additional context from Answer Agent (classification, reasoning) if available
    */
-  onFeedback: (data: { feedback: FeedbackResult; result: RAGResult; query: string }) => void;
+  onFeedback: (data: {
+    feedback: FeedbackResult;
+    result: RAGResult | AnswerAgentResult;
+    query: string;
+    context?: {
+      classification?: { route_type: "question" | "search"; confidence: number };
+      reasoning?: string;
+    };
+  }) => void;
 
   /**
    * Placeholder text for the optional comment field
@@ -62,6 +72,18 @@ export interface AnswerFeedbackProps {
    * @default "Submit Feedback"
    */
   submitLabel?: string;
+
+  /**
+   * Message to show after feedback is submitted
+   * @default "Thank you for your feedback!"
+   */
+  thankYouMessage?: string;
+
+  /**
+   * Optional heading to show before feedback is submitted
+   * If not provided, no heading is shown
+   */
+  heading?: string;
 }
 
 export default function AnswerFeedback({
@@ -71,12 +93,39 @@ export default function AnswerFeedback({
   onFeedback,
   commentPlaceholder = "Add a comment (optional)",
   submitLabel = "Submit Feedback",
+  thankYouMessage = "Thank you for your feedback!",
+  heading,
 }: AnswerFeedbackProps) {
-  const { query, result, isStreaming } = useRAGResultsContext();
+  // Try to use Answer context first, fall back to RAG context
+  const answerContext = useContext(AnswerResultsContext);
+  const ragContext = useContext(RAGResultsContext);
+
+  // Determine which context to use
+  const activeContext = answerContext || ragContext;
+
+  if (!activeContext) {
+    throw new Error("AnswerFeedback must be used within either a RAGResults or AnswerResults component");
+  }
+
+  const { query, isStreaming } = activeContext;
+  const result = answerContext?.result || ragContext?.result || null;
+
   const [rating, setRating] = useState<number | null>(null);
   const [comment, setComment] = useState("");
   const [showCommentField, setShowCommentField] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const previousQueryRef = useRef<string>(query);
+
+  // Reset feedback state when query changes (new question submitted)
+  useEffect(() => {
+    if (previousQueryRef.current !== query) {
+      previousQueryRef.current = query;
+      setRating(null);
+      setComment("");
+      setShowCommentField(false);
+      setSubmitted(false);
+    }
+  }, [query]);
 
   // Validate and set rating
   const handleRate = useCallback(
@@ -113,18 +162,36 @@ export default function AnswerFeedback({
       ...(comment && { comment }),
     };
 
+    // Build context object for Answer Agent (if available)
+    const contextData = answerContext
+      ? {
+          classification: answerContext.classification || undefined,
+          reasoning: answerContext.reasoning || undefined,
+        }
+      : undefined;
+
     onFeedback({
       feedback: feedbackData,
       result,
       query,
+      ...(contextData && { context: contextData }),
     });
 
     setSubmitted(true);
-  }, [rating, scale, comment, result, query, onFeedback]);
+  }, [rating, scale, comment, result, query, answerContext, onFeedback]);
 
-  // Don't show feedback UI while streaming or if already submitted
-  if (isStreaming || submitted) {
+  // Don't show feedback UI while streaming
+  if (isStreaming) {
     return null;
+  }
+
+  // Show thank you message after submission
+  if (submitted) {
+    return (
+      <h4 className="react-af-answer-feedback-submitted">
+        {thankYouMessage}
+      </h4>
+    );
   }
 
   // Don't show feedback if there's no result yet
@@ -132,8 +199,29 @@ export default function AnswerFeedback({
     return null;
   }
 
+  // Check if answer/summary has actual content before showing feedback
+  // For Answer context, check that answer text exists
+  if (answerContext) {
+    if (!answerContext.answer || answerContext.answer.trim() === "") {
+      return null;
+    }
+  }
+  // For RAG context, check that summary exists
+  else if (ragContext) {
+    if (!ragContext.result?.summary_result?.summary || ragContext.result.summary_result.summary.trim() === "") {
+      return null;
+    }
+  }
+  // If neither context has content, don't render
+  else {
+    return null;
+  }
+
   return (
     <div className="react-af-answer-feedback">
+      {/* Optional heading */}
+      {heading && <h4 className="react-af-feedback-heading">{heading}</h4>}
+
       {/* Rating UI */}
       <div className="react-af-feedback-rating">
         {renderRating ? renderRating(rating, handleRate) : null}

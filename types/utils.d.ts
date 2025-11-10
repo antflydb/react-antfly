@@ -1,4 +1,4 @@
-import { QueryHit, AntflyClient, QueryRequest, QueryResponses, RAGRequest, RAGResult } from '@antfly/sdk';
+import { QueryHit, AntflyClient, QueryRequest, QueryResponses, RAGRequest, RAGResult, AnswerAgentRequest, AnswerAgentResult } from '@antfly/sdk';
 export interface MultiqueryRequest {
     query: QueryRequest;
 }
@@ -39,4 +39,28 @@ export interface RAGCallbacks {
  * @returns AbortController to cancel the stream
  */
 export declare function streamRAG(url: string, tableName: string, request: RAGRequest, headers: Record<string, string> | undefined, callbacks: RAGCallbacks): Promise<AbortController>;
+export interface AnswerCallbacks {
+    onClassification?: (data: {
+        route_type: "question" | "search";
+        improved_query: string;
+        semantic_query: string;
+        confidence: number;
+    }) => void;
+    onHit?: (hit: QueryHit) => void;
+    onReasoning?: (chunk: string) => void;
+    onAnswer?: (chunk: string) => void;
+    onFollowUpQuestion?: (question: string) => void;
+    onComplete?: () => void;
+    onError?: (error: Error | string) => void;
+    onAnswerAgentResult?: (result: AnswerAgentResult) => void;
+}
+/**
+ * Stream Answer Agent results from the Antfly /agents/answer endpoint using Server-Sent Events or JSON
+ * @param url - Base URL of the Antfly server (e.g., http://localhost:8080/api/v1)
+ * @param request - Answer agent request containing query and generator config
+ * @param headers - Optional HTTP headers for authentication
+ * @param callbacks - Structured callbacks for answer events (classification, keywords, query, hits, reasoning, answer, follow-up, complete, error)
+ * @returns AbortController to cancel the stream
+ */
+export declare function streamAnswer(url: string, request: AnswerAgentRequest, headers: Record<string, string> | undefined, callbacks: AnswerCallbacks): Promise<AbortController>;
 //# sourceMappingURL=utils.d.ts.map

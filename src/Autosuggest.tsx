@@ -459,8 +459,13 @@ export default function Autosuggest({
     // Extract isLoading from widget directly instead of from contextValue to avoid ref access warning
     const isCurrentlyLoading = widget?.isLoading === true;
 
-    // Don't hide if we're loading - keep showing previous results
-    if (!hasResults && !hasFacets && !isCurrentlyLoading) {
+    // Also check if search value is valid (meets minimum char requirement)
+    const hasValidQuery = searchValue.length >= minChars;
+
+    // Don't show dropdown if:
+    // 1. No results AND no facets AND not loading
+    // 2. OR query is too short (even if loading)
+    if (!hasValidQuery || (!hasResults && !hasFacets && !isCurrentlyLoading)) {
       return null;
     }
 
