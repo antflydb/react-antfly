@@ -37,10 +37,13 @@ npm run build-storybook
 ## Testing
 
 - Uses Vitest with jsdom for testing React components
+- Uses Mock Service Worker (MSW) for mocking API requests in tests
 - Tests are located alongside component files (e.g., `SearchBox.test.tsx`)
 - Test setup is in `vitest.setup.ts`
 - Run specific test file: `vitest src/SearchBox.test.tsx`
-- Run tests with UI: `npm run vitest`
+- Run specific test: `vitest -t "test name pattern"`
+- Run tests with UI: `vitest --ui`
+- Run tests in watch mode: `vitest` (no arguments)
 
 ## Architecture
 
@@ -65,11 +68,22 @@ Each interactive component is a "widget" that registers in `SharedState.widgets`
 - `needsQuery`: Whether it needs query results
 - `needsConfiguration`: Whether it contributes to the query
 - `isFacet`: Whether it's a facet component
+- `rootQuery`: Whether it's a root query widget (SearchBox, RAGBox, AnswerBox)
+- `isAutosuggest`: Whether it's an autosuggest widget (for isolation)
 - `wantResults`: Whether it wants full results
+- `wantFacets`: Whether it wants facet data
 - `query`: The query it contributes
+- `semanticQuery`: Semantic/vector search query text
+- `isSemantic`: Whether semantic search is enabled
 - `value`: Current selected/input value
+- `submittedAt`: Timestamp of last submission
+- `table`: Optional table override (single or multi-table)
+- `filterQuery`: Query to constrain results
+- `exclusionQuery`: Query to exclude matches
+- `facetOptions`: Facet configurations for the widget
+- `isLoading`: Loading state
 - `configuration`: Component config (fields, size, etc.)
-- `result`: Query results specific to this widget
+- `result`: Query results specific to this widget (data, facetData, total, error)
 
 ### Query Building
 
@@ -88,14 +102,24 @@ The library uses Antfly's query DSL (match, conjuncts, disjuncts) and communicat
 
 ## Key Components
 
+### Search Components
 - **Antfly**: Root provider component that initializes client and context
 - **SearchBox**: Text search input with debouncing
-- **Autosuggest**: Search box with autocomplete suggestions
+- **Autosuggest**: Search box with autocomplete suggestions (can be standalone or nested in SearchBox/RAGBox/AnswerBox)
 - **Facet**: Faceted navigation with term aggregations
 - **Results**: Render search results with customizable item rendering
 - **Pagination**: Page navigation controls
 - **QueryBuilder**: Advanced query building UI with rules and combinators
 - **ActiveFilters**: Display and remove active filters
+
+### RAG/AI Components
+- **RAGBox**: Search input for retrieval-augmented generation queries (can contain Autosuggest)
+- **RAGResults**: Display RAG results with streaming summary support
+- **AnswerBox**: Search input for Answer Agent queries (can contain Autosuggest)
+- **AnswerResults**: Display Answer Agent results with streaming reasoning and answers
+- **AnswerFeedback**: Collect user ratings and comments on AI-generated answers (see `docs/feedback.md`)
+
+### Internal Components
 - **Listener**: Internal component that coordinates queries (not typically used directly)
 - **CustomWidget**: Extensibility point for custom search widgets
 
@@ -105,8 +129,36 @@ The library depends on `@antfly/sdk` (from `antfly-ts` repository) which provide
 - `AntflyClient`: HTTP client for Antfly API
 - Type definitions for queries and responses
 - Multi-query support via `multiquery()`
+- Streaming support for RAG and Answer Agent
 
 Client initialization happens in `Antfly` component via `initializeAntflyClient()`. The client is stored as a singleton accessible via `getAntflyClient()`.
+
+### Streaming RAG and Answer Agent
+
+The library provides `streamRAG()` and `streamAnswer()` utilities (in `utils.ts`) for streaming responses:
+
+```typescript
+// RAG streaming
+streamRAG(url, tableName, request, headers, {
+  onHit: (hit) => { /* handle search hit */ },
+  onSummary: (chunk) => { /* handle summary chunk */ },
+  onComplete: () => { /* handle completion */ },
+  onError: (error) => { /* handle error */ },
+  onRAGResult: (result) => { /* handle non-streaming result */ }
+});
+
+// Answer Agent streaming
+streamAnswer(url, request, headers, {
+  onClassification: (data) => { /* handle query classification */ },
+  onHit: (hit) => { /* handle search hit */ },
+  onReasoning: (chunk) => { /* handle reasoning chunk */ },
+  onAnswer: (chunk) => { /* handle answer chunk */ },
+  onFollowUpQuestion: (question) => { /* handle follow-up */ },
+  onComplete: () => { /* handle completion */ }
+});
+```
+
+Both functions return an `AbortController` for canceling streams.
 
 ## Build Output
 
@@ -132,3 +184,46 @@ Published to npm as `@antfly/components`. The package includes:
 4. Run `npm run storybook` to develop interactively
 5. Run tests with `npm test`
 6. Lint and type-check before committing
+
+## Important Architecture Patterns
+
+### Widget Isolation (Autosuggest vs. Search)
+
+The `Listener` component (src/Listener.tsx:154-193) implements widget isolation to prevent query interference:
+
+- **Autosuggest widgets** are completely isolated - they only see their own queries
+- **Root query widgets** (SearchBox, RAGBox, AnswerBox) exclude other root queries but include facet filters
+- **Facet widgets** see all non-autosuggest queries
+
+This prevents autocomplete dropdowns from affecting main search results and vice versa.
+
+### Multi-Table Support
+
+Widgets support a `table` prop to override the default table from `Antfly`:
+- Single table: `table="products"`
+- Priority: `widget.table` > `Antfly.table`
+- Resolved via `resolveTable()` in utils.ts:144-154
+
+### Citation Handling (RAG/Answer Agent)
+
+The `citations.ts` module provides utilities for parsing and rendering citations in AI responses:
+
+```typescript
+// Parse citations from text
+const citations = parseCitations(text); // Finds [doc_id X] or [X] patterns
+
+// Replace with custom rendering
+const rendered = replaceCitations(text, {
+  renderCitation: (ids, allIds) => renderAsSequentialLinks(ids, allIds)
+});
+
+// Extract cited document IDs
+const citedIds = getCitedDocumentIds(summary);
+const citedHits = hits.filter(hit => citedIds.includes(hit._id));
+```
+
+Supports formats: `[doc_id 1, 2]` and shorthand `[1, 2]`
+
+### Query Debouncing
+
+The `Listener` batches rapid widget updates with a 15ms debounce (src/Listener.tsx:448) to minimize network calls when multiple widgets update simultaneously.

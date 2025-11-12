@@ -120,6 +120,7 @@ export default function AnswerFeedback({
   useEffect(() => {
     if (previousQueryRef.current !== query) {
       previousQueryRef.current = query;
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Resetting form state when query changes is intentional
       setRating(null);
       setComment("");
       setShowCommentField(false);

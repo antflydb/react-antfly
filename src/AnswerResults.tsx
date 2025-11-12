@@ -25,6 +25,7 @@ export interface AnswerResultsProps {
   showHits?: boolean;
 
   // Custom renderers
+  renderLoading?: () => ReactNode;
   renderClassification?: (data: {
     route_type: "question" | "search";
     improved_query: string;
@@ -54,6 +55,7 @@ export default function AnswerResults({
   showReasoning = false,
   showFollowUpQuestions = true,
   showHits = false,
+  renderLoading,
   renderClassification,
   renderReasoning,
   renderAnswer,
@@ -386,9 +388,11 @@ export default function AnswerResults({
           </div>
         )}
         {!error && !answer && isStreaming && (
-          <div className="react-af-answer-loading">
-            Loading answer...
-          </div>
+          renderLoading ? renderLoading() : (
+            <div className="react-af-answer-loading">
+              Loading answer...
+            </div>
+          )
         )}
         {!error && !answer && !isStreaming && (
           <div className="react-af-answer-empty">
