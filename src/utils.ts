@@ -319,8 +319,6 @@ export async function streamAnswer(
       with_streaming: shouldStream,
     };
 
-    console.log('[streamAnswer] Request being sent:', JSON.stringify(answerRequest, null, 2));
-
     // Build SDK callbacks if streaming
     const sdkCallbacks: AnswerAgentStreamCallbacks | undefined = shouldStream
       ? {
