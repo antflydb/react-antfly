@@ -128,6 +128,16 @@ export default function AnswerResults({
     const widgetTable = table || answerBoxWidget?.table;
     const resolvedTable = resolveTable(widgetTable, defaultTable);
 
+    // Debug logging for filter queries
+    console.log('[AnswerResults] Building request with:', {
+      filterQuery,
+      exclusionQuery,
+      filterQueryType: typeof filterQuery,
+      exclusionQueryType: typeof exclusionQuery,
+      filterQueryDefined: filterQuery !== undefined,
+      exclusionQueryDefined: exclusionQuery !== undefined,
+    });
+
     // Build the Answer Agent request with queries array (similar to RAG format)
     const answerRequest: AnswerAgentRequest = {
       query: currentQuery,
@@ -148,6 +158,8 @@ export default function AnswerResults({
       with_reasoning: showReasoning || false,
       with_followup: showFollowUpQuestions || false,
     };
+
+    console.log('[AnswerResults] Final request:', JSON.stringify(answerRequest, null, 2));
 
     // Start streaming
     const startStream = async () => {
