@@ -2,7 +2,7 @@
  * Citation parsing and rendering utilities for RAG responses.
  *
  * These utilities handle citations in the format:
- * - `[doc_id <ID>]` or `[doc_id <ID1>, <ID2>]` (backend-instructed format)
+ * - `[resource_id <ID>]` or `[resource_id <ID1>, <ID2>]` (backend-instructed format)
  * - `[<ID>]` or `[<ID1>, <ID2>]` (shorthand format)
  *
  * IDs can be any characters except closing brackets.
@@ -10,10 +10,10 @@
  * @example
  * ```typescript
  * // Parse citations to get structured data
- * const citations = parseCitations("Some text [doc_id 1, 2] more text [3]");
+ * const citations = parseCitations("Some text [resource_id 1, 2] more text [3]");
  * // Returns: [
- * //   { originalText: "[doc_id 1, 2]", ids: ["1", "2"], startIndex: 10, endIndex: 23 },
- * //   { originalText: "[3]", ids: ["3"], startIndex: 34, endIndex: 37 }
+ * //   { originalText: "[resource_id 1, 2]", ids: ["1", "2"], startIndex: 10, endIndex: 26 },
+ * //   { originalText: "[3]", ids: ["3"], startIndex: 37, endIndex: 40 }
  * // ]
  *
  * // Replace citations with custom rendering
@@ -32,9 +32,9 @@
  * Represents a parsed citation reference in text.
  */
 export interface Citation {
-  /** The original citation text as it appears in the source (e.g., "[doc_id 1, 2, 3]") */
+  /** The original citation text as it appears in the source (e.g., "[resource_id 1, 2, 3]") */
   originalText: string;
-  /** Array of document IDs referenced in this citation (e.g., ["1", "2", "3"]) */
+  /** Array of resource IDs referenced in this citation (e.g., ["1", "2", "3"]) */
   ids: string[];
   /** Starting character position of the citation in the original text */
   startIndex: number;
@@ -49,7 +49,7 @@ export interface CitationRenderOptions {
   /**
    * Function that takes citation IDs and returns the rendered string.
    *
-   * @param ids - The document IDs for this specific citation
+   * @param ids - The resource IDs for this specific citation
    * @param allCitationIds - All unique citation IDs in order of first appearance (for sequential numbering)
    * @returns The rendered string to replace the citation
    *
@@ -78,9 +78,10 @@ export interface CitationRenderOptions {
 
 /**
  * Regular expression for matching citation patterns.
- * Matches both `[doc_id X]` and `[X]` formats with comma-separated IDs.
+ * Matches both `[resource_id X]` and `[X]` formats with comma-separated IDs.
+ * Also supports legacy `[doc_id X]` format for backward compatibility.
  */
-const CITATION_REGEX = /\[(?:doc_id\s+)?([^\]]+)\]/g;
+const CITATION_REGEX = /\[(?:(?:resource_id|doc_id)\s+)?([^\]]+)\]/g;
 
 /**
  * Extract all citation IDs from text in order of first appearance.
@@ -111,12 +112,12 @@ function extractAllCitationIds(text: string): string[] {
  *
  * @example
  * ```typescript
- * const text = "The system uses consensus [doc_id 1] and replication [2, 3].";
+ * const text = "The system uses consensus [resource_id 1] and replication [2, 3].";
  * const citations = parseCitations(text);
  * // Returns:
  * // [
- * //   { originalText: "[doc_id 1]", ids: ["1"], startIndex: 27, endIndex: 38 },
- * //   { originalText: "[2, 3]", ids: ["2", "3"], startIndex: 57, endIndex: 63 }
+ * //   { originalText: "[resource_id 1]", ids: ["1"], startIndex: 27, endIndex: 42 },
+ * //   { originalText: "[2, 3]", ids: ["2", "3"], startIndex: 61, endIndex: 67 }
  * // ]
  * ```
  */
@@ -152,7 +153,7 @@ export function parseCitations(text: string): Citation[] {
  *
  * @example
  * ```typescript
- * const text = "See docs [doc_id 1, 2] and [3].";
+ * const text = "See docs [resource_id 1, 2] and [3].";
  * const result = replaceCitations(text, {
  *   renderCitation: (ids) => ids.map(id => `[[${id}]](#hit-${id})`).join(', ')
  * });
@@ -171,9 +172,9 @@ export function replaceCitations(text: string, options: CitationRenderOptions): 
 }
 
 /**
- * Helper function to render citations as markdown links using the actual doc IDs.
+ * Helper function to render citations as markdown links using the actual resource IDs.
  *
- * @param ids - The document IDs to render
+ * @param ids - The resource IDs to render
  * @returns Comma-separated markdown links
  *
  * @example
@@ -190,7 +191,7 @@ export function renderAsMarkdownLinks(ids: string[]): string {
  * Helper function to render citations as markdown links with sequential numbering.
  * The display number is based on the order of first appearance across all citations.
  *
- * @param ids - The document IDs for this citation
+ * @param ids - The resource IDs for this citation
  * @param allCitationIds - All unique citation IDs in order of first appearance
  * @returns Comma-separated markdown links with sequential numbers
  *
@@ -209,23 +210,23 @@ export function renderAsSequentialLinks(ids: string[], allCitationIds: string[])
 }
 
 /**
- * Extract all cited document IDs from a summary text.
- * Useful for filtering search results to only show documents that were cited.
+ * Extract all cited resource IDs from a summary text.
+ * Useful for filtering search results to only show resources that were cited.
  *
  * @param summary - The RAG summary text containing citations
- * @returns Array of unique document IDs in order of first appearance
+ * @returns Array of unique resource IDs in order of first appearance
  *
  * @example
  * ```typescript
- * const summary = "The system uses [doc_id 1] and [2, 3].";
- * const citedIds = getCitedDocumentIds(summary);
+ * const summary = "The system uses [resource_id 1] and [2, 3].";
+ * const citedIds = getCitedResourceIds(summary);
  * // Returns: ["1", "2", "3"]
  *
- * // Filter hits to only cited documents
+ * // Filter hits to only cited resources
  * const citedHits = hits.filter(hit => citedIds.includes(hit._id));
  * ```
  */
-export function getCitedDocumentIds(summary: string): string[] {
+export function getCitedResourceIds(summary: string): string[] {
   const citations = parseCitations(summary);
   const uniqueIds = new Set<string>();
 
@@ -236,4 +237,12 @@ export function getCitedDocumentIds(summary: string): string[] {
   }
 
   return Array.from(uniqueIds);
+}
+
+/**
+ * @deprecated Use getCitedResourceIds instead. This function name is deprecated.
+ * Extract all cited resource IDs from a summary text.
+ */
+export function getCitedDocumentIds(summary: string): string[] {
+  return getCitedResourceIds(summary);
 }

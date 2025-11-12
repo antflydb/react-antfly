@@ -7,7 +7,20 @@ import {
 } from './citations';
 
 describe('parseCitations', () => {
-  it('should parse single citation with doc_id prefix', () => {
+  it('should parse single citation with resource_id prefix', () => {
+    const text = 'Some text [resource_id 1] more text';
+    const citations = parseCitations(text);
+
+    expect(citations).toHaveLength(1);
+    expect(citations[0]).toEqual({
+      originalText: '[resource_id 1]',
+      ids: ['1'],
+      startIndex: 10,
+      endIndex: 25,
+    });
+  });
+
+  it('should parse single citation with doc_id prefix (legacy)', () => {
     const text = 'Some text [doc_id 1] more text';
     const citations = parseCitations(text);
 
@@ -33,7 +46,20 @@ describe('parseCitations', () => {
     });
   });
 
-  it('should parse multiple IDs in single citation with doc_id prefix', () => {
+  it('should parse multiple IDs in single citation with resource_id prefix', () => {
+    const text = 'Text [resource_id 1, 2, 3] more';
+    const citations = parseCitations(text);
+
+    expect(citations).toHaveLength(1);
+    expect(citations[0]).toEqual({
+      originalText: '[resource_id 1, 2, 3]',
+      ids: ['1', '2', '3'],
+      startIndex: 5,
+      endIndex: 26,
+    });
+  });
+
+  it('should parse multiple IDs in single citation with doc_id prefix (legacy)', () => {
     const text = 'Text [doc_id 1, 2, 3] more';
     const citations = parseCitations(text);
 
@@ -60,22 +86,31 @@ describe('parseCitations', () => {
   });
 
   it('should parse multiple separate citations', () => {
-    const text = 'First [doc_id 1] and second [2, 3] citation';
+    const text = 'First [resource_id 1] and second [2, 3] citation';
     const citations = parseCitations(text);
 
     expect(citations).toHaveLength(2);
     expect(citations[0]).toEqual({
-      originalText: '[doc_id 1]',
+      originalText: '[resource_id 1]',
       ids: ['1'],
       startIndex: 6,
-      endIndex: 16,
+      endIndex: 21,
     });
     expect(citations[1]).toEqual({
       originalText: '[2, 3]',
       ids: ['2', '3'],
-      startIndex: 28,
-      endIndex: 34,
+      startIndex: 33,
+      endIndex: 39,
     });
+  });
+
+  it('should handle mixed resource_id and doc_id formats', () => {
+    const text = 'First [resource_id 1] and second [doc_id 2]';
+    const citations = parseCitations(text);
+
+    expect(citations).toHaveLength(2);
+    expect(citations[0].ids).toEqual(['1']);
+    expect(citations[1].ids).toEqual(['2']);
   });
 
   it('should handle alphanumeric IDs', () => {
