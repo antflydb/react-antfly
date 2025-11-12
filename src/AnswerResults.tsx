@@ -119,6 +119,8 @@ export default function AnswerResults({
     const answerBoxQuery = answerBoxWidget?.query;
     const answerBoxSemanticQuery = answerBoxWidget?.semanticQuery;
     const answerBoxConfiguration = answerBoxWidget?.configuration;
+    const answerBoxFilterQuery = answerBoxWidget?.filterQuery as Record<string, unknown> | undefined;
+    const answerBoxExclusionQuery = answerBoxWidget?.exclusionQuery as Record<string, unknown> | undefined;
 
     // Resolve table: prop > AnswerBox widget > default
     const widgetTable = table || answerBoxWidget?.table;
@@ -134,6 +136,8 @@ export default function AnswerResults({
           semantic_search: answerBoxSemanticQuery,
           indexes: answerBoxConfiguration?.indexes as string[] | undefined,
           limit: (answerBoxConfiguration?.limit as number | undefined) || 10,
+          filter_query: answerBoxFilterQuery,
+          exclusion_query: answerBoxExclusionQuery,
         },
       ],
       summarizer: generator,
