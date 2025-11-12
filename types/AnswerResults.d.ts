@@ -6,6 +6,8 @@ export interface AnswerResultsProps {
     generator: GeneratorConfig;
     systemPrompt?: string;
     table?: string;
+    filterQuery?: Record<string, unknown>;
+    exclusionQuery?: Record<string, unknown>;
     showClassification?: boolean;
     showReasoning?: boolean;
     showFollowUpQuestions?: boolean;
@@ -26,5 +28,5 @@ export interface AnswerResultsProps {
     onError?: (error: string) => void;
     children?: ReactNode;
 }
-export default function AnswerResults({ id, answerBoxId, generator, systemPrompt, table, showClassification, showReasoning, showFollowUpQuestions, showHits, renderLoading, renderClassification, renderReasoning, renderAnswer, renderFollowUpQuestions, renderHits, onStreamStart, onStreamEnd, onError: onErrorCallback, children, }: AnswerResultsProps): import("react/jsx-runtime").JSX.Element;
+export default function AnswerResults({ id, answerBoxId, generator, systemPrompt, table, filterQuery, exclusionQuery, showClassification, showReasoning, showFollowUpQuestions, showHits, renderLoading, renderClassification, renderReasoning, renderAnswer, renderFollowUpQuestions, renderHits, onStreamStart, onStreamEnd, onError: onErrorCallback, children, }: AnswerResultsProps): import("react/jsx-runtime").JSX.Element;
 //# sourceMappingURL=AnswerResults.d.ts.map
