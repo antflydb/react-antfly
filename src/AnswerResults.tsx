@@ -17,6 +17,8 @@ export interface AnswerResultsProps {
   generator: GeneratorConfig;
   systemPrompt?: string;
   table?: string; // Optional table override - auto-inherits from AnswerBox if not specified
+  filterQuery?: Record<string, unknown>; // Filter query to constrain search results
+  exclusionQuery?: Record<string, unknown>; // Exclusion query to exclude matches
 
   // Visibility controls
   showClassification?: boolean;
@@ -51,6 +53,8 @@ export default function AnswerResults({
   generator,
   systemPrompt,
   table,
+  filterQuery,
+  exclusionQuery,
   showClassification = false,
   showReasoning = false,
   showFollowUpQuestions = true,
@@ -119,8 +123,6 @@ export default function AnswerResults({
     const answerBoxQuery = answerBoxWidget?.query;
     const answerBoxSemanticQuery = answerBoxWidget?.semanticQuery;
     const answerBoxConfiguration = answerBoxWidget?.configuration;
-    const answerBoxFilterQuery = answerBoxWidget?.filterQuery as Record<string, unknown> | undefined;
-    const answerBoxExclusionQuery = answerBoxWidget?.exclusionQuery as Record<string, unknown> | undefined;
 
     // Resolve table: prop > AnswerBox widget > default
     const widgetTable = table || answerBoxWidget?.table;
@@ -136,8 +138,8 @@ export default function AnswerResults({
           semantic_search: answerBoxSemanticQuery,
           indexes: answerBoxConfiguration?.indexes as string[] | undefined,
           limit: (answerBoxConfiguration?.limit as number | undefined) || 10,
-          filter_query: answerBoxFilterQuery,
-          exclusion_query: answerBoxExclusionQuery,
+          filter_query: filterQuery,
+          exclusion_query: exclusionQuery,
         },
       ],
       summarizer: generator,
@@ -235,6 +237,8 @@ export default function AnswerResults({
     headers,
     generator,
     systemPrompt,
+    filterQuery,
+    exclusionQuery,
     showReasoning,
     showFollowUpQuestions,
     onStreamStart,
