@@ -1,6 +1,7 @@
 import "./style.css";
 import Antfly from "./Antfly";
 import Results from "./Results";
+import QueryBox from "./QueryBox";
 import SearchBox from "./SearchBox";
 import Facet from "./Facet";
 import Pagination from "./Pagination";
@@ -40,7 +41,11 @@ import {
 export {
   Antfly,
   Results,
+  QueryBox,
+  // Deprecated: Use QueryBox instead
   SearchBox,
+  AnswerBox,
+  RAGBox,
   Facet,
   Pagination,
   Listener,
@@ -52,8 +57,6 @@ export {
   Autosuggest,
   AutosuggestResults,
   AutosuggestFacets,
-  AnswerBox,
-  RAGBox,
   RAGResults,
   useRAGResultsContext,
   AnswerResults,
@@ -77,14 +80,16 @@ export {
 // Export types for users of the library
 export type { AntflyProps } from "./Antfly";
 export type { ResultsProps } from "./Results";
+export type { QueryBoxProps } from "./QueryBox";
+// Deprecated types: Use QueryBoxProps instead
 export type { SearchBoxProps } from "./SearchBox";
+export type { AnswerBoxProps } from "./AnswerBox";
+export type { RAGBoxProps } from "./RAGBox";
 export type { FacetProps } from "./Facet";
 export type { PaginationProps } from "./Pagination";
 export type { ActiveFiltersProps, ActiveFilter } from "./ActiveFilters";
 export type { CustomWidgetProps } from "./CustomWidget";
 export type { AutosuggestProps, AutosuggestResultsProps, AutosuggestFacetsProps } from "./Autosuggest";
-export type { AnswerBoxProps } from "./AnswerBox";
-export type { RAGBoxProps } from "./RAGBox";
 export type { RAGResultsProps } from "./RAGResults";
 export type { AnswerResultsProps } from "./AnswerResults";
 export type { AnswerResultsContextValue } from "./AnswerResultsContext";

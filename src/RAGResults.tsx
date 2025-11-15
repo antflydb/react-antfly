@@ -32,10 +32,10 @@ export function useRAGResultsContext() {
 
 export interface RAGResultsProps {
   id: string;
-  answerBoxId: string;
+  searchBoxId: string; // Links to the QueryBox that provides the search value
   summarizer: GeneratorConfig;
   systemPrompt?: string;
-  table?: string; // Optional table override - auto-inherits from AnswerBox if not specified
+  table?: string; // Optional table override - auto-inherits from QueryBox if not specified
   filterQuery?: Record<string, unknown>; // Filter query to constrain RAG retrieval
   exclusionQuery?: Record<string, unknown>; // Exclusion query to exclude matches
   /**
@@ -81,7 +81,7 @@ export interface RAGResultsProps {
 
 export default function RAGResults({
   id,
-  answerBoxId,
+  searchBoxId,
   summarizer,
   systemPrompt,
   table,
@@ -100,12 +100,12 @@ export default function RAGResults({
   const abortControllerRef = useRef<AbortController | null>(null);
   const previousSubmissionRef = useRef<number | undefined>(undefined);
 
-  // Watch for changes in the AnswerBox widget
-  const answerBoxWidget = widgets.get(answerBoxId);
-  const currentQuery = answerBoxWidget?.value as string | undefined;
-  const submittedAt = answerBoxWidget?.submittedAt;
+  // Watch for changes in the QueryBox widget
+  const searchBoxWidget = widgets.get(searchBoxId);
+  const currentQuery = searchBoxWidget?.value as string | undefined;
+  const submittedAt = searchBoxWidget?.submittedAt;
 
-  // Trigger RAG request when AnswerBox is submitted (based on timestamp, not just query value)
+  // Trigger RAG request when QueryBox is submitted (based on timestamp, not just query value)
   useEffect(() => {
     // Only trigger if we have a query and a submission timestamp
     if (!currentQuery || !submittedAt) {
@@ -130,23 +130,23 @@ export default function RAGResults({
 
     previousSubmissionRef.current = submittedAt;
 
-    // Get the query from the AnswerBox widget
-    const answerBoxQuery = answerBoxWidget?.query;
-    const answerBoxSemanticQuery = answerBoxWidget?.semanticQuery;
-    const answerBoxConfiguration = answerBoxWidget?.configuration;
+    // Get the query from the QueryBox widget
+    const searchBoxQuery = searchBoxWidget?.query;
+    const searchBoxSemanticQuery = searchBoxWidget?.semanticQuery;
+    const searchBoxConfiguration = searchBoxWidget?.configuration;
 
-    // Resolve table: prop > AnswerBox widget > default
-    const widgetTable = table || answerBoxWidget?.table;
+    // Resolve table: prop > QueryBox widget > default
+    const widgetTable = table || searchBoxWidget?.table;
     const resolvedTable = resolveTable(widgetTable, defaultTable);
 
     // Build the RAG request (table will be added by streamRAG)
     const ragRequest: RAGRequest = {
       queries: [
         {
-          full_text_search: answerBoxQuery as Record<string, unknown> | undefined,
-          semantic_search: answerBoxSemanticQuery,
-          indexes: answerBoxConfiguration?.indexes as string[] | undefined,
-          limit: (answerBoxConfiguration?.limit as number | undefined) || 10,
+          full_text_search: searchBoxQuery as Record<string, unknown> | undefined,
+          semantic_search: searchBoxSemanticQuery,
+          indexes: searchBoxConfiguration?.indexes as string[] | undefined,
+          limit: (searchBoxConfiguration?.limit as number | undefined) || 10,
           fields: fields || [],
           filter_query: filterQuery,
           exclusion_query: exclusionQuery,
@@ -207,7 +207,7 @@ export default function RAGResults({
   }, [
     submittedAt,
     currentQuery,
-    answerBoxWidget,
+    searchBoxWidget,
     url,
     table,
     defaultTable,

@@ -13,10 +13,10 @@ import { AnswerResultsContext, AnswerResultsContextValue } from "./AnswerResults
 
 export interface AnswerResultsProps {
   id: string;
-  answerBoxId: string;
+  searchBoxId: string; // Links to the QueryBox that provides the search value
   generator: GeneratorConfig;
   systemPrompt?: string;
-  table?: string; // Optional table override - auto-inherits from AnswerBox if not specified
+  table?: string; // Optional table override - auto-inherits from QueryBox if not specified
   filterQuery?: Record<string, unknown>; // Filter query to constrain search results
   exclusionQuery?: Record<string, unknown>; // Exclusion query to exclude matches
 
@@ -49,7 +49,7 @@ export interface AnswerResultsProps {
 
 export default function AnswerResults({
   id,
-  answerBoxId,
+  searchBoxId,
   generator,
   systemPrompt,
   table,
@@ -89,12 +89,12 @@ export default function AnswerResults({
   const abortControllerRef = useRef<AbortController | null>(null);
   const previousSubmissionRef = useRef<number | undefined>(undefined);
 
-  // Watch for changes in the AnswerBox widget
-  const answerBoxWidget = widgets.get(answerBoxId);
-  const currentQuery = answerBoxWidget?.value as string | undefined;
-  const submittedAt = answerBoxWidget?.submittedAt;
+  // Watch for changes in the QueryBox widget
+  const searchBoxWidget = widgets.get(searchBoxId);
+  const currentQuery = searchBoxWidget?.value as string | undefined;
+  const submittedAt = searchBoxWidget?.submittedAt;
 
-  // Trigger Answer Agent request when AnswerBox is submitted (based on timestamp, not just query value)
+  // Trigger Answer Agent request when QueryBox is submitted (based on timestamp, not just query value)
   useEffect(() => {
     // Only trigger if we have a query and a submission timestamp
     if (!currentQuery || !submittedAt) {
@@ -119,13 +119,13 @@ export default function AnswerResults({
 
     previousSubmissionRef.current = submittedAt;
 
-    // Get the query configuration from the AnswerBox widget
-    const answerBoxQuery = answerBoxWidget?.query;
-    const answerBoxSemanticQuery = answerBoxWidget?.semanticQuery;
-    const answerBoxConfiguration = answerBoxWidget?.configuration;
+    // Get the query configuration from the QueryBox widget
+    const searchBoxQuery = searchBoxWidget?.query;
+    const searchBoxSemanticQuery = searchBoxWidget?.semanticQuery;
+    const searchBoxConfiguration = searchBoxWidget?.configuration;
 
-    // Resolve table: prop > AnswerBox widget > default
-    const widgetTable = table || answerBoxWidget?.table;
+    // Resolve table: prop > QueryBox widget > default
+    const widgetTable = table || searchBoxWidget?.table;
     const resolvedTable = resolveTable(widgetTable, defaultTable);
 
     // Build the Answer Agent request with queries array (similar to RAG format)
@@ -134,10 +134,10 @@ export default function AnswerResults({
       queries: [
         {
           table: resolvedTable,
-          full_text_search: answerBoxQuery as Record<string, unknown> | undefined,
-          semantic_search: answerBoxSemanticQuery,
-          indexes: answerBoxConfiguration?.indexes as string[] | undefined,
-          limit: (answerBoxConfiguration?.limit as number | undefined) || 10,
+          full_text_search: searchBoxQuery as Record<string, unknown> | undefined,
+          semantic_search: searchBoxSemanticQuery,
+          indexes: searchBoxConfiguration?.indexes as string[] | undefined,
+          limit: (searchBoxConfiguration?.limit as number | undefined) || 10,
           filter_query: filterQuery,
           exclusion_query: exclusionQuery,
         },
@@ -230,7 +230,7 @@ export default function AnswerResults({
   }, [
     submittedAt,
     currentQuery,
-    answerBoxWidget,
+    searchBoxWidget,
     url,
     table,
     defaultTable,
