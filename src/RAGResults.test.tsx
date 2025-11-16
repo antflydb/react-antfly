@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, waitFor, act } from "@testing-library/react";
+import { render, waitFor, act, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import React from "react";
 import RAGResults from "./RAGResults";
-import AnswerBox from "./AnswerBox";
+import QueryBox from "./QueryBox";
 import Antfly from "./Antfly";
 import type { GeneratorConfig } from "@antfly/sdk";
 import * as utils from "./utils";
@@ -42,8 +42,8 @@ describe("RAGResults", () => {
     it("should render without crashing", () => {
       const { container } = render(
         <TestWrapper>
-          <AnswerBox id="question" fields={["content"]} />
-          <RAGResults id="rag-answer" answerBoxId="question" summarizer={mockSummarizer} />
+          <QueryBox id="question" mode="submit" />
+          <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} fields={["content"]} />
         </TestWrapper>,
       );
 
@@ -53,8 +53,8 @@ describe("RAGResults", () => {
     it("should show empty state when no question submitted", () => {
       const { container } = render(
         <TestWrapper>
-          <AnswerBox id="question" fields={["content"]} />
-          <RAGResults id="rag-answer" answerBoxId="question" summarizer={mockSummarizer} />
+          <QueryBox id="question" mode="submit" />
+          <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} fields={["content"]} />
         </TestWrapper>,
       );
 
@@ -68,10 +68,10 @@ describe("RAGResults", () => {
 
       const { container } = render(
         <TestWrapper>
-          <AnswerBox id="question" fields={["content"]} />
+          <QueryBox id="question" mode="submit" />
           <RAGResults
             id="rag-answer"
-            answerBoxId="question"
+            searchBoxId="question"
             summarizer={mockSummarizer}
             renderSummary={customRender}
           />
@@ -96,30 +96,35 @@ describe("RAGResults", () => {
 
       const { container } = render(
         <TestWrapper>
-          <AnswerBox id="question" fields={["content"]} />
-          <RAGResults id="rag-answer" answerBoxId="question" summarizer={mockSummarizer} />
+          <QueryBox id="question" mode="submit" />
+          <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} fields={["content"]} />
         </TestWrapper>,
       );
 
-      // Submit a question
-      const input = container.querySelector("input") as HTMLInputElement;
-      const button = container.querySelector("button") as HTMLButtonElement;
+      // Find elements using more reliable methods
+      const input = screen.getByPlaceholderText(/ask a question/i);
+      const button = screen.getByRole("button", { name: /submit/i });
 
-      await userEvent.type(input, "test question");
+      // Type into input and submit - all within act
       await act(async () => {
+        await userEvent.type(input, "test question");
         await userEvent.click(button);
       });
 
-      // Wait for streaming to complete
+      // Wait for streamRAG to be called
+      await waitFor(() => {
+        expect(mockStreamRAG).toHaveBeenCalled();
+      }, { timeout: 3000 });
+
+      // Wait for summary to appear
       await waitFor(
         () => {
           const summary = container.querySelector(".react-af-rag-summary");
+          expect(summary).toBeTruthy();
           expect(summary?.textContent).toContain("Hello world");
         },
-        { timeout: 3000 },
+        { timeout: 1000 },
       );
-
-      expect(mockStreamRAG).toHaveBeenCalled();
     });
 
     it("should show streaming indicator while streaming", async () => {
@@ -132,16 +137,16 @@ describe("RAGResults", () => {
 
       const { container } = render(
         <TestWrapper>
-          <AnswerBox id="question" fields={["content"]} />
-          <RAGResults id="rag-answer" answerBoxId="question" summarizer={mockSummarizer} />
+          <QueryBox id="question" mode="submit" />
+          <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} fields={["content"]} />
         </TestWrapper>,
       );
 
-      const input = container.querySelector("input") as HTMLInputElement;
-      const button = container.querySelector("button") as HTMLButtonElement;
+      const input = screen.getByPlaceholderText(/ask a question/i);
+      const button = screen.getByRole("button", { name: /submit/i });
 
-      await userEvent.type(input, "test question");
       await act(async () => {
+        await userEvent.type(input, "test question");
         await userEvent.click(button);
       });
 
@@ -163,16 +168,16 @@ describe("RAGResults", () => {
 
       const { container } = render(
         <TestWrapper>
-          <AnswerBox id="question" fields={["content"]} />
-          <RAGResults id="rag-answer" answerBoxId="question" summarizer={mockSummarizer} />
+          <QueryBox id="question" mode="submit" />
+          <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} fields={["content"]} />
         </TestWrapper>,
       );
 
-      const input = container.querySelector("input") as HTMLInputElement;
-      const button = container.querySelector("button") as HTMLButtonElement;
+      const input = screen.getByPlaceholderText(/ask a question/i);
+      const button = screen.getByRole("button", { name: /submit/i });
 
-      await userEvent.type(input, "test question");
       await act(async () => {
+        await userEvent.type(input, "test question");
         await userEvent.click(button);
       });
 
@@ -196,16 +201,16 @@ describe("RAGResults", () => {
 
       const { container } = render(
         <TestWrapper>
-          <AnswerBox id="question" fields={["content"]} />
-          <RAGResults id="rag-answer" answerBoxId="question" summarizer={mockSummarizer} />
+          <QueryBox id="question" mode="submit" />
+          <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} fields={["content"]} />
         </TestWrapper>,
       );
 
-      const input = container.querySelector("input") as HTMLInputElement;
-      const button = container.querySelector("button") as HTMLButtonElement;
+      const input = screen.getByPlaceholderText(/ask a question/i);
+      const button = screen.getByRole("button", { name: /submit/i });
 
-      await userEvent.type(input, "test question");
       await act(async () => {
+        await userEvent.type(input, "test question");
         await userEvent.click(button);
       });
 
@@ -225,16 +230,16 @@ describe("RAGResults", () => {
 
       const { container } = render(
         <TestWrapper>
-          <AnswerBox id="question" fields={["content"]} />
-          <RAGResults id="rag-answer" answerBoxId="question" summarizer={mockSummarizer} />
+          <QueryBox id="question" mode="submit" />
+          <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} fields={["content"]} />
         </TestWrapper>,
       );
 
-      const input = container.querySelector("input") as HTMLInputElement;
-      const button = container.querySelector("button") as HTMLButtonElement;
+      const input = screen.getByPlaceholderText(/ask a question/i);
+      const button = screen.getByRole("button", { name: /submit/i });
 
-      await userEvent.type(input, "test question");
       await act(async () => {
+        await userEvent.type(input, "test question");
         await userEvent.click(button);
       });
 
@@ -254,16 +259,16 @@ describe("RAGResults", () => {
 
       const { container } = render(
         <TestWrapper>
-          <AnswerBox id="question" fields={["content"]} />
-          <RAGResults id="rag-answer" answerBoxId="question" summarizer={mockSummarizer} />
+          <QueryBox id="question" mode="submit" />
+          <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} fields={["content"]} />
         </TestWrapper>,
       );
 
-      const input = container.querySelector("input") as HTMLInputElement;
-      const button = container.querySelector("button") as HTMLButtonElement;
+      const input = screen.getByPlaceholderText(/ask a question/i);
+      const button = screen.getByRole("button", { name: /submit/i });
 
-      await userEvent.type(input, "test question");
       await act(async () => {
+        await userEvent.type(input, "test question");
         await userEvent.click(button);
       });
 
@@ -285,16 +290,16 @@ describe("RAGResults", () => {
 
       const { container } = render(
         <TestWrapper>
-          <AnswerBox id="question" fields={["content"]} />
-          <RAGResults id="rag-answer" answerBoxId="question" summarizer={mockSummarizer} />
+          <QueryBox id="question" mode="submit" />
+          <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} fields={["content"]} />
         </TestWrapper>,
       );
 
-      const input = container.querySelector("input") as HTMLInputElement;
-      const button = container.querySelector("button") as HTMLButtonElement;
+      const input = screen.getByPlaceholderText(/ask a question/i);
+      const button = screen.getByRole("button", { name: /submit/i });
 
-      await userEvent.type(input, "test question");
       await act(async () => {
+        await userEvent.type(input, "test question");
         await userEvent.click(button);
       });
 
@@ -315,23 +320,23 @@ describe("RAGResults", () => {
         return new AbortController();
       });
 
-      const { container } = render(
+      render(
         <TestWrapper>
-          <AnswerBox id="question" fields={["content"]} />
+          <QueryBox id="question" mode="submit" />
           <RAGResults
             id="rag-answer"
-            answerBoxId="question"
+            searchBoxId="question"
             summarizer={mockSummarizer}
             systemPrompt="You are a helpful assistant."
           />
         </TestWrapper>,
       );
 
-      const input = container.querySelector("input") as HTMLInputElement;
-      const button = container.querySelector("button") as HTMLButtonElement;
+      const input = screen.getByPlaceholderText(/ask a question/i);
+      const button = screen.getByRole("button", { name: /submit/i });
 
-      await userEvent.type(input, "test question");
       await act(async () => {
+        await userEvent.type(input, "test question");
         await userEvent.click(button);
       });
 
@@ -349,23 +354,23 @@ describe("RAGResults", () => {
         return new AbortController();
       });
 
-      const { container } = render(
+      render(
         <TestWrapper>
-          <AnswerBox id="question" fields={["content"]} />
+          <QueryBox id="question" mode="submit" />
           <RAGResults
             id="rag-answer"
-            answerBoxId="question"
+            searchBoxId="question"
             summarizer={mockSummarizer}
             fields={["title", "content"]}
           />
         </TestWrapper>,
       );
 
-      const input = container.querySelector("input") as HTMLInputElement;
-      const button = container.querySelector("button") as HTMLButtonElement;
+      const input = screen.getByPlaceholderText(/ask a question/i);
+      const button = screen.getByRole("button", { name: /submit/i });
 
-      await userEvent.type(input, "test question");
       await act(async () => {
+        await userEvent.type(input, "test question");
         await userEvent.click(button);
       });
 
@@ -386,17 +391,17 @@ describe("RAGResults", () => {
 
       const { container } = render(
         <TestWrapper>
-          <AnswerBox id="question" fields={["content"]} />
-          <RAGResults id="rag-answer" answerBoxId="question" summarizer={mockSummarizer} />
+          <QueryBox id="question" mode="submit" />
+          <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} fields={["content"]} />
         </TestWrapper>,
       );
 
-      const input = container.querySelector("input") as HTMLInputElement;
-      const button = container.querySelector("button") as HTMLButtonElement;
+      const input = screen.getByPlaceholderText(/ask a question/i);
+      const button = screen.getByRole("button", { name: /submit/i });
 
       // Submit question
-      await userEvent.type(input, "test question");
       await act(async () => {
+        await userEvent.type(input, "test question");
         await userEvent.click(button);
       });
 
@@ -415,18 +420,18 @@ describe("RAGResults", () => {
         return new AbortController();
       });
 
-      const { container } = render(
+      render(
         <TestWrapper>
-          <AnswerBox id="question" fields={["content"]} />
-          <RAGResults id="rag-answer" answerBoxId="question" summarizer={mockSummarizer} />
+          <QueryBox id="question" mode="submit" />
+          <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} fields={["content"]} />
         </TestWrapper>,
       );
 
-      const input = container.querySelector("input") as HTMLInputElement;
-      const button = container.querySelector("button") as HTMLButtonElement;
+      const input = screen.getByPlaceholderText(/ask a question/i);
+      const button = screen.getByRole("button", { name: /submit/i });
 
-      await userEvent.type(input, "same question");
       await act(async () => {
+        await userEvent.type(input, "same question");
         await userEvent.click(button);
       });
 
@@ -455,17 +460,17 @@ describe("RAGResults", () => {
 
       const { container } = render(
         <TestWrapper>
-          <AnswerBox id="question" fields={["content"]} />
-          <RAGResults id="rag-answer" answerBoxId="question" summarizer={mockSummarizer} />
+          <QueryBox id="question" mode="submit" />
+          <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} fields={["content"]} />
         </TestWrapper>,
       );
 
-      const input = container.querySelector("input") as HTMLInputElement;
-      const button = container.querySelector("button") as HTMLButtonElement;
+      const input = screen.getByPlaceholderText(/ask a question/i);
+      const button = screen.getByRole("button", { name: /submit/i });
 
       // Submit a question
-      await userEvent.type(input, "test question");
       await act(async () => {
+        await userEvent.type(input, "test question");
         await userEvent.click(button);
       });
 
@@ -481,7 +486,7 @@ describe("RAGResults", () => {
     it("should handle missing AnswerBox widget", () => {
       const { container } = render(
         <TestWrapper>
-          <RAGResults id="rag-answer" answerBoxId="nonexistent" summarizer={mockSummarizer} />
+          <RAGResults id="rag-answer" searchBoxId="nonexistent" summarizer={mockSummarizer} />
         </TestWrapper>,
       );
 
@@ -497,16 +502,16 @@ describe("RAGResults", () => {
 
       const { container } = render(
         <TestWrapper>
-          <AnswerBox id="question" fields={["content"]} />
-          <RAGResults id="rag-answer" answerBoxId="question" summarizer={mockSummarizer} />
+          <QueryBox id="question" mode="submit" />
+          <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} fields={["content"]} />
         </TestWrapper>,
       );
 
-      const input = container.querySelector("input") as HTMLInputElement;
-      const button = container.querySelector("button") as HTMLButtonElement;
+      const input = screen.getByPlaceholderText(/ask a question/i);
+      const button = screen.getByRole("button", { name: /submit/i });
 
-      await userEvent.type(input, "test");
       await act(async () => {
+        await userEvent.type(input, "test");
         await userEvent.click(button);
       });
 
@@ -522,16 +527,16 @@ describe("RAGResults", () => {
 
       const { container } = render(
         <TestWrapper>
-          <AnswerBox id="question" fields={["content"]} />
-          <RAGResults id="rag-answer" answerBoxId="question" summarizer={mockSummarizer} />
+          <QueryBox id="question" mode="submit" />
+          <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} fields={["content"]} />
         </TestWrapper>,
       );
 
-      const input = container.querySelector("input") as HTMLInputElement;
-      const button = container.querySelector("button") as HTMLButtonElement;
+      const input = screen.getByPlaceholderText(/ask a question/i);
+      const button = screen.getByRole("button", { name: /submit/i });
 
-      await userEvent.type(input, "test");
       await act(async () => {
+        await userEvent.type(input, "test");
         await userEvent.click(button);
       });
 

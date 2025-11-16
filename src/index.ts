@@ -1,7 +1,7 @@
 import "./style.css";
 import Antfly from "./Antfly";
 import Results from "./Results";
-import SearchBox from "./SearchBox";
+import QueryBox from "./QueryBox";
 import Facet from "./Facet";
 import Pagination from "./Pagination";
 import Listener from "./Listener";
@@ -9,8 +9,6 @@ import ActiveFilters from "./ActiveFilters";
 import QueryBuilder from "./QueryBuilder/QueryBuilder";
 import CustomWidget from "./CustomWidget";
 import Autosuggest, { AutosuggestResults, AutosuggestFacets } from "./Autosuggest";
-import AnswerBox from "./AnswerBox";
-import RAGBox from "./RAGBox";
 import RAGResults, { useRAGResultsContext } from "./RAGResults";
 import AnswerResults from "./AnswerResults";
 import { useAnswerResultsContext } from "./AnswerResultsContext";
@@ -40,7 +38,7 @@ import {
 export {
   Antfly,
   Results,
-  SearchBox,
+  QueryBox,
   Facet,
   Pagination,
   Listener,
@@ -52,8 +50,6 @@ export {
   Autosuggest,
   AutosuggestResults,
   AutosuggestFacets,
-  AnswerBox,
-  RAGBox,
   RAGResults,
   useRAGResultsContext,
   AnswerResults,
@@ -77,14 +73,12 @@ export {
 // Export types for users of the library
 export type { AntflyProps } from "./Antfly";
 export type { ResultsProps } from "./Results";
-export type { SearchBoxProps } from "./SearchBox";
+export type { QueryBoxProps } from "./QueryBox";
 export type { FacetProps } from "./Facet";
 export type { PaginationProps } from "./Pagination";
 export type { ActiveFiltersProps, ActiveFilter } from "./ActiveFilters";
 export type { CustomWidgetProps } from "./CustomWidget";
 export type { AutosuggestProps, AutosuggestResultsProps, AutosuggestFacetsProps } from "./Autosuggest";
-export type { AnswerBoxProps } from "./AnswerBox";
-export type { RAGBoxProps } from "./RAGBox";
 export type { RAGResultsProps } from "./RAGResults";
 export type { AnswerResultsProps } from "./AnswerResults";
 export type { AnswerResultsContextValue } from "./AnswerResultsContext";
