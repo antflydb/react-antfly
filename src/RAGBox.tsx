@@ -49,13 +49,13 @@ export default function RAGBox({
   onInputChange,
   onEscape,
   // Legacy props - ignored in favor of RAGResults configuration
-  customQuery: _customQuery,
-  fields: _fields,
-  semanticIndexes: _semanticIndexes,
-  limit: _limit,
-  table: _table,
-  filterQuery: _filterQuery,
-  exclusionQuery: _exclusionQuery,
+  customQuery: _customQuery, // eslint-disable-line @typescript-eslint/no-unused-vars
+  fields: _fields, // eslint-disable-line @typescript-eslint/no-unused-vars
+  semanticIndexes: _semanticIndexes, // eslint-disable-line @typescript-eslint/no-unused-vars
+  limit: _limit, // eslint-disable-line @typescript-eslint/no-unused-vars
+  table: _table, // eslint-disable-line @typescript-eslint/no-unused-vars
+  filterQuery: _filterQuery, // eslint-disable-line @typescript-eslint/no-unused-vars
+  exclusionQuery: _exclusionQuery, // eslint-disable-line @typescript-eslint/no-unused-vars
 }: RAGBoxProps) {
   return (
     <QueryBox

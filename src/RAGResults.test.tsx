@@ -320,7 +320,7 @@ describe("RAGResults", () => {
         return new AbortController();
       });
 
-      const { container } = render(
+      render(
         <TestWrapper>
           <AnswerBox id="question" fields={["content"]} />
           <RAGResults
@@ -354,7 +354,7 @@ describe("RAGResults", () => {
         return new AbortController();
       });
 
-      const { container } = render(
+      render(
         <TestWrapper>
           <AnswerBox id="question" fields={["content"]} />
           <RAGResults
@@ -420,7 +420,7 @@ describe("RAGResults", () => {
         return new AbortController();
       });
 
-      const { container } = render(
+      render(
         <TestWrapper>
           <AnswerBox id="question" />
           <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} fields={["content"]} />
