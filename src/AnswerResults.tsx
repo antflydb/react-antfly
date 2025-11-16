@@ -19,6 +19,8 @@ export interface AnswerResultsProps {
   table?: string; // Optional table override - auto-inherits from QueryBox if not specified
   filterQuery?: Record<string, unknown>; // Filter query to constrain search results
   exclusionQuery?: Record<string, unknown>; // Exclusion query to exclude matches
+  fields?: string[];
+  semanticIndexes?: string[];
 
   // Visibility controls
   showClassification?: boolean;
@@ -55,6 +57,8 @@ export default function AnswerResults({
   table,
   filterQuery,
   exclusionQuery,
+  fields,
+  semanticIndexes,
   showClassification = false,
   showReasoning = false,
   showFollowUpQuestions = true,
@@ -132,6 +136,8 @@ export default function AnswerResults({
           table: resolvedTable,
           // Use the query value directly as semantic search
           semantic_search: currentQuery,
+          fields: fields || [],
+          indexes: semanticIndexes || [],
           filter_query: filterQuery,
           exclusion_query: exclusionQuery,
         },
@@ -231,6 +237,8 @@ export default function AnswerResults({
     headers,
     generator,
     systemPrompt,
+    fields,
+    semanticIndexes,
     filterQuery,
     exclusionQuery,
     showReasoning,

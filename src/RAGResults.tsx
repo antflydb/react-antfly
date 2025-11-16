@@ -76,6 +76,7 @@ export interface RAGResultsProps {
   withCitations?: boolean;
   showHits?: boolean;
   fields?: string[];
+  semanticIndexes?: string[];
   children?: ReactNode;
 }
 
@@ -90,6 +91,7 @@ export default function RAGResults({
   renderSummary,
   showHits = false,
   fields,
+  semanticIndexes,
   children,
 }: RAGResultsProps) {
   const [{ widgets, url, table: defaultTable, headers }, dispatch] = useSharedContext();
@@ -142,6 +144,7 @@ export default function RAGResults({
           // Use the query value directly as semantic search
           semantic_search: currentQuery,
           fields: fields || [],
+          indexes: semanticIndexes || [],
           filter_query: filterQuery,
           exclusion_query: exclusionQuery,
         },
@@ -209,6 +212,7 @@ export default function RAGResults({
     summarizer,
     systemPrompt,
     fields,
+    semanticIndexes,
     filterQuery,
     exclusionQuery,
   ]);
