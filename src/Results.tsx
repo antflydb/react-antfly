@@ -1,9 +1,20 @@
-import React, { useEffect, useState, ReactNode } from "react";
+import React, { useEffect, useState, ReactNode, useCallback } from "react";
 import { useSharedContext } from "./SharedContext";
 import Pagination from "./Pagination";
 import { QueryHit } from "@antfly/sdk";
+import { disjunctsFrom } from "./utils";
 
 export interface ResultsProps {
+  id: string;
+  searchBoxId?: string; // Links to the QueryBox that provides the search value (optional for backward compatibility)
+
+  // Query configuration (moved from SearchBox) - only used if searchBoxId is provided
+  fields?: string[];
+  customQuery?: (query?: string) => unknown;
+  semanticIndexes?: string[];
+  limit?: number;
+
+  // Display configuration
   itemsPerPage?: number;
   initialPage?: number;
   pagination?: (
@@ -14,23 +25,27 @@ export interface ResultsProps {
   ) => ReactNode;
   stats?: (total: number) => ReactNode;
   items: (data: QueryHit[]) => ReactNode;
-  id: string;
+
+  // Optional overrides
   sort?: unknown;
-  fields?: string[];
   table?: string; // Optional table override (Phase 1: single table only)
   filterQuery?: Record<string, unknown>; // Filter query to constrain search results
   exclusionQuery?: Record<string, unknown>; // Exclusion query to exclude matches
 }
 
 export default function Results({
+  id,
+  searchBoxId,
+  fields,
+  customQuery,
+  semanticIndexes,
+  limit,
   itemsPerPage = 10,
   initialPage = 1,
   pagination,
   stats,
   items,
-  id,
   sort,
-  fields,
   table,
   filterQuery,
   exclusionQuery,
@@ -51,13 +66,29 @@ export default function Results({
         : (widget.result.total as number)
       : 0;
 
-  // Check if any search widgets have semantic search enabled
-  const isSemanticSearchActive = Array.from(widgets.values()).some(
-    (w) =>
-      w.isSemantic &&
-      w.semanticQuery &&
-      typeof w.semanticQuery === "string" &&
-      w.semanticQuery.trim().length > 0,
+  // Get the search value from the linked QueryBox (if searchBoxId is provided)
+  const searchBoxWidget = searchBoxId ? widgets.get(searchBoxId) : undefined;
+  const searchValue = (searchBoxWidget?.value as string) || "";
+
+  // Determine if semantic search is enabled
+  const isSemanticEnabled = !!(searchBoxId && semanticIndexes && semanticIndexes.length > 0);
+
+  // Build a query from the search value
+  const queryFromValue = useCallback(
+    (query: string): unknown => {
+      if (isSemanticEnabled) return query;
+      if (customQuery) {
+        return customQuery(query);
+      } else if (fields) {
+        const termQueries: Array<{ match: string; field: string }> = [];
+        fields.forEach((field) => {
+          termQueries.push({ match: query, field });
+        });
+        return query ? disjunctsFrom(termQueries) : { match_all: {} };
+      }
+      return { match_all: {} };
+    },
+    [isSemanticEnabled, customQuery, fields],
   );
 
   // Create a hash of all search/filter widgets to detect query changes
@@ -86,23 +117,63 @@ export default function Results({
     }
   }, [queryHash, lastQueryHash, desiredPage, page]);
 
-  // Update context with page (and itemsPerPage)
+  // Update context with query and configuration
   useEffect(() => {
+    // If searchBoxId is provided, Results contributes the search query
+    // Otherwise, it just wants results (backward compatibility with old SearchBox)
+    const shouldContributeQuery = !!searchBoxId;
+
     dispatch({
       type: "setWidget",
       key: id,
-      needsQuery: false,
-      needsConfiguration: true,
+      needsQuery: shouldContributeQuery,
+      needsConfiguration: true, // Results always has configuration (itemsPerPage, page, sort, fields)
       isFacet: false,
+      rootQuery: false, // Not a root query - doesn't need isolation
       wantResults: true,
-      isSemantic: isSemanticSearchActive,
+      isSemantic: isSemanticEnabled,
+      query: shouldContributeQuery
+        ? isSemanticEnabled
+          ? customQuery
+            ? customQuery()
+            : null
+          : queryFromValue(searchValue)
+        : undefined,
+      semanticQuery: shouldContributeQuery && isSemanticEnabled ? searchValue : undefined,
       table: table,
       filterQuery: filterQuery,
       exclusionQuery: exclusionQuery,
-      configuration: { itemsPerPage, page, sort, fields },
+      configuration:
+        shouldContributeQuery && isSemanticEnabled
+          ? {
+              indexes: semanticIndexes || [],
+              limit: limit || 10,
+              itemsPerPage,
+              page,
+              sort,
+              fields,
+            }
+          : { itemsPerPage, page, sort, fields },
       // Don't pass result here - it should only be set by the Listener after fetching
     });
-  }, [dispatch, id, itemsPerPage, page, sort, fields, table, filterQuery, exclusionQuery, isSemanticSearchActive]); // Remove data and total to prevent loops
+  }, [
+    dispatch,
+    id,
+    searchBoxId,
+    searchValue,
+    itemsPerPage,
+    page,
+    sort,
+    fields,
+    table,
+    filterQuery,
+    exclusionQuery,
+    isSemanticEnabled,
+    semanticIndexes,
+    limit,
+    customQuery,
+    queryFromValue,
+  ]);
 
   // Destroy widget from context (remove from the list to unapply its effects)
   useEffect(() => () => dispatch({ type: "deleteWidget", key: id }), [dispatch, id]);
@@ -120,7 +191,7 @@ export default function Results({
     <div className="react-af-results">
       {stats ? (
         stats(total)
-      ) : isSemanticSearchActive ? (
+      ) : isSemanticEnabled ? (
         <>
           {data.length} out of {total} results
         </>
@@ -128,7 +199,7 @@ export default function Results({
         <>{total} results</>
       )}
       <div className="react-af-results-items">{items(data)}</div>
-      {!isSemanticSearchActive &&
+      {!isSemanticEnabled &&
         (pagination ? pagination(total, itemsPerPage, page, setPage) : defaultPagination())}
     </div>
   );

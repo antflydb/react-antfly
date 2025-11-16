@@ -2,7 +2,7 @@ import { ReactNode } from 'react';
 import { GeneratorConfig, QueryHit } from '@antfly/sdk';
 export interface AnswerResultsProps {
     id: string;
-    answerBoxId: string;
+    searchBoxId: string;
     generator: GeneratorConfig;
     systemPrompt?: string;
     table?: string;
@@ -28,5 +28,5 @@ export interface AnswerResultsProps {
     onError?: (error: string) => void;
     children?: ReactNode;
 }
-export default function AnswerResults({ id, answerBoxId, generator, systemPrompt, table, filterQuery, exclusionQuery, showClassification, showReasoning, showFollowUpQuestions, showHits, renderLoading, renderClassification, renderReasoning, renderAnswer, renderFollowUpQuestions, renderHits, onStreamStart, onStreamEnd, onError: onErrorCallback, children, }: AnswerResultsProps): import("react/jsx-runtime").JSX.Element;
+export default function AnswerResults({ id, searchBoxId, generator, systemPrompt, table, filterQuery, exclusionQuery, showClassification, showReasoning, showFollowUpQuestions, showHits, renderLoading, renderClassification, renderReasoning, renderAnswer, renderFollowUpQuestions, renderHits, onStreamStart, onStreamEnd, onError: onErrorCallback, children, }: AnswerResultsProps): import("react/jsx-runtime").JSX.Element;
 //# sourceMappingURL=AnswerResults.d.ts.map

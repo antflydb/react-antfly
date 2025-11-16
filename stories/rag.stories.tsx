@@ -1,6 +1,6 @@
 import {
   Antfly,
-  RAGBox,
+  QueryBox,
   RAGResults,
   Results,
   GeneratorConfig,
@@ -33,17 +33,17 @@ export const BasicRAG = () => {
     <Antfly url={url} table={tableName}>
       <h1>Basic RAG Example</h1>
       <p>Ask a question and get an AI-generated summary based on search results.</p>
-      <pre>{`<RAGBox id="question" fields={["TICO", "AUTR"]} />
+      <pre>{`<QueryBox id="question" />
 <RAGResults
   id="rag-answer"
-  answerBoxId="question"
+  searchBoxId="question"
   summarizer={mockSummarizer}
 />`}</pre>
 
-      <RAGBox id="question" fields={["TICO", "AUTR"]} placeholder="Ask a question..." />
+      <QueryBox id="question" placeholder="Ask a question..." />
 
       <div style={{ marginTop: "20px" }}>
-        <RAGResults id="rag-answer" answerBoxId="question" summarizer={mockSummarizer} />
+        <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} />
       </div>
     </Antfly>
   );
@@ -54,20 +54,20 @@ export const WithSystemPrompt = () => {
     <Antfly url={url} table={tableName}>
       <h1>RAG with Custom System Prompt</h1>
       <p>Guide the AI's behavior with a custom system prompt.</p>
-      <pre>{`<RAGBox id="question" fields={["TICO"]} />
+      <pre>{`<QueryBox id="question" />
 <RAGResults
   id="rag-answer"
-  answerBoxId="question"
+  searchBoxId="question"
   summarizer={mockSummarizer}
   systemPrompt="You are a literary expert. Provide concise, scholarly answers."
 />`}</pre>
 
-      <RAGBox id="question" fields={["TICO"]} placeholder="Ask about literature..." />
+      <QueryBox id="question" placeholder="Ask about literature..." />
 
       <div style={{ marginTop: "20px" }}>
         <RAGResults
           id="rag-answer"
-          answerBoxId="question"
+          searchBoxId="question"
           summarizer={mockSummarizer}
           systemPrompt="You are a literary expert. Provide concise, scholarly answers about books and authors."
         />
@@ -83,7 +83,7 @@ export const WithCustomRendering = () => {
       <p>Customize how the AI summary is displayed. Parse inline citations yourself!</p>
       <pre>{`<RAGResults
   id="rag-answer"
-  answerBoxId="question"
+  searchBoxId="question"
   summarizer={mockSummarizer}
   renderSummary={(summary, isStreaming) => (
     <div style={{
@@ -98,12 +98,12 @@ export const WithCustomRendering = () => {
   )}
 />`}</pre>
 
-      <RAGBox id="question" fields={["TICO", "AUTR"]} placeholder="Ask a question..." />
+      <QueryBox id="question" placeholder="Ask a question..." />
 
       <div style={{ marginTop: "20px" }}>
         <RAGResults
           id="rag-answer"
-          answerBoxId="question"
+          searchBoxId="question"
           summarizer={mockSummarizer}
           renderSummary={(summary, isStreaming) => (
             <div
@@ -136,12 +136,12 @@ export const RAGWithSearchResults = () => {
       <p>
         Combine AI-generated summaries with traditional search results for the best of both worlds.
       </p>
-      <pre>{`<RAGBox id="question" fields={["TICO", "AUTR"]} />
+      <pre>{`<QueryBox id="question" />
 
 {/* AI Summary with inline citations */}
 <RAGResults
   id="rag-answer"
-  answerBoxId="question"
+  searchBoxId="question"
   summarizer={mockSummarizer}
 />
 
@@ -151,16 +151,15 @@ export const RAGWithSearchResults = () => {
   items={(data) => data.map(hit => ...)}
 />`}</pre>
 
-      <RAGBox
+      <QueryBox
         id="question"
-        fields={["TICO", "AUTR"]}
         placeholder="Ask a question..."
         buttonLabel="Search & Summarize"
       />
 
       <div style={{ marginTop: "20px" }}>
         <h2>AI Summary</h2>
-        <RAGResults id="rag-answer" answerBoxId="question" summarizer={mockSummarizer} />
+        <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} />
       </div>
 
       <div style={{ marginTop: "40px" }}>
@@ -498,12 +497,10 @@ export const StyledRAGExample = () => {
       `}</style>
 
       <div className="rag-container">
-        <RAGBox
+        <QueryBox
           id="question"
-          semanticIndexes={["tico_embeddings"]}
           placeholder="Ask me anything about the books..."
           buttonLabel="Get AI Answer"
-          fields={["TICO", "AUTR", "DESC"]}
         >
           <Autosuggest
             fields={[
@@ -534,12 +531,11 @@ export const StyledRAGExample = () => {
               )}
             />
           </Autosuggest>
-        </RAGBox>
+        </QueryBox>
 
         <RAGResults
           id="rag-answer"
-          answerBoxId="question"
-          fields={["TICO", "AUTR", "DESC"]}
+          searchBoxId="question"
           summarizer={mockSummarizer}
           showHits={true}
           systemPrompt="You are a knowledgeable librarian. Provide helpful, detailed answers about books."
@@ -815,9 +811,8 @@ export const ComposableAutosuggestWithFacets = () => {
         </div>
 
         <div className="composable-demo-answerbox">
-          <RAGBox
+          <QueryBox
             id="composable-question"
-            fields={["TICO", "AUTR"]}
             placeholder="Start typing to see suggestions and facets..."
             buttonLabel="Search"
           >
@@ -838,7 +833,7 @@ export const ComposableAutosuggestWithFacets = () => {
                 order="count"
               />
             </Autosuggest>
-          </RAGBox>
+          </QueryBox>
         </div>
 
         <div style={{ marginTop: "40px" }}>
@@ -921,18 +916,18 @@ export const MultipleLanguageModels = () => {
       <h1>Compare Different Language Models</h1>
       <p>See how different models respond to the same question.</p>
 
-      <RAGBox id="question" fields={["TICO", "AUTR"]} placeholder="Ask a question..." />
+      <QueryBox id="question" placeholder="Ask a question..." />
 
       <div
         style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginTop: "20px" }}
       >
         <div>
           <h3>GPT-4 Response</h3>
-          <RAGResults id="rag-gpt4" answerBoxId="question" summarizer={gpt4Summarizer} />
+          <RAGResults id="rag-gpt4" searchBoxId="question" summarizer={gpt4Summarizer} />
         </div>
         <div>
           <h3>Claude Response</h3>
-          <RAGResults id="rag-claude" answerBoxId="question" summarizer={claudeSummarizer} />
+          <RAGResults id="rag-claude" searchBoxId="question" summarizer={claudeSummarizer} />
         </div>
       </div>
     </Antfly>

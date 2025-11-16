@@ -1,5 +1,5 @@
 import React from "react";
-import { Antfly, SearchBox, Results, CustomWidget } from "../src";
+import { Antfly, QueryBox, Results, CustomWidget } from "../src";
 import type { SharedState } from "../src";
 import { url, tableName } from "./utils";
 
@@ -21,7 +21,7 @@ function MyComponent({ ctx }: { ctx?: SharedState }) {
 export const Active = () => {
   return (
     <Antfly url={url} table={tableName}>
-      <SearchBox id="main" fields={["AUTR"]} />
+      <QueryBox id="main" />
       <CustomWidget>
         <MyComponent ctx={{} as SharedState} />
       </CustomWidget>
