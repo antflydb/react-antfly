@@ -1,6 +1,12 @@
 import React from "react";
-import { Antfly, QueryBox, Results, RAGResults, AnswerResults, Autosuggest, Facet } from "../src";
+import { Antfly, QueryBox, Results, RAGResults, AnswerResults, Autosuggest, Facet, GeneratorConfig } from "../src";
 import { url, tableName } from "./utils";
+
+// Mock generator configuration
+const mockGenerator: GeneratorConfig = {
+  provider: "ollama",
+  model: "gemma3:4b",
+};
 
 export default {
   title: "QueryBox",
@@ -139,10 +145,7 @@ export const RAGMode = () => {
       <RAGResults
         id="rag-results"
         searchBoxId="rag"
-        summarizer={{
-          model: "gpt-4",
-          temperature: 0.7,
-        }}
+        summarizer={mockGenerator}
         fields={["TICO", "AUTR"]}
         showHits={true}
       />
@@ -164,10 +167,7 @@ export const AnswerMode = () => {
       <AnswerResults
         id="answer-results"
         searchBoxId="answer"
-        generator={{
-          model: "gpt-4",
-          temperature: 0.7,
-        }}
+        generator={mockGenerator}
         showFollowUpQuestions={true}
         showHits={true}
       />

@@ -36,14 +36,14 @@ export const BasicRAG = () => {
       <pre>{`<RAGBox id="question" fields={["TICO", "AUTR"]} />
 <RAGResults
   id="rag-answer"
-  answerBoxId="question"
+  searchBoxId="question"
   summarizer={mockSummarizer}
 />`}</pre>
 
       <RAGBox id="question" fields={["TICO", "AUTR"]} placeholder="Ask a question..." />
 
       <div style={{ marginTop: "20px" }}>
-        <RAGResults id="rag-answer" answerBoxId="question" summarizer={mockSummarizer} />
+        <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} />
       </div>
     </Antfly>
   );
@@ -57,7 +57,7 @@ export const WithSystemPrompt = () => {
       <pre>{`<RAGBox id="question" fields={["TICO"]} />
 <RAGResults
   id="rag-answer"
-  answerBoxId="question"
+  searchBoxId="question"
   summarizer={mockSummarizer}
   systemPrompt="You are a literary expert. Provide concise, scholarly answers."
 />`}</pre>
@@ -67,7 +67,7 @@ export const WithSystemPrompt = () => {
       <div style={{ marginTop: "20px" }}>
         <RAGResults
           id="rag-answer"
-          answerBoxId="question"
+          searchBoxId="question"
           summarizer={mockSummarizer}
           systemPrompt="You are a literary expert. Provide concise, scholarly answers about books and authors."
         />
@@ -83,7 +83,7 @@ export const WithCustomRendering = () => {
       <p>Customize how the AI summary is displayed. Parse inline citations yourself!</p>
       <pre>{`<RAGResults
   id="rag-answer"
-  answerBoxId="question"
+  searchBoxId="question"
   summarizer={mockSummarizer}
   renderSummary={(summary, isStreaming) => (
     <div style={{
@@ -103,7 +103,7 @@ export const WithCustomRendering = () => {
       <div style={{ marginTop: "20px" }}>
         <RAGResults
           id="rag-answer"
-          answerBoxId="question"
+          searchBoxId="question"
           summarizer={mockSummarizer}
           renderSummary={(summary, isStreaming) => (
             <div
@@ -141,7 +141,7 @@ export const RAGWithSearchResults = () => {
 {/* AI Summary with inline citations */}
 <RAGResults
   id="rag-answer"
-  answerBoxId="question"
+  searchBoxId="question"
   summarizer={mockSummarizer}
 />
 
@@ -160,7 +160,7 @@ export const RAGWithSearchResults = () => {
 
       <div style={{ marginTop: "20px" }}>
         <h2>AI Summary</h2>
-        <RAGResults id="rag-answer" answerBoxId="question" summarizer={mockSummarizer} />
+        <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} />
       </div>
 
       <div style={{ marginTop: "40px" }}>
@@ -538,7 +538,7 @@ export const StyledRAGExample = () => {
 
         <RAGResults
           id="rag-answer"
-          answerBoxId="question"
+          searchBoxId="question"
           fields={["TICO", "AUTR", "DESC"]}
           summarizer={mockSummarizer}
           showHits={true}
@@ -928,11 +928,11 @@ export const MultipleLanguageModels = () => {
       >
         <div>
           <h3>GPT-4 Response</h3>
-          <RAGResults id="rag-gpt4" answerBoxId="question" summarizer={gpt4Summarizer} />
+          <RAGResults id="rag-gpt4" searchBoxId="question" summarizer={gpt4Summarizer} />
         </div>
         <div>
           <h3>Claude Response</h3>
-          <RAGResults id="rag-claude" answerBoxId="question" summarizer={claudeSummarizer} />
+          <RAGResults id="rag-claude" searchBoxId="question" summarizer={claudeSummarizer} />
         </div>
       </div>
     </Antfly>

@@ -71,7 +71,7 @@ export default function Results({
   const searchValue = (searchBoxWidget?.value as string) || "";
 
   // Determine if semantic search is enabled
-  const isSemanticEnabled = searchBoxId && semanticIndexes && semanticIndexes.length > 0;
+  const isSemanticEnabled = !!(searchBoxId && semanticIndexes && semanticIndexes.length > 0);
 
   // Build a query from the search value
   const queryFromValue = useCallback(
@@ -127,7 +127,7 @@ export default function Results({
       type: "setWidget",
       key: id,
       needsQuery: shouldContributeQuery,
-      needsConfiguration: shouldContributeQuery && isSemanticEnabled,
+      needsConfiguration: true, // Results always has configuration (itemsPerPage, page, sort, fields)
       isFacet: false,
       rootQuery: false, // Not a root query - doesn't need isolation
       wantResults: true,

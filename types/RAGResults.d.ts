@@ -9,7 +9,7 @@ export declare const RAGResultsContext: React.Context<RAGResultsContextValue | n
 export declare function useRAGResultsContext(): RAGResultsContextValue;
 export interface RAGResultsProps {
     id: string;
-    answerBoxId: string;
+    searchBoxId: string;
     summarizer: GeneratorConfig;
     systemPrompt?: string;
     table?: string;
@@ -55,5 +55,5 @@ export interface RAGResultsProps {
     fields?: string[];
     children?: ReactNode;
 }
-export default function RAGResults({ id, answerBoxId, summarizer, systemPrompt, table, filterQuery, exclusionQuery, renderSummary, showHits, fields, children, }: RAGResultsProps): import("react/jsx-runtime").JSX.Element;
+export default function RAGResults({ id, searchBoxId, summarizer, systemPrompt, table, filterQuery, exclusionQuery, renderSummary, showHits, fields, children, }: RAGResultsProps): import("react/jsx-runtime").JSX.Element;
 //# sourceMappingURL=RAGResults.d.ts.map

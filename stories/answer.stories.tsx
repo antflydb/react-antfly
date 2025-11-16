@@ -38,14 +38,14 @@ export const BasicAnswer = () => {
       <pre>{`<AnswerBox id="question" />
 <AnswerResults
   id="answer"
-  answerBoxId="question"
+  searchBoxId="question"
   generator={mockGenerator}
 />`}</pre>
 
       <AnswerBox id="question" placeholder="Ask a question..." semanticIndexes={["full_text_index"]} />
 
       <div style={{ marginTop: "20px" }}>
-        <AnswerResults id="answer" answerBoxId="question" generator={mockGenerator} />
+        <AnswerResults id="answer" searchBoxId="question" generator={mockGenerator} />
       </div>
     </Antfly>
   );
@@ -59,7 +59,7 @@ export const WithAllInsights = () => {
       <pre>{`<AnswerBox id="question" />
 <AnswerResults
   id="answer"
-  answerBoxId="question"
+  searchBoxId="question"
   generator={mockGenerator}
   showClassification={true}
   showKeywords={true}
@@ -73,7 +73,7 @@ export const WithAllInsights = () => {
       <div style={{ marginTop: "20px" }}>
         <AnswerResults
           id="answer"
-          answerBoxId="question"
+          searchBoxId="question"
           generator={mockGenerator}
           showClassification={true}
           showReasoning={true}
@@ -95,7 +95,7 @@ export const WithCustomRenderers = () => {
       <div style={{ marginTop: "20px" }}>
         <AnswerResults
           id="answer"
-          answerBoxId="question"
+          searchBoxId="question"
           generator={mockGenerator}
           showClassification={true}
           showReasoning={true}
@@ -152,7 +152,7 @@ export const WithSystemPrompt = () => {
       <pre>{`<AnswerBox id="question" />
 <AnswerResults
   id="answer"
-  answerBoxId="question"
+  searchBoxId="question"
   generator={mockGenerator}
   systemPrompt="You are a literary expert. Provide concise, scholarly answers with historical context."
   showReasoning={true}
@@ -163,7 +163,7 @@ export const WithSystemPrompt = () => {
       <div style={{ marginTop: "20px" }}>
         <AnswerResults
           id="answer"
-          answerBoxId="question"
+          searchBoxId="question"
           generator={mockGenerator}
           systemPrompt="You are a literary expert. Provide concise, scholarly answers with historical context."
           showReasoning={true}
@@ -198,7 +198,7 @@ export const WithFeedback = () => {
       <AnswerBox id="question" placeholder="Ask a question..." />
 
       <div style={{ marginTop: "20px" }}>
-        <AnswerResults id="answer" answerBoxId="question" generator={mockGenerator} showReasoning={true}>
+        <AnswerResults id="answer" searchBoxId="question" generator={mockGenerator} showReasoning={true}>
           <div style={{ marginTop: "20px", padding: "15px", background: "#f5f5f5", borderRadius: "8px" }}>
             <AnswerFeedback
               scale={1}
@@ -221,7 +221,7 @@ export const WithHits = () => {
       <pre>{`<AnswerBox id="question" />
 <AnswerResults
   id="answer"
-  answerBoxId="question"
+  searchBoxId="question"
   generator={mockGenerator}
   showHits={true}
 />`}</pre>
@@ -229,7 +229,7 @@ export const WithHits = () => {
       <AnswerBox id="question" placeholder="Ask a question..." />
 
       <div style={{ marginTop: "20px" }}>
-        <AnswerResults id="answer" answerBoxId="question" generator={mockGenerator} showHits={true} />
+        <AnswerResults id="answer" searchBoxId="question" generator={mockGenerator} showHits={true} />
       </div>
     </Antfly>
   );
@@ -663,7 +663,7 @@ export const StyledExample = () => {
         <div style={{ marginTop: "20px" }}>
           <AnswerResults
             id="answer"
-            answerBoxId="question"
+            searchBoxId="question"
             generator={mockGenerator}
             showClassification={true}
             showReasoning={true}

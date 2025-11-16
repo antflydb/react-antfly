@@ -132,7 +132,7 @@ export const ThumbsUpDown = () => {
       `}</style>
 
       <div className="feedback-demo">
-        <pre style={{ background: "#f5f5f5", padding: "16px", borderRadius: "8px" }}>{`<RAGResults id="answer" answerBoxId="question" summarizer={summarizer}>
+        <pre style={{ background: "#f5f5f5", padding: "16px", borderRadius: "8px" }}>{`<RAGResults id="answer" searchBoxId="question" summarizer={summarizer}>
   <AnswerFeedback
     scale={1}
     renderRating={renderThumbsUpDown}
@@ -142,7 +142,7 @@ export const ThumbsUpDown = () => {
 
         <AnswerBox id="question" fields={["TICO", "AUTR"]} placeholder="Ask a question..." />
 
-        <RAGResults id="answer" answerBoxId="question" summarizer={mockSummarizer}>
+        <RAGResults id="answer" searchBoxId="question" summarizer={mockSummarizer}>
           <AnswerFeedback
             scale={1}
             renderRating={renderThumbsUpDown}
@@ -255,7 +255,7 @@ export const StarRating = () => {
       `}</style>
 
       <div className="feedback-demo">
-        <pre style={{ background: "#f5f5f5", padding: "16px", borderRadius: "8px" }}>{`<RAGResults id="answer" answerBoxId="question" summarizer={summarizer}>
+        <pre style={{ background: "#f5f5f5", padding: "16px", borderRadius: "8px" }}>{`<RAGResults id="answer" searchBoxId="question" summarizer={summarizer}>
   <AnswerFeedback
     scale={4}
     renderRating={renderStars}
@@ -265,7 +265,7 @@ export const StarRating = () => {
 
         <AnswerBox id="question" fields={["TICO", "AUTR"]} placeholder="Ask a question..." />
 
-        <RAGResults id="answer" answerBoxId="question" summarizer={mockSummarizer}>
+        <RAGResults id="answer" searchBoxId="question" summarizer={mockSummarizer}>
           <AnswerFeedback scale={4} renderRating={renderStars} onFeedback={handleFeedback} />
         </RAGResults>
       </div>
@@ -383,7 +383,7 @@ export const NumericScale = () => {
       `}</style>
 
       <div className="feedback-demo">
-        <pre style={{ background: "#f5f5f5", padding: "16px", borderRadius: "8px" }}>{`<RAGResults id="answer" answerBoxId="question" summarizer={summarizer}>
+        <pre style={{ background: "#f5f5f5", padding: "16px", borderRadius: "8px" }}>{`<RAGResults id="answer" searchBoxId="question" summarizer={summarizer}>
   <AnswerFeedback
     scale={3}
     renderRating={(rating, onRate) => renderNumeric(rating, onRate, 3)}
@@ -393,7 +393,7 @@ export const NumericScale = () => {
 
         <AnswerBox id="question" fields={["TICO", "AUTR"]} placeholder="Ask a question..." />
 
-        <RAGResults id="answer" answerBoxId="question" summarizer={mockSummarizer}>
+        <RAGResults id="answer" searchBoxId="question" summarizer={mockSummarizer}>
           <AnswerFeedback
             scale={3}
             renderRating={(rating, onRate) => renderNumeric(rating, onRate, 3)}
@@ -501,7 +501,7 @@ export const WithoutComments = () => {
 
         <AnswerBox id="question" fields={["TICO", "AUTR"]} placeholder="Ask a question..." />
 
-        <RAGResults id="answer" answerBoxId="question" summarizer={mockSummarizer}>
+        <RAGResults id="answer" searchBoxId="question" summarizer={mockSummarizer}>
           <AnswerFeedback
             scale={4}
             renderRating={renderStars}
@@ -673,7 +673,7 @@ export const CustomRenderer = () => {
 
         <AnswerBox id="question" fields={["TICO", "AUTR"]} placeholder="Ask a question..." />
 
-        <RAGResults id="answer" answerBoxId="question" summarizer={mockSummarizer}>
+        <RAGResults id="answer" searchBoxId="question" summarizer={mockSummarizer}>
           <AnswerFeedback
             scale={4}
             renderRating={customRender}

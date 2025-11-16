@@ -43,7 +43,7 @@ describe("RAGResults", () => {
       const { container } = render(
         <TestWrapper>
           <AnswerBox id="question" fields={["content"]} />
-          <RAGResults id="rag-answer" answerBoxId="question" summarizer={mockSummarizer} />
+          <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} />
         </TestWrapper>,
       );
 
@@ -54,7 +54,7 @@ describe("RAGResults", () => {
       const { container } = render(
         <TestWrapper>
           <AnswerBox id="question" fields={["content"]} />
-          <RAGResults id="rag-answer" answerBoxId="question" summarizer={mockSummarizer} />
+          <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} />
         </TestWrapper>,
       );
 
@@ -71,7 +71,7 @@ describe("RAGResults", () => {
           <AnswerBox id="question" fields={["content"]} />
           <RAGResults
             id="rag-answer"
-            answerBoxId="question"
+            searchBoxId="question"
             summarizer={mockSummarizer}
             renderSummary={customRender}
           />
@@ -97,7 +97,7 @@ describe("RAGResults", () => {
       const { container } = render(
         <TestWrapper>
           <AnswerBox id="question" fields={["content"]} />
-          <RAGResults id="rag-answer" answerBoxId="question" summarizer={mockSummarizer} />
+          <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} />
         </TestWrapper>,
       );
 
@@ -133,7 +133,7 @@ describe("RAGResults", () => {
       const { container } = render(
         <TestWrapper>
           <AnswerBox id="question" fields={["content"]} />
-          <RAGResults id="rag-answer" answerBoxId="question" summarizer={mockSummarizer} />
+          <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} />
         </TestWrapper>,
       );
 
@@ -164,7 +164,7 @@ describe("RAGResults", () => {
       const { container } = render(
         <TestWrapper>
           <AnswerBox id="question" fields={["content"]} />
-          <RAGResults id="rag-answer" answerBoxId="question" summarizer={mockSummarizer} />
+          <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} />
         </TestWrapper>,
       );
 
@@ -197,7 +197,7 @@ describe("RAGResults", () => {
       const { container } = render(
         <TestWrapper>
           <AnswerBox id="question" fields={["content"]} />
-          <RAGResults id="rag-answer" answerBoxId="question" summarizer={mockSummarizer} />
+          <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} />
         </TestWrapper>,
       );
 
@@ -226,7 +226,7 @@ describe("RAGResults", () => {
       const { container } = render(
         <TestWrapper>
           <AnswerBox id="question" fields={["content"]} />
-          <RAGResults id="rag-answer" answerBoxId="question" summarizer={mockSummarizer} />
+          <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} />
         </TestWrapper>,
       );
 
@@ -255,7 +255,7 @@ describe("RAGResults", () => {
       const { container } = render(
         <TestWrapper>
           <AnswerBox id="question" fields={["content"]} />
-          <RAGResults id="rag-answer" answerBoxId="question" summarizer={mockSummarizer} />
+          <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} />
         </TestWrapper>,
       );
 
@@ -286,7 +286,7 @@ describe("RAGResults", () => {
       const { container } = render(
         <TestWrapper>
           <AnswerBox id="question" fields={["content"]} />
-          <RAGResults id="rag-answer" answerBoxId="question" summarizer={mockSummarizer} />
+          <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} />
         </TestWrapper>,
       );
 
@@ -320,7 +320,7 @@ describe("RAGResults", () => {
           <AnswerBox id="question" fields={["content"]} />
           <RAGResults
             id="rag-answer"
-            answerBoxId="question"
+            searchBoxId="question"
             summarizer={mockSummarizer}
             systemPrompt="You are a helpful assistant."
           />
@@ -354,7 +354,7 @@ describe("RAGResults", () => {
           <AnswerBox id="question" fields={["content"]} />
           <RAGResults
             id="rag-answer"
-            answerBoxId="question"
+            searchBoxId="question"
             summarizer={mockSummarizer}
             fields={["title", "content"]}
           />
@@ -387,7 +387,7 @@ describe("RAGResults", () => {
       const { container } = render(
         <TestWrapper>
           <AnswerBox id="question" fields={["content"]} />
-          <RAGResults id="rag-answer" answerBoxId="question" summarizer={mockSummarizer} />
+          <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} />
         </TestWrapper>,
       );
 
@@ -418,7 +418,7 @@ describe("RAGResults", () => {
       const { container } = render(
         <TestWrapper>
           <AnswerBox id="question" fields={["content"]} />
-          <RAGResults id="rag-answer" answerBoxId="question" summarizer={mockSummarizer} />
+          <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} />
         </TestWrapper>,
       );
 
@@ -456,7 +456,7 @@ describe("RAGResults", () => {
       const { container } = render(
         <TestWrapper>
           <AnswerBox id="question" fields={["content"]} />
-          <RAGResults id="rag-answer" answerBoxId="question" summarizer={mockSummarizer} />
+          <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} />
         </TestWrapper>,
       );
 
@@ -481,7 +481,7 @@ describe("RAGResults", () => {
     it("should handle missing AnswerBox widget", () => {
       const { container } = render(
         <TestWrapper>
-          <RAGResults id="rag-answer" answerBoxId="nonexistent" summarizer={mockSummarizer} />
+          <RAGResults id="rag-answer" searchBoxId="nonexistent" summarizer={mockSummarizer} />
         </TestWrapper>,
       );
 
@@ -498,7 +498,7 @@ describe("RAGResults", () => {
       const { container } = render(
         <TestWrapper>
           <AnswerBox id="question" fields={["content"]} />
-          <RAGResults id="rag-answer" answerBoxId="question" summarizer={mockSummarizer} />
+          <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} />
         </TestWrapper>,
       );
 
@@ -523,7 +523,7 @@ describe("RAGResults", () => {
       const { container } = render(
         <TestWrapper>
           <AnswerBox id="question" fields={["content"]} />
-          <RAGResults id="rag-answer" answerBoxId="question" summarizer={mockSummarizer} />
+          <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} />
         </TestWrapper>,
       );
 
