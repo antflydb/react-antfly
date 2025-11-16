@@ -323,7 +323,7 @@ describe("Listener", () => {
 
       const { container } = render(
         <TestWrapper>
-          <SearchBox id="main" fields={["title__keyword"]}>
+          <SearchBox id="main">
             <Autosuggest
               semanticIndexes={["title_body_semantic"]}
               fields={[]}
@@ -332,6 +332,8 @@ describe("Listener", () => {
             />
           </SearchBox>
           <Results
+            searchBoxId="main"
+            fields={["title__keyword"]}
             id="result"
             items={(data) => <div className="test-results">{data.length} results</div>}
             itemsPerPage={10}
