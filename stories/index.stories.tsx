@@ -8,7 +8,7 @@ import {
   toUrlQueryString,
   fromUrlQueryString,
 } from "../src";
-import { customQuery, customQueryMovie, url, tableName } from "./utils";
+import { url, tableName } from "./utils";
 
 export default {
   title: "Antfly",
@@ -18,7 +18,7 @@ export default {
 export const BasicUsage = () => {
   return (
     <Antfly url={url} table={tableName}>
-      <QueryBox id="main" customQuery={customQuery} />
+      <QueryBox id="main" />
       <div style={{ display: "inline-block" }}>
         <Facet id="author" fields={["AUTR"]} />
       </div>
@@ -42,7 +42,7 @@ export const BasicUsage = () => {
 export const SemanticSearch = () => {
   return (
     <Antfly url={url} table={tableName}>
-      <QueryBox id="main" semanticIndexes={["tico_embeddings"]} limit={10} />
+      <QueryBox id="main" />
       <div style={{ display: "inline-block" }}>
         <Facet id="author" fields={["AUTR"]} />
       </div>
@@ -76,7 +76,7 @@ export const WithUrlParams = () => {
       }}
     >
       <div>Params: {queryString}</div>
-      <QueryBox id="main" fields={["TICO"]} initialValue={initialValues.get("main") as string} />
+      <QueryBox id="main" initialValue={initialValues.get("main") as string} />
       <hr />
       <Facet id="author" fields={["AUTR"]} />
       <ActiveFilters />
@@ -94,7 +94,7 @@ export const WithUrlParams = () => {
 export const Wikipedia = () => {
   return (
     <Antfly url={"http://localhost:8080"} table="wikipedia">
-      <QueryBox id="main" semanticIndexes={["tico_embeddings"]} limit={10} />
+      <QueryBox id="main" />
       <ActiveFilters />
       <Results
         id="result"
@@ -121,7 +121,7 @@ export const MovieDatabase = () => {
         Authorization: "Basic " + window.btoa("Qq38oEj7D:a23804f8-f0c4-4dea-9a55-67739275e588"),
       }}
     >
-      <QueryBox id="main" customQuery={customQueryMovie} />
+      <QueryBox id="main" />
       <Results
         id="result"
         items={(data) =>

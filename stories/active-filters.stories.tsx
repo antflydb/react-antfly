@@ -15,7 +15,7 @@ export const Active = () => {
       <pre>{`<ActiveFilters />`}</pre>
       Active Filters:
       <ActiveFilters />
-      <QueryBox id="main" fields={["TICO"]} initialValue={"chemin"} />
+      <QueryBox id="main" initialValue={"chemin"} />
       <Facet id="autr" fields={["AUTR"]} initialValue={["auteur inconnu"]} />
       <Results
         id="result"
@@ -38,7 +38,7 @@ export const ActiveFilterChangeComponentOrder = () => {
       <h1>Active filter (change component order)</h1>
       <Facet id="autr" fields={["AUTR"]} />
       Recherche:
-      <QueryBox id="main" fields={["TICO"]} initialValue={"chemin"} />
+      <QueryBox id="main" initialValue={"chemin"} />
       Filtres:
       <ActiveFilters />
       <Results

@@ -42,7 +42,7 @@ export const BasicAnswer = () => {
   generator={mockGenerator}
 />`}</pre>
 
-      <QueryBox id="question" placeholder="Ask a question..." semanticIndexes={["full_text_index"]} />
+      <QueryBox id="question" placeholder="Ask a question..." />
 
       <div style={{ marginTop: "20px" }}>
         <AnswerResults id="answer" searchBoxId="question" generator={mockGenerator} />
@@ -68,7 +68,7 @@ export const WithAllInsights = () => {
   showFollowUpQuestions={true}
 />`}</pre>
 
-      <QueryBox id="question" placeholder="Ask a question..." semanticIndexes={["full_text_index"]} />
+      <QueryBox id="question" placeholder="Ask a question..." />
 
       <div style={{ marginTop: "20px" }}>
         <AnswerResults
@@ -626,8 +626,6 @@ export const StyledExample = () => {
           id="question"
           placeholder="Ask me anything about the books..."
           buttonLabel="Get AI Answer"
-          semanticIndexes={["full_text_index"]}
-          fields={["TICO"]}
         >
           <Autosuggest
             fields={[

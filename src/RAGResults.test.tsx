@@ -68,7 +68,7 @@ describe("RAGResults", () => {
 
       const { container } = render(
         <TestWrapper>
-          <QueryBox id="question" mode="submit" fields={["content"]} />
+          <QueryBox id="question" mode="submit" />
           <RAGResults
             id="rag-answer"
             searchBoxId="question"
@@ -322,7 +322,7 @@ describe("RAGResults", () => {
 
       render(
         <TestWrapper>
-          <QueryBox id="question" mode="submit" fields={["content"]} />
+          <QueryBox id="question" mode="submit" />
           <RAGResults
             id="rag-answer"
             searchBoxId="question"
@@ -356,7 +356,7 @@ describe("RAGResults", () => {
 
       render(
         <TestWrapper>
-          <QueryBox id="question" mode="submit" fields={["content"]} />
+          <QueryBox id="question" mode="submit" />
           <RAGResults
             id="rag-answer"
             searchBoxId="question"

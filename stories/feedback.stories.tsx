@@ -140,7 +140,7 @@ export const ThumbsUpDown = () => {
   />
 </RAGResults>`}</pre>
 
-        <QueryBox id="question" fields={["TICO", "AUTR"]} placeholder="Ask a question..." />
+        <QueryBox id="question" placeholder="Ask a question..." />
 
         <RAGResults id="answer" searchBoxId="question" summarizer={mockSummarizer}>
           <AnswerFeedback
@@ -263,7 +263,7 @@ export const StarRating = () => {
   />
 </RAGResults>`}</pre>
 
-        <QueryBox id="question" fields={["TICO", "AUTR"]} placeholder="Ask a question..." />
+        <QueryBox id="question" placeholder="Ask a question..." />
 
         <RAGResults id="answer" searchBoxId="question" summarizer={mockSummarizer}>
           <AnswerFeedback scale={4} renderRating={renderStars} onFeedback={handleFeedback} />
@@ -391,7 +391,7 @@ export const NumericScale = () => {
   />
 </RAGResults>`}</pre>
 
-        <QueryBox id="question" fields={["TICO", "AUTR"]} placeholder="Ask a question..." />
+        <QueryBox id="question" placeholder="Ask a question..." />
 
         <RAGResults id="answer" searchBoxId="question" summarizer={mockSummarizer}>
           <AnswerFeedback
@@ -499,7 +499,7 @@ export const WithoutComments = () => {
   onFeedback={handleFeedback}
 />`}</pre>
 
-        <QueryBox id="question" fields={["TICO", "AUTR"]} placeholder="Ask a question..." />
+        <QueryBox id="question" placeholder="Ask a question..." />
 
         <RAGResults id="answer" searchBoxId="question" summarizer={mockSummarizer}>
           <AnswerFeedback
@@ -671,7 +671,7 @@ export const CustomRenderer = () => {
   onFeedback={handleFeedback}
 />`}</pre>
 
-        <QueryBox id="question" fields={["TICO", "AUTR"]} placeholder="Ask a question..." />
+        <QueryBox id="question" placeholder="Ask a question..." />
 
         <RAGResults id="answer" searchBoxId="question" summarizer={mockSummarizer}>
           <AnswerFeedback

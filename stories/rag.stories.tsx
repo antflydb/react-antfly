@@ -33,14 +33,14 @@ export const BasicRAG = () => {
     <Antfly url={url} table={tableName}>
       <h1>Basic RAG Example</h1>
       <p>Ask a question and get an AI-generated summary based on search results.</p>
-      <pre>{`<QueryBox id="question" fields={["TICO", "AUTR"]} />
+      <pre>{`<QueryBox id="question" />
 <RAGResults
   id="rag-answer"
   searchBoxId="question"
   summarizer={mockSummarizer}
 />`}</pre>
 
-      <QueryBox id="question" fields={["TICO", "AUTR"]} placeholder="Ask a question..." />
+      <QueryBox id="question" placeholder="Ask a question..." />
 
       <div style={{ marginTop: "20px" }}>
         <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} />
@@ -54,7 +54,7 @@ export const WithSystemPrompt = () => {
     <Antfly url={url} table={tableName}>
       <h1>RAG with Custom System Prompt</h1>
       <p>Guide the AI's behavior with a custom system prompt.</p>
-      <pre>{`<QueryBox id="question" fields={["TICO"]} />
+      <pre>{`<QueryBox id="question" />
 <RAGResults
   id="rag-answer"
   searchBoxId="question"
@@ -62,7 +62,7 @@ export const WithSystemPrompt = () => {
   systemPrompt="You are a literary expert. Provide concise, scholarly answers."
 />`}</pre>
 
-      <QueryBox id="question" fields={["TICO"]} placeholder="Ask about literature..." />
+      <QueryBox id="question" placeholder="Ask about literature..." />
 
       <div style={{ marginTop: "20px" }}>
         <RAGResults
@@ -98,7 +98,7 @@ export const WithCustomRendering = () => {
   )}
 />`}</pre>
 
-      <QueryBox id="question" fields={["TICO", "AUTR"]} placeholder="Ask a question..." />
+      <QueryBox id="question" placeholder="Ask a question..." />
 
       <div style={{ marginTop: "20px" }}>
         <RAGResults
@@ -136,7 +136,7 @@ export const RAGWithSearchResults = () => {
       <p>
         Combine AI-generated summaries with traditional search results for the best of both worlds.
       </p>
-      <pre>{`<QueryBox id="question" fields={["TICO", "AUTR"]} />
+      <pre>{`<QueryBox id="question" />
 
 {/* AI Summary with inline citations */}
 <RAGResults
@@ -153,7 +153,6 @@ export const RAGWithSearchResults = () => {
 
       <QueryBox
         id="question"
-        fields={["TICO", "AUTR"]}
         placeholder="Ask a question..."
         buttonLabel="Search & Summarize"
       />
@@ -500,10 +499,8 @@ export const StyledRAGExample = () => {
       <div className="rag-container">
         <QueryBox
           id="question"
-          semanticIndexes={["tico_embeddings"]}
           placeholder="Ask me anything about the books..."
           buttonLabel="Get AI Answer"
-          fields={["TICO", "AUTR", "DESC"]}
         >
           <Autosuggest
             fields={[
@@ -539,7 +536,6 @@ export const StyledRAGExample = () => {
         <RAGResults
           id="rag-answer"
           searchBoxId="question"
-          fields={["TICO", "AUTR", "DESC"]}
           summarizer={mockSummarizer}
           showHits={true}
           systemPrompt="You are a knowledgeable librarian. Provide helpful, detailed answers about books."
@@ -817,7 +813,6 @@ export const ComposableAutosuggestWithFacets = () => {
         <div className="composable-demo-answerbox">
           <QueryBox
             id="composable-question"
-            fields={["TICO", "AUTR"]}
             placeholder="Start typing to see suggestions and facets..."
             buttonLabel="Search"
           >
@@ -921,7 +916,7 @@ export const MultipleLanguageModels = () => {
       <h1>Compare Different Language Models</h1>
       <p>See how different models respond to the same question.</p>
 
-      <QueryBox id="question" fields={["TICO", "AUTR"]} placeholder="Ask a question..." />
+      <QueryBox id="question" placeholder="Ask a question..." />
 
       <div
         style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginTop: "20px" }}

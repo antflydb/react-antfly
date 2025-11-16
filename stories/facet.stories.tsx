@@ -36,7 +36,7 @@ function CollapsableFacet({ title, ...rest }: { title: string } & FacetProps) {
 export const Collapsable = () => {
   return (
     <Antfly url={url} table={tableName}>
-      <QueryBox id="main" fields={["TICO"]} />
+      <QueryBox id="main" />
       <CollapsableFacet title="Author" id="autr" fields={["AUTR"]} />
       <Results
         id="result"
@@ -103,7 +103,7 @@ export const ModifyFilterValue = () => {
 export const FacetWithCustomRenderItems = () => {
   return (
     <Antfly url={url} table={tableName}>
-      <QueryBox id="main" fields={["TICO"]} />
+      <QueryBox id="main" />
       <Facet
         id="autr"
         fields={["AUTR"]}

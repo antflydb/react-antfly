@@ -21,7 +21,7 @@ function MyComponent({ ctx }: { ctx?: SharedState }) {
 export const Active = () => {
   return (
     <Antfly url={url} table={tableName}>
-      <QueryBox id="main" fields={["AUTR"]} />
+      <QueryBox id="main" />
       <CustomWidget>
         <MyComponent ctx={{} as SharedState} />
       </CustomWidget>
