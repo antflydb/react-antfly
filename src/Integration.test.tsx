@@ -3,7 +3,7 @@ import { render, waitFor, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import React from "react";
 import Antfly from "./Antfly";
-import SearchBox from "./SearchBox";
+import QueryBox from "./QueryBox";
 import Autosuggest from "./Autosuggest";
 import Results from "./Results";
 import * as utils from "./utils";
@@ -18,9 +18,10 @@ describe("Integration Tests", () => {
     it("should render SearchBox with Autosuggest child", () => {
       const { container } = render(
         <TestWrapper>
-          <SearchBox id="search" fields={["title"]}>
+          <QueryBox id="search" mode="live" />
+          <Results searchBoxId="search" fields={["title"]}>
             <Autosuggest fields={["title__keyword"]} minChars={2} />
-          </SearchBox>
+          </Results>
         </TestWrapper>,
       );
 
@@ -30,9 +31,10 @@ describe("Integration Tests", () => {
     it("should pass search value from SearchBox to Autosuggest", async () => {
       const { container } = render(
         <TestWrapper>
-          <SearchBox id="search" fields={["title"]}>
+          <QueryBox id="search" mode="live" />
+          <Results searchBoxId="search" fields={["title"]}>
             <Autosuggest fields={["title__keyword"]} minChars={2} />
-          </SearchBox>
+          </Results>
         </TestWrapper>,
       );
 
@@ -45,9 +47,10 @@ describe("Integration Tests", () => {
     it("should handle suggestion selection without custom handler", async () => {
       const { container } = render(
         <TestWrapper>
-          <SearchBox id="search" fields={["title"]}>
+          <QueryBox id="search" mode="live" />
+          <Results searchBoxId="search" fields={["title"]}>
             <Autosuggest fields={["title__keyword"]} minChars={1} />
-          </SearchBox>
+          </Results>
         </TestWrapper>,
       );
 
@@ -60,9 +63,10 @@ describe("Integration Tests", () => {
     it("should respect minChars threshold", async () => {
       const { container } = render(
         <TestWrapper>
-          <SearchBox id="search" fields={["title"]}>
+          <QueryBox id="search" mode="live" />
+          <Results searchBoxId="search" fields={["title"]}>
             <Autosuggest fields={["title__keyword"]} minChars={3} />
-          </SearchBox>
+          </Results>
         </TestWrapper>,
       );
 
@@ -76,9 +80,10 @@ describe("Integration Tests", () => {
     it("should work with containerRef for click outside detection", async () => {
       const { container } = render(
         <TestWrapper>
-          <SearchBox id="search" fields={["title"]}>
+          <QueryBox id="search" mode="live" />
+          <Results searchBoxId="search" fields={["title"]}>
             <Autosuggest fields={["title__keyword"]} minChars={1} />
-          </SearchBox>
+          </Results>
         </TestWrapper>,
       );
 
@@ -93,7 +98,8 @@ describe("Integration Tests", () => {
     it("should render SearchBox with Results", () => {
       const { container } = render(
         <TestWrapper>
-          <SearchBox id="search" fields={["title"]} />
+          <QueryBox id="search" mode="live" />
+          <Results searchBoxId="search" fields={["title"]} />
           <Results
             id="results"
             items={(data) => (
@@ -114,7 +120,8 @@ describe("Integration Tests", () => {
     it("should update results when search value changes", async () => {
       const { container } = render(
         <TestWrapper>
-          <SearchBox id="search" fields={["title"]} />
+          <QueryBox id="search" mode="live" />
+          <Results searchBoxId="search" fields={["title"]} />
           <Results
             id="results"
             items={(data) => <div className="results-items">{data.length} items</div>}
@@ -133,7 +140,8 @@ describe("Integration Tests", () => {
     it("should handle semantic search in SearchBox and Results", async () => {
       const { container } = render(
         <TestWrapper>
-          <SearchBox id="search" semanticIndexes={["index1"]} limit={10} />
+          <QueryBox id="search" mode="live" />
+          <Results searchBoxId="search" semanticIndexes={["index1"]} limit={10} />
           <Results
             id="results"
             items={(data) => <div className="results-items">{data.length} items</div>}
@@ -154,9 +162,10 @@ describe("Integration Tests", () => {
     it("should handle complete search workflow with autosuggest and results", async () => {
       const { container } = render(
         <TestWrapper>
-          <SearchBox id="search" fields={["title", "description"]}>
+          <QueryBox id="search" mode="live" />
+          <Results searchBoxId="search" fields={["title", "description"]}>
             <Autosuggest fields={["title__keyword", "description__2gram"]} minChars={2} />
-          </SearchBox>
+          </Results>
           <Results
             id="results"
             items={(data) => (
@@ -183,9 +192,10 @@ describe("Integration Tests", () => {
     it("should handle semantic search workflow", async () => {
       const { container } = render(
         <TestWrapper>
-          <SearchBox id="search" semanticIndexes={["embedding_index"]} limit={20}>
+          <QueryBox id="search" mode="live" />
+          <Results searchBoxId="search" semanticIndexes={["embedding_index"]} limit={20}>
             <Autosuggest semanticIndexes={["embedding_index"]} minChars={3} />
-          </SearchBox>
+          </Results>
           <Results id="results" items={(data) => <div>{data.length} results</div>} />
         </TestWrapper>,
       );
@@ -201,9 +211,10 @@ describe("Integration Tests", () => {
     it("should handle mixed field types in autosuggest", async () => {
       const { container } = render(
         <TestWrapper>
-          <SearchBox id="search" fields={["title"]}>
+          <QueryBox id="search" mode="live" />
+          <Results searchBoxId="search" fields={["title"]}>
             <Autosuggest fields={["title__keyword", "name__2gram", "description"]} minChars={1} />
-          </SearchBox>
+          </Results>
         </TestWrapper>,
       );
 
@@ -222,9 +233,10 @@ describe("Integration Tests", () => {
 
       const { container } = render(
         <TestWrapper>
-          <SearchBox id="search" customQuery={customSearchQuery}>
+          <QueryBox id="search" mode="live" />
+          <Results searchBoxId="search" customQuery={customSearchQuery}>
             <Autosuggest customQuery={customAutosuggestQuery} minChars={1} />
-          </SearchBox>
+          </Results>
         </TestWrapper>,
       );
 
@@ -239,9 +251,10 @@ describe("Integration Tests", () => {
     it("should handle rapid typing without crashing", async () => {
       const { container } = render(
         <TestWrapper>
-          <SearchBox id="search" fields={["title"]}>
+          <QueryBox id="search" mode="live" />
+          <Results searchBoxId="search" fields={["title"]}>
             <Autosuggest fields={["title__keyword"]} minChars={1} />
-          </SearchBox>
+          </Results>
         </TestWrapper>,
       );
 
@@ -257,9 +270,10 @@ describe("Integration Tests", () => {
     it("should handle clearing search", async () => {
       const { container } = render(
         <TestWrapper>
-          <SearchBox id="search" fields={["title"]} initialValue="initial">
+          <QueryBox id="search" mode="live" />
+          <Results searchBoxId="search" fields={["title"]} initialValue="initial">
             <Autosuggest fields={["title__keyword"]} minChars={1} />
-          </SearchBox>
+          </Results>
         </TestWrapper>,
       );
 
@@ -273,9 +287,9 @@ describe("Integration Tests", () => {
     it("should handle SearchBox without fields", async () => {
       const { container } = render(
         <TestWrapper>
-          <SearchBox id="search">
+          <QueryBox id="search" mode="live">
             <Autosuggest minChars={1} />
-          </SearchBox>
+          </QueryBox>
         </TestWrapper>,
       );
 
@@ -288,9 +302,10 @@ describe("Integration Tests", () => {
     it("should handle Autosuggest without fields in SearchBox context", async () => {
       const { container } = render(
         <TestWrapper>
-          <SearchBox id="search" fields={["title"]}>
+          <QueryBox id="search" mode="live" />
+          <Results searchBoxId="search" fields={["title"]}>
             <Autosuggest minChars={1} />
-          </SearchBox>
+          </Results>
         </TestWrapper>,
       );
 
@@ -303,9 +318,10 @@ describe("Integration Tests", () => {
     it("should handle empty fields arrays", async () => {
       const { container } = render(
         <TestWrapper>
-          <SearchBox id="search" fields={[]}>
+          <QueryBox id="search" mode="live" />
+          <Results searchBoxId="search" fields={[]}>
             <Autosuggest fields={[]} minChars={1} />
-          </SearchBox>
+          </Results>
         </TestWrapper>,
       );
 
@@ -333,9 +349,9 @@ describe("Integration Tests", () => {
 
       const { container } = render(
         <TestWrapper>
-          <SearchBox id="search">
+          <QueryBox id="search" mode="live">
             <Autosuggest fields={[]} minChars={2} />
-          </SearchBox>
+          </QueryBox>
           <Results
             searchBoxId="search"
             fields={["title__keyword"]}
@@ -378,9 +394,10 @@ describe("Integration Tests", () => {
       const longQuery = "a".repeat(500);
       const { container } = render(
         <TestWrapper>
-          <SearchBox id="search" fields={["title"]}>
+          <QueryBox id="search" mode="live" />
+          <Results searchBoxId="search" fields={["title"]}>
             <Autosuggest fields={["title__keyword"]} minChars={1} />
-          </SearchBox>
+          </Results>
         </TestWrapper>,
       );
 
@@ -396,9 +413,10 @@ describe("Integration Tests", () => {
       // so we test them with fireEvent instead
       const { container } = render(
         <TestWrapper>
-          <SearchBox id="search" fields={["title"]}>
+          <QueryBox id="search" mode="live" />
+          <Results searchBoxId="search" fields={["title"]}>
             <Autosuggest fields={["title__keyword"]} minChars={1} />
-          </SearchBox>
+          </Results>
         </TestWrapper>,
       );
 
@@ -417,12 +435,14 @@ describe("Integration Tests", () => {
     it("should not interfere between multiple search boxes", async () => {
       const { container } = render(
         <TestWrapper>
-          <SearchBox id="search1" fields={["title"]}>
+          <QueryBox id="search1" mode="live" />
+          <Results searchBoxId="search1" fields={["title"]}>
             <Autosuggest fields={["title__keyword"]} minChars={1} />
-          </SearchBox>
-          <SearchBox id="search2" fields={["description"]}>
+          </Results>
+          <QueryBox id="search2" mode="live" />
+          <Results searchBoxId="search2" fields={["description"]}>
             <Autosuggest fields={["description__keyword"]} minChars={1} />
-          </SearchBox>
+          </Results>
         </TestWrapper>,
       );
 
@@ -439,7 +459,8 @@ describe("Integration Tests", () => {
     it("should handle multiple Results components", () => {
       const { container } = render(
         <TestWrapper>
-          <SearchBox id="search" fields={["title"]} />
+          <QueryBox id="search" mode="live" />
+          <Results searchBoxId="search" fields={["title"]} />
           <Results id="results1" items={(data) => <div className="results1">{data.length}</div>} />
           <Results
             id="results2"
@@ -457,9 +478,10 @@ describe("Integration Tests", () => {
     it("should not include autosuggest queries in main search", async () => {
       const { container } = render(
         <TestWrapper>
-          <SearchBox id="search" fields={["title"]}>
+          <QueryBox id="search" mode="live" />
+          <Results searchBoxId="search" fields={["title"]}>
             <Autosuggest fields={["title__keyword"]} minChars={1} />
-          </SearchBox>
+          </Results>
           <Results id="results" items={(data) => <div>{data.length} items</div>} />
         </TestWrapper>,
       );
@@ -476,9 +498,10 @@ describe("Integration Tests", () => {
     it("should handle autosuggest with semantic and traditional search together", async () => {
       const { container } = render(
         <TestWrapper>
-          <SearchBox id="search" semanticIndexes={["index1"]}>
+          <QueryBox id="search" mode="live" />
+          <Results searchBoxId="search" semanticIndexes={["index1"]}>
             <Autosuggest fields={["title__keyword"]} minChars={1} />
-          </SearchBox>
+          </Results>
         </TestWrapper>,
       );
 
@@ -505,9 +528,10 @@ describe("Integration Tests", () => {
 
       const { container } = render(
         <TestWrapper>
-          <SearchBox id="search" fields={["title"]}>
+          <QueryBox id="search" mode="live" />
+          <Results searchBoxId="search" fields={["title"]}>
             <Autosuggest fields={["title__keyword"]} minChars={2} />
-          </SearchBox>
+          </Results>
           <Results
             id="results"
             items={(data) => <div className="results-content">{data.length} results</div>}
@@ -536,9 +560,10 @@ describe("Integration Tests", () => {
       // This was the exact scenario where the bug occurred
       const { container } = render(
         <TestWrapper>
-          <SearchBox id="search" fields={["title", "description"]}>
+          <QueryBox id="search" mode="live" />
+          <Results searchBoxId="search" fields={["title", "description"]}>
             <Autosuggest fields={["title__keyword", "description__2gram"]} minChars={1} />
-          </SearchBox>
+          </Results>
         </TestWrapper>,
       );
 
@@ -565,10 +590,12 @@ describe("Integration Tests", () => {
       // some need configuration and some don't
       const { container } = render(
         <TestWrapper>
-          <SearchBox id="search1" fields={["title"]}>
+          <QueryBox id="search1" mode="live" />
+          <Results searchBoxId="search1" fields={["title"]}>
             <Autosuggest fields={["title__keyword"]} minChars={1} />
-          </SearchBox>
-          <SearchBox id="search2" fields={["description"]} />
+          </Results>
+          <QueryBox id="search2" mode="live" />
+          <Results searchBoxId="search2" fields={["description"]} />
           <Results id="results" items={(data) => <div>{data.length} items</div>} />
         </TestWrapper>,
       );
@@ -592,9 +619,10 @@ describe("Integration Tests", () => {
       // Verify that semantic autosuggest also sets needsConfiguration properly
       const { container } = render(
         <TestWrapper>
-          <SearchBox id="search" semanticIndexes={["embedding_index"]}>
+          <QueryBox id="search" mode="live" />
+          <Results searchBoxId="search" semanticIndexes={["embedding_index"]}>
             <Autosuggest semanticIndexes={["suggestion_index"]} minChars={2} />
-          </SearchBox>
+          </Results>
           <Results id="results" items={(data) => <div>{data.length} results</div>} />
         </TestWrapper>,
       );
@@ -625,7 +653,8 @@ describe("Integration Tests", () => {
 
       const { container } = render(
         <TestWrapper>
-          <SearchBox id="search" fields={["title"]} filterQuery={filterQuery} />
+          <QueryBox id="search" mode="live" />
+          <Results searchBoxId="search" fields={["title"]} filterQuery={filterQuery} />
           <Results
             id="results"
             filterQuery={filterQuery}
@@ -653,9 +682,10 @@ describe("Integration Tests", () => {
 
       const { container } = render(
         <TestWrapper>
-          <SearchBox id="search" fields={["title"]} filterQuery={filterQuery}>
+          <QueryBox id="search" mode="live" />
+          <Results searchBoxId="search" fields={["title"]} filterQuery={filterQuery}>
             <Autosuggest fields={["title__keyword"]} minChars={2} filterQuery={filterQuery} />
-          </SearchBox>
+          </Results>
           <Results
             id="results"
             filterQuery={filterQuery}
@@ -682,7 +712,8 @@ describe("Integration Tests", () => {
 
       const { container } = render(
         <TestWrapper>
-          <SearchBox id="search" fields={["title"]} filterQuery={searchFilter} />
+          <QueryBox id="search" mode="live" />
+          <Results searchBoxId="search" fields={["title"]} filterQuery={searchFilter} />
           <Results
             id="results"
             filterQuery={resultsFilter}
@@ -702,8 +733,9 @@ describe("Integration Tests", () => {
 
       const { container } = render(
         <TestWrapper>
-          <SearchBox
-            id="search"
+          <QueryBox id="search" mode="live" />
+          <Results
+            searchBoxId="search"
             semanticIndexes={["vector-index"]}
             filterQuery={filterQuery}
           >
@@ -712,7 +744,7 @@ describe("Integration Tests", () => {
               minChars={2}
               filterQuery={filterQuery}
             />
-          </SearchBox>
+          </Results>
           <Results
             id="results"
             filterQuery={filterQuery}
@@ -744,7 +776,8 @@ describe("Integration Tests", () => {
 
       const { container } = render(
         <TestWrapper>
-          <SearchBox id="search" fields={["title"]} exclusionQuery={exclusionQuery} />
+          <QueryBox id="search" mode="live" />
+          <Results searchBoxId="search" fields={["title"]} exclusionQuery={exclusionQuery} />
           <Results
             id="results"
             exclusionQuery={exclusionQuery}
@@ -783,8 +816,9 @@ describe("Integration Tests", () => {
 
       const { container } = render(
         <TestWrapper>
-          <SearchBox
-            id="search"
+          <QueryBox id="search" mode="live" />
+          <Results
+            searchBoxId="search"
             fields={["title"]}
             filterQuery={filterQuery}
             exclusionQuery={exclusionQuery}
@@ -818,9 +852,10 @@ describe("Integration Tests", () => {
 
       const { container } = render(
         <TestWrapper>
-          <SearchBox id="search" fields={["title"]} exclusionQuery={exclusionQuery}>
+          <QueryBox id="search" mode="live" />
+          <Results searchBoxId="search" fields={["title"]} exclusionQuery={exclusionQuery}>
             <Autosuggest fields={["title__keyword"]} minChars={2} exclusionQuery={exclusionQuery} />
-          </SearchBox>
+          </Results>
           <Results
             id="results"
             exclusionQuery={exclusionQuery}
@@ -841,8 +876,9 @@ describe("Integration Tests", () => {
 
       const { container } = render(
         <TestWrapper>
-          <SearchBox
-            id="search"
+          <QueryBox id="search" mode="live" />
+          <Results
+            searchBoxId="search"
             semanticIndexes={["vector-index"]}
             exclusionQuery={exclusionQuery}
           >
@@ -851,7 +887,7 @@ describe("Integration Tests", () => {
               minChars={2}
               exclusionQuery={exclusionQuery}
             />
-          </SearchBox>
+          </Results>
           <Results
             id="results"
             exclusionQuery={exclusionQuery}

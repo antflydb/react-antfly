@@ -3,7 +3,7 @@ import { render } from "@testing-library/react";
 import React from "react";
 import Autosuggest from "./Autosuggest";
 import Antfly from "./Antfly";
-import SearchBox from "./SearchBox";
+import QueryBox from "./QueryBox";
 import userEvent from "@testing-library/user-event";
 
 // Wrapper component to provide required context
@@ -213,9 +213,10 @@ describe("Autosuggest", () => {
     it("should work when nested inside SearchBox", () => {
       const { container } = render(
         <TestWrapper>
-          <SearchBox id="test-search" fields={["title"]}>
+          <QueryBox id="test-search" mode="live" />
+          <Results searchBoxId="test-search" fields={["title"]}>
             <Autosuggest fields={["title__keyword"]} minChars={1} />
-          </SearchBox>
+          </Results>
         </TestWrapper>,
       );
 
@@ -227,9 +228,10 @@ describe("Autosuggest", () => {
     it("should receive searchValue prop from SearchBox", async () => {
       const { container } = render(
         <TestWrapper>
-          <SearchBox id="test-search" fields={["title"]}>
+          <QueryBox id="test-search" mode="live" />
+          <Results searchBoxId="test-search" fields={["title"]}>
             <Autosuggest fields={["title__keyword"]} minChars={1} />
-          </SearchBox>
+          </Results>
         </TestWrapper>,
       );
 
@@ -248,13 +250,14 @@ describe("Autosuggest", () => {
 
       const { container } = render(
         <TestWrapper>
-          <SearchBox id="test-search" fields={["title"]}>
+          <QueryBox id="test-search" mode="live" />
+          <Results searchBoxId="test-search" fields={["title"]}>
             <Autosuggest
               fields={["title__keyword"]}
               minChars={1}
               onSuggestionSelect={handleSelect}
             />
-          </SearchBox>
+          </Results>
         </TestWrapper>,
       );
 
@@ -270,9 +273,10 @@ describe("Autosuggest", () => {
     it("should receive containerRef from SearchBox", () => {
       const { container } = render(
         <TestWrapper>
-          <SearchBox id="test-search" fields={["title"]}>
+          <QueryBox id="test-search" mode="live" />
+          <Results searchBoxId="test-search" fields={["title"]}>
             <Autosuggest fields={["title__keyword"]} minChars={1} />
-          </SearchBox>
+          </Results>
         </TestWrapper>,
       );
 
@@ -615,13 +619,14 @@ describe("Autosuggest", () => {
     it("should handle returnFields in SearchBox integration", () => {
       const { container } = render(
         <TestWrapper>
-          <SearchBox id="test-search" fields={["title"]}>
+          <QueryBox id="test-search" mode="live" />
+          <Results searchBoxId="test-search" fields={["title"]}>
             <Autosuggest
               fields={["title__keyword"]}
               returnFields={["title", "url", "snippet"]}
               minChars={1}
             />
-          </SearchBox>
+          </Results>
         </TestWrapper>,
       );
 

@@ -3,7 +3,7 @@ import { render, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import React from "react";
 import Antfly from "./Antfly";
-import SearchBox from "./SearchBox";
+import QueryBox from "./QueryBox";
 import Autosuggest from "./Autosuggest";
 import Results from "./Results";
 import Listener from "./Listener";
@@ -24,9 +24,10 @@ describe("Listener", () => {
 
       const { container } = render(
         <TestWrapper>
-          <SearchBox id="search" fields={["title"]}>
+          <QueryBox id="search" mode="live" />
+          <Results searchBoxId="search" fields={["title"]}>
             <Autosuggest fields={["title__keyword"]} minChars={1} />
-          </SearchBox>
+          </Results>
           <Results
             id="results"
             items={(data) => <div className="results-rendered">Found {data.length}</div>}
@@ -58,9 +59,10 @@ describe("Listener", () => {
 
       const { container } = render(
         <TestWrapper>
-          <SearchBox id="search" fields={["name", "description"]}>
+          <QueryBox id="search" mode="live" />
+          <Results searchBoxId="search" fields={["name", "description"]}>
             <Autosuggest fields={["name__keyword", "description__2gram"]} minChars={2} />
-          </SearchBox>
+          </Results>
         </TestWrapper>,
       );
 
@@ -82,9 +84,10 @@ describe("Listener", () => {
     it("should handle semantic autosuggest configuration correctly", async () => {
       const { container } = render(
         <TestWrapper>
-          <SearchBox id="search" semanticIndexes={["main_index"]} limit={20}>
+          <QueryBox id="search" mode="live" />
+          <Results searchBoxId="search" semanticIndexes={["main_index"]} limit={20}>
             <Autosuggest semanticIndexes={["suggestion_index"]} minChars={2} />
-          </SearchBox>
+          </Results>
           <Results id="results" items={(data) => <div>{data.length} results</div>} />
         </TestWrapper>,
       );
@@ -107,10 +110,12 @@ describe("Listener", () => {
 
       const { container } = render(
         <TestWrapper>
-          <SearchBox id="search1" fields={["title"]}>
+          <QueryBox id="search1" mode="live" />
+          <Results searchBoxId="search1" fields={["title"]}>
             <Autosuggest fields={["title__keyword"]} minChars={1} />
-          </SearchBox>
-          <SearchBox id="search2" fields={["description"]} />
+          </Results>
+          <QueryBox id="search2" mode="live" />
+          <Results searchBoxId="search2" fields={["description"]} />
           <Results
             id="results"
             items={(data) => <div className="test-results">{data.length}</div>}
@@ -136,7 +141,8 @@ describe("Listener", () => {
 
       const { container } = render(
         <TestWrapper>
-          <SearchBox id="search" fields={["title"]} />
+          <QueryBox id="search" mode="live" />
+          <Results searchBoxId="search" fields={["title"]} />
           <Results id="results" items={(data) => <div>{data.length}</div>} />
         </TestWrapper>,
       );
@@ -152,9 +158,10 @@ describe("Listener", () => {
     it("should handle empty search value clearing widgets", async () => {
       const { container } = render(
         <TestWrapper>
-          <SearchBox id="search" fields={["title"]} initialValue="initial">
+          <QueryBox id="search" mode="live" />
+          <Results searchBoxId="search" fields={["title"]} initialValue="initial">
             <Autosuggest fields={["title__keyword"]} minChars={2} />
-          </SearchBox>
+          </Results>
           <Results id="results" items={(data) => <div>{data.length}</div>} />
         </TestWrapper>,
       );
@@ -171,9 +178,10 @@ describe("Listener", () => {
     it("should debounce rapid widget updates", async () => {
       const { container } = render(
         <TestWrapper>
-          <SearchBox id="search" fields={["title"]}>
+          <QueryBox id="search" mode="live" />
+          <Results searchBoxId="search" fields={["title"]}>
             <Autosuggest fields={["title__keyword"]} minChars={1} />
-          </SearchBox>
+          </Results>
         </TestWrapper>,
       );
 
@@ -202,9 +210,10 @@ describe("Listener", () => {
 
       const { container } = render(
         <TestWrapper>
-          <SearchBox id="search" fields={["title"]}>
+          <QueryBox id="search" mode="live" />
+          <Results searchBoxId="search" fields={["title"]}>
             <Autosuggest fields={["title__keyword"]} minChars={1} />
-          </SearchBox>
+          </Results>
           <Results id="results" items={(data) => <div>{data.length}</div>} />
         </TestWrapper>,
       );
@@ -231,14 +240,15 @@ describe("Listener", () => {
 
       const { container } = render(
         <TestWrapper>
-          <SearchBox id="main" fields={["title__keyword"]}>
+          <QueryBox id="main" mode="live" />
+          <Results searchBoxId="main" fields={["title__keyword"]}>
             <Autosuggest
               semanticIndexes={["title_body_semantic"]}
               fields={[]}
               limit={10}
               minChars={2}
             />
-          </SearchBox>
+          </Results>
           <Results
             id="result"
             items={(data) => <div className="test-results">{data.length} results</div>}
@@ -268,14 +278,15 @@ describe("Listener", () => {
 
       const { container } = render(
         <TestWrapper>
-          <SearchBox id="main" semanticIndexes={["main_semantic_index"]} limit={20}>
+          <QueryBox id="main" mode="live" />
+          <Results searchBoxId="main" semanticIndexes={["main_semantic_index"]} limit={20}>
             <Autosuggest
               semanticIndexes={["autosuggest_semantic_index"]}
               fields={[]}
               limit={5}
               minChars={2}
             />
-          </SearchBox>
+          </Results>
           <Results
             id="result"
             items={(data) => <div className="test-results">{data.length} results</div>}
@@ -323,14 +334,14 @@ describe("Listener", () => {
 
       const { container } = render(
         <TestWrapper>
-          <SearchBox id="main">
+          <QueryBox id="main" mode="live">
             <Autosuggest
               semanticIndexes={["title_body_semantic"]}
               fields={[]}
               limit={10}
               minChars={2}
             />
-          </SearchBox>
+          </QueryBox>
           <Results
             searchBoxId="main"
             fields={["title__keyword"]}
@@ -389,7 +400,8 @@ describe("Listener", () => {
 
       const { container } = render(
         <TestWrapper>
-          <SearchBox id="search" fields={["title"]} />
+          <QueryBox id="search" mode="live" />
+          <Results searchBoxId="search" fields={["title"]} />
           <Results id="results" items={(data) => <div>{data.length}</div>} />
         </TestWrapper>,
       );
@@ -410,7 +422,8 @@ describe("Listener", () => {
       const { container } = render(
         <Antfly url="http://localhost:8082/api/v1" table="test">
           <Listener onChange={onChange}>
-            <SearchBox id="search" fields={["title"]} />
+            <QueryBox id="search" mode="live" />
+          <Results searchBoxId="search" fields={["title"]} />
           </Listener>
         </Antfly>,
       );
@@ -430,7 +443,8 @@ describe("Listener", () => {
       const { container } = render(
         <Antfly url="http://localhost:8082/api/v1" table="test">
           <Listener onChange={onChange}>
-            <SearchBox id="search" fields={["title"]} />
+            <QueryBox id="search" mode="live" />
+          <Results searchBoxId="search" fields={["title"]} />
             <Results id="results" items={(data) => <div>{data.length}</div>} />
           </Listener>
         </Antfly>,
@@ -454,7 +468,8 @@ describe("Listener", () => {
       // Using an invalid URL to simulate connection error
       const { container } = render(
         <Antfly url="http://invalid-url-that-does-not-exist:9999/api" table="test">
-          <SearchBox id="search" fields={["title"]} />
+          <QueryBox id="search" mode="live" />
+          <Results searchBoxId="search" fields={["title"]} />
           <Results id="results" items={(data) => <div>{data.length}</div>} />
         </Antfly>,
       );
@@ -479,9 +494,10 @@ describe("Listener", () => {
     it("should clean up widgets on unmount", async () => {
       const { container, unmount } = render(
         <TestWrapper>
-          <SearchBox id="search" fields={["title"]}>
+          <QueryBox id="search" mode="live" />
+          <Results searchBoxId="search" fields={["title"]}>
             <Autosuggest fields={["title__keyword"]} minChars={1} />
-          </SearchBox>
+          </Results>
         </TestWrapper>,
       );
 
@@ -496,9 +512,10 @@ describe("Listener", () => {
     it("should handle rapid mount/unmount cycles", async () => {
       const { container, unmount, rerender } = render(
         <TestWrapper>
-          <SearchBox id="search" fields={["title"]}>
+          <QueryBox id="search" mode="live" />
+          <Results searchBoxId="search" fields={["title"]}>
             <Autosuggest fields={["title__keyword"]} minChars={1} />
-          </SearchBox>
+          </Results>
         </TestWrapper>,
       );
 
@@ -508,17 +525,19 @@ describe("Listener", () => {
       // Rerender multiple times
       rerender(
         <TestWrapper>
-          <SearchBox id="search" fields={["title"]}>
+          <QueryBox id="search" mode="live" />
+          <Results searchBoxId="search" fields={["title"]}>
             <Autosuggest fields={["title__keyword"]} minChars={1} />
-          </SearchBox>
+          </Results>
         </TestWrapper>,
       );
 
       rerender(
         <TestWrapper>
-          <SearchBox id="search" fields={["name"]}>
+          <QueryBox id="search" mode="live" />
+          <Results searchBoxId="search" fields={["name"]}>
             <Autosuggest fields={["name__keyword"]} minChars={1} />
-          </SearchBox>
+          </Results>
         </TestWrapper>,
       );
 
@@ -543,7 +562,8 @@ describe("Listener", () => {
 
       const { container } = render(
         <TestWrapper>
-          <SearchBox id="search" fields={["title"]} />
+          <QueryBox id="search" mode="live" />
+          <Results searchBoxId="search" fields={["title"]} />
           <Results
             id="results"
             filterQuery={filterQuery}
@@ -580,7 +600,8 @@ describe("Listener", () => {
 
       const { container } = render(
         <TestWrapper>
-          <SearchBox id="search" fields={["title"]} filterQuery={filterQuery} />
+          <QueryBox id="search" mode="live" />
+          <Results searchBoxId="search" fields={["title"]} filterQuery={filterQuery} />
           <Results
             id="results"
             items={(data) => <div>Results: {data.length}</div>}
@@ -618,7 +639,8 @@ describe("Listener", () => {
 
       const { container } = render(
         <TestWrapper>
-          <SearchBox id="search" fields={["title"]} />
+          <QueryBox id="search" mode="live" />
+          <Results searchBoxId="search" fields={["title"]} />
           <Results
             id="results"
             filterQuery={filterQuery}

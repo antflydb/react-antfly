@@ -3,7 +3,7 @@ import { render, waitFor, act, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import React from "react";
 import RAGResults from "./RAGResults";
-import AnswerBox from "./AnswerBox";
+import QueryBox from "./QueryBox";
 import Antfly from "./Antfly";
 import type { GeneratorConfig } from "@antfly/sdk";
 import * as utils from "./utils";
@@ -42,7 +42,7 @@ describe("RAGResults", () => {
     it("should render without crashing", () => {
       const { container } = render(
         <TestWrapper>
-          <AnswerBox id="question" />
+          <QueryBox id="question" mode="submit" />
           <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} fields={["content"]} />
         </TestWrapper>,
       );
@@ -53,7 +53,7 @@ describe("RAGResults", () => {
     it("should show empty state when no question submitted", () => {
       const { container } = render(
         <TestWrapper>
-          <AnswerBox id="question" />
+          <QueryBox id="question" mode="submit" />
           <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} fields={["content"]} />
         </TestWrapper>,
       );
@@ -68,7 +68,7 @@ describe("RAGResults", () => {
 
       const { container } = render(
         <TestWrapper>
-          <AnswerBox id="question" fields={["content"]} />
+          <QueryBox id="question" mode="submit" fields={["content"]} />
           <RAGResults
             id="rag-answer"
             searchBoxId="question"
@@ -96,7 +96,7 @@ describe("RAGResults", () => {
 
       const { container } = render(
         <TestWrapper>
-          <AnswerBox id="question" />
+          <QueryBox id="question" mode="submit" />
           <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} fields={["content"]} />
         </TestWrapper>,
       );
@@ -137,7 +137,7 @@ describe("RAGResults", () => {
 
       const { container } = render(
         <TestWrapper>
-          <AnswerBox id="question" />
+          <QueryBox id="question" mode="submit" />
           <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} fields={["content"]} />
         </TestWrapper>,
       );
@@ -168,7 +168,7 @@ describe("RAGResults", () => {
 
       const { container } = render(
         <TestWrapper>
-          <AnswerBox id="question" />
+          <QueryBox id="question" mode="submit" />
           <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} fields={["content"]} />
         </TestWrapper>,
       );
@@ -201,7 +201,7 @@ describe("RAGResults", () => {
 
       const { container } = render(
         <TestWrapper>
-          <AnswerBox id="question" />
+          <QueryBox id="question" mode="submit" />
           <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} fields={["content"]} />
         </TestWrapper>,
       );
@@ -230,7 +230,7 @@ describe("RAGResults", () => {
 
       const { container } = render(
         <TestWrapper>
-          <AnswerBox id="question" />
+          <QueryBox id="question" mode="submit" />
           <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} fields={["content"]} />
         </TestWrapper>,
       );
@@ -259,7 +259,7 @@ describe("RAGResults", () => {
 
       const { container } = render(
         <TestWrapper>
-          <AnswerBox id="question" />
+          <QueryBox id="question" mode="submit" />
           <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} fields={["content"]} />
         </TestWrapper>,
       );
@@ -290,7 +290,7 @@ describe("RAGResults", () => {
 
       const { container } = render(
         <TestWrapper>
-          <AnswerBox id="question" />
+          <QueryBox id="question" mode="submit" />
           <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} fields={["content"]} />
         </TestWrapper>,
       );
@@ -322,7 +322,7 @@ describe("RAGResults", () => {
 
       render(
         <TestWrapper>
-          <AnswerBox id="question" fields={["content"]} />
+          <QueryBox id="question" mode="submit" fields={["content"]} />
           <RAGResults
             id="rag-answer"
             searchBoxId="question"
@@ -356,7 +356,7 @@ describe("RAGResults", () => {
 
       render(
         <TestWrapper>
-          <AnswerBox id="question" fields={["content"]} />
+          <QueryBox id="question" mode="submit" fields={["content"]} />
           <RAGResults
             id="rag-answer"
             searchBoxId="question"
@@ -391,7 +391,7 @@ describe("RAGResults", () => {
 
       const { container } = render(
         <TestWrapper>
-          <AnswerBox id="question" />
+          <QueryBox id="question" mode="submit" />
           <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} fields={["content"]} />
         </TestWrapper>,
       );
@@ -422,7 +422,7 @@ describe("RAGResults", () => {
 
       render(
         <TestWrapper>
-          <AnswerBox id="question" />
+          <QueryBox id="question" mode="submit" />
           <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} fields={["content"]} />
         </TestWrapper>,
       );
@@ -460,7 +460,7 @@ describe("RAGResults", () => {
 
       const { container } = render(
         <TestWrapper>
-          <AnswerBox id="question" />
+          <QueryBox id="question" mode="submit" />
           <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} fields={["content"]} />
         </TestWrapper>,
       );
@@ -502,7 +502,7 @@ describe("RAGResults", () => {
 
       const { container } = render(
         <TestWrapper>
-          <AnswerBox id="question" />
+          <QueryBox id="question" mode="submit" />
           <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} fields={["content"]} />
         </TestWrapper>,
       );
@@ -527,7 +527,7 @@ describe("RAGResults", () => {
 
       const { container } = render(
         <TestWrapper>
-          <AnswerBox id="question" />
+          <QueryBox id="question" mode="submit" />
           <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} fields={["content"]} />
         </TestWrapper>,
       );
