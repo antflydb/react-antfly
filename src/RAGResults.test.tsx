@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, waitFor, act } from "@testing-library/react";
+import { render, waitFor, act, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import React from "react";
 import RAGResults from "./RAGResults";
@@ -84,9 +84,7 @@ describe("RAGResults", () => {
   });
 
   describe("streaming behavior", () => {
-    // TODO: These tests need to be rewritten for the new QueryBox architecture
-    // where QueryBox only manages input/value/submittedAt and RAGResults owns query config
-    it.skip("should stream chunks progressively", async () => {
+    it("should stream chunks progressively", async () => {
       // Mock streamRAG to simulate streaming chunks
       const mockStreamRAG = vi.mocked(utils.streamRAG);
       mockStreamRAG.mockImplementation(async (_url, _table, _request, _headers, callbacks) => {
@@ -103,23 +101,20 @@ describe("RAGResults", () => {
         </TestWrapper>,
       );
 
-      // Submit a question
-      const input = container.querySelector("input") as HTMLInputElement;
-      const button = container.querySelector('button[type="submit"]') as HTMLButtonElement;
+      // Find elements using more reliable methods
+      const input = screen.getByPlaceholderText(/ask a question/i);
+      const button = screen.getByRole("button", { name: /submit/i });
 
-      await userEvent.type(input, "test question");
-
-      // Use act to ensure state updates are flushed
+      // Type into input and submit - all within act
       await act(async () => {
+        await userEvent.type(input, "test question");
         await userEvent.click(button);
-        // Give React time to process the widget state update
-        await new Promise(resolve => setTimeout(resolve, 50));
       });
 
       // Wait for streamRAG to be called
       await waitFor(() => {
         expect(mockStreamRAG).toHaveBeenCalled();
-      }, { timeout: 2000 });
+      }, { timeout: 3000 });
 
       // Wait for summary to appear
       await waitFor(
@@ -132,7 +127,7 @@ describe("RAGResults", () => {
       );
     });
 
-    it.skip("should show streaming indicator while streaming", async () => {
+    it("should show streaming indicator while streaming", async () => {
       const mockStreamRAG = vi.mocked(utils.streamRAG);
       mockStreamRAG.mockImplementation(async (_url, _table, _request, _headers, callbacks) => {
         callbacks.onSummary?.("Streaming...");
@@ -147,11 +142,11 @@ describe("RAGResults", () => {
         </TestWrapper>,
       );
 
-      const input = container.querySelector("input") as HTMLInputElement;
-      const button = container.querySelector('button[type="submit"]') as HTMLButtonElement;
+      const input = screen.getByPlaceholderText(/ask a question/i);
+      const button = screen.getByRole("button", { name: /submit/i });
 
-      await userEvent.type(input, "test question");
       await act(async () => {
+        await userEvent.type(input, "test question");
         await userEvent.click(button);
       });
 
@@ -163,7 +158,7 @@ describe("RAGResults", () => {
       });
     });
 
-    it.skip("should handle [DONE] signal", async () => {
+    it("should handle [DONE] signal", async () => {
       const mockStreamRAG = vi.mocked(utils.streamRAG);
       mockStreamRAG.mockImplementation(async (_url, _table, _request, _headers, callbacks) => {
         callbacks.onSummary?.("Complete");
@@ -178,11 +173,11 @@ describe("RAGResults", () => {
         </TestWrapper>,
       );
 
-      const input = container.querySelector("input") as HTMLInputElement;
-      const button = container.querySelector('button[type="submit"]') as HTMLButtonElement;
+      const input = screen.getByPlaceholderText(/ask a question/i);
+      const button = screen.getByRole("button", { name: /submit/i });
 
-      await userEvent.type(input, "test question");
       await act(async () => {
+        await userEvent.type(input, "test question");
         await userEvent.click(button);
       });
 
@@ -197,7 +192,7 @@ describe("RAGResults", () => {
   });
 
   describe("error handling", () => {
-    it.skip("should display error when fetch fails", async () => {
+    it("should display error when fetch fails", async () => {
       const mockStreamRAG = vi.mocked(utils.streamRAG);
       mockStreamRAG.mockImplementation(async (_url, _table, _request, _headers, callbacks) => {
         callbacks.onError?.(new Error("Network error"));
@@ -211,11 +206,11 @@ describe("RAGResults", () => {
         </TestWrapper>,
       );
 
-      const input = container.querySelector("input") as HTMLInputElement;
-      const button = container.querySelector('button[type="submit"]') as HTMLButtonElement;
+      const input = screen.getByPlaceholderText(/ask a question/i);
+      const button = screen.getByRole("button", { name: /submit/i });
 
-      await userEvent.type(input, "test question");
       await act(async () => {
+        await userEvent.type(input, "test question");
         await userEvent.click(button);
       });
 
@@ -226,7 +221,7 @@ describe("RAGResults", () => {
       });
     });
 
-    it.skip("should handle HTTP error responses", async () => {
+    it("should handle HTTP error responses", async () => {
       const mockStreamRAG = vi.mocked(utils.streamRAG);
       mockStreamRAG.mockImplementation(async (_url, _table, _request, _headers, callbacks) => {
         callbacks.onError?.(new Error("RAG request failed: 500 Internal Server Error"));
@@ -240,11 +235,11 @@ describe("RAGResults", () => {
         </TestWrapper>,
       );
 
-      const input = container.querySelector("input") as HTMLInputElement;
-      const button = container.querySelector('button[type="submit"]') as HTMLButtonElement;
+      const input = screen.getByPlaceholderText(/ask a question/i);
+      const button = screen.getByRole("button", { name: /submit/i });
 
-      await userEvent.type(input, "test question");
       await act(async () => {
+        await userEvent.type(input, "test question");
         await userEvent.click(button);
       });
 
@@ -255,7 +250,7 @@ describe("RAGResults", () => {
       });
     });
 
-    it.skip("should handle error chunks in stream", async () => {
+    it("should handle error chunks in stream", async () => {
       const mockStreamRAG = vi.mocked(utils.streamRAG);
       mockStreamRAG.mockImplementation(async (_url, _table, _request, _headers, callbacks) => {
         callbacks.onError?.(new Error("Something went wrong"));
@@ -269,11 +264,11 @@ describe("RAGResults", () => {
         </TestWrapper>,
       );
 
-      const input = container.querySelector("input") as HTMLInputElement;
-      const button = container.querySelector('button[type="submit"]') as HTMLButtonElement;
+      const input = screen.getByPlaceholderText(/ask a question/i);
+      const button = screen.getByRole("button", { name: /submit/i });
 
-      await userEvent.type(input, "test question");
       await act(async () => {
+        await userEvent.type(input, "test question");
         await userEvent.click(button);
       });
 
@@ -300,11 +295,11 @@ describe("RAGResults", () => {
         </TestWrapper>,
       );
 
-      const input = container.querySelector("input") as HTMLInputElement;
-      const button = container.querySelector('button[type="submit"]') as HTMLButtonElement;
+      const input = screen.getByPlaceholderText(/ask a question/i);
+      const button = screen.getByRole("button", { name: /submit/i });
 
-      await userEvent.type(input, "test question");
       await act(async () => {
+        await userEvent.type(input, "test question");
         await userEvent.click(button);
       });
 
@@ -316,7 +311,7 @@ describe("RAGResults", () => {
   });
 
   describe("configuration options", () => {
-    it.skip("should use custom system prompt", async () => {
+    it("should use custom system prompt", async () => {
       const mockStreamRAG = vi.mocked(utils.streamRAG);
       mockStreamRAG.mockImplementation(async (_url, _table, request, _headers, callbacks) => {
         // Verify system prompt is in the request
@@ -337,11 +332,11 @@ describe("RAGResults", () => {
         </TestWrapper>,
       );
 
-      const input = container.querySelector("input") as HTMLInputElement;
-      const button = container.querySelector('button[type="submit"]') as HTMLButtonElement;
+      const input = screen.getByPlaceholderText(/ask a question/i);
+      const button = screen.getByRole("button", { name: /submit/i });
 
-      await userEvent.type(input, "test question");
       await act(async () => {
+        await userEvent.type(input, "test question");
         await userEvent.click(button);
       });
 
@@ -350,7 +345,7 @@ describe("RAGResults", () => {
       });
     });
 
-    it.skip("should pass fields to query", async () => {
+    it("should pass fields to query", async () => {
       const mockStreamRAG = vi.mocked(utils.streamRAG);
       mockStreamRAG.mockImplementation(async (_url, _table, request, _headers, callbacks) => {
         // Verify fields are in the request
@@ -371,11 +366,11 @@ describe("RAGResults", () => {
         </TestWrapper>,
       );
 
-      const input = container.querySelector("input") as HTMLInputElement;
-      const button = container.querySelector('button[type="submit"]') as HTMLButtonElement;
+      const input = screen.getByPlaceholderText(/ask a question/i);
+      const button = screen.getByRole("button", { name: /submit/i });
 
-      await userEvent.type(input, "test question");
       await act(async () => {
+        await userEvent.type(input, "test question");
         await userEvent.click(button);
       });
 
@@ -386,7 +381,7 @@ describe("RAGResults", () => {
   });
 
   describe("query updates", () => {
-    it.skip("should trigger request when question is submitted", async () => {
+    it("should trigger request when question is submitted", async () => {
       const mockStreamRAG = vi.mocked(utils.streamRAG);
       mockStreamRAG.mockImplementation(async (_url, _table, _request, _headers, callbacks) => {
         callbacks.onSummary?.("Answer");
@@ -401,12 +396,12 @@ describe("RAGResults", () => {
         </TestWrapper>,
       );
 
-      const input = container.querySelector("input") as HTMLInputElement;
-      const button = container.querySelector('button[type="submit"]') as HTMLButtonElement;
+      const input = screen.getByPlaceholderText(/ask a question/i);
+      const button = screen.getByRole("button", { name: /submit/i });
 
       // Submit question
-      await userEvent.type(input, "test question");
       await act(async () => {
+        await userEvent.type(input, "test question");
         await userEvent.click(button);
       });
 
@@ -418,7 +413,7 @@ describe("RAGResults", () => {
       expect(mockStreamRAG).toHaveBeenCalled();
     });
 
-    it.skip("should trigger new request even if question is the same when explicitly resubmitted", async () => {
+    it("should trigger new request even if question is the same when explicitly resubmitted", async () => {
       const mockStreamRAG = vi.mocked(utils.streamRAG);
       mockStreamRAG.mockImplementation(async (_url, _table, _request, _headers, callbacks) => {
         callbacks.onComplete?.();
@@ -432,11 +427,11 @@ describe("RAGResults", () => {
         </TestWrapper>,
       );
 
-      const input = container.querySelector("input") as HTMLInputElement;
-      const button = container.querySelector('button[type="submit"]') as HTMLButtonElement;
+      const input = screen.getByPlaceholderText(/ask a question/i);
+      const button = screen.getByRole("button", { name: /submit/i });
 
-      await userEvent.type(input, "same question");
       await act(async () => {
+        await userEvent.type(input, "same question");
         await userEvent.click(button);
       });
 
@@ -455,7 +450,7 @@ describe("RAGResults", () => {
       });
     });
 
-    it.skip("should reset summary when new request starts", async () => {
+    it("should reset summary when new request starts", async () => {
       const mockStreamRAG = vi.mocked(utils.streamRAG);
       mockStreamRAG.mockImplementation(async (_url, _table, _request, _headers, callbacks) => {
         callbacks.onSummary?.("New answer");
@@ -470,12 +465,12 @@ describe("RAGResults", () => {
         </TestWrapper>,
       );
 
-      const input = container.querySelector("input") as HTMLInputElement;
-      const button = container.querySelector('button[type="submit"]') as HTMLButtonElement;
+      const input = screen.getByPlaceholderText(/ask a question/i);
+      const button = screen.getByRole("button", { name: /submit/i });
 
       // Submit a question
-      await userEvent.type(input, "test question");
       await act(async () => {
+        await userEvent.type(input, "test question");
         await userEvent.click(button);
       });
 
@@ -512,18 +507,18 @@ describe("RAGResults", () => {
         </TestWrapper>,
       );
 
-      const input = container.querySelector("input") as HTMLInputElement;
-      const button = container.querySelector('button[type="submit"]') as HTMLButtonElement;
+      const input = screen.getByPlaceholderText(/ask a question/i);
+      const button = screen.getByRole("button", { name: /submit/i });
 
-      await userEvent.type(input, "test");
       await act(async () => {
+        await userEvent.type(input, "test");
         await userEvent.click(button);
       });
 
       expect(container).toBeTruthy();
     });
 
-    it.skip("should handle null response body", async () => {
+    it("should handle null response body", async () => {
       const mockStreamRAG = vi.mocked(utils.streamRAG);
       mockStreamRAG.mockImplementation(async (_url, _table, _request, _headers, callbacks) => {
         callbacks.onError?.(new Error("Response body is null"));
@@ -537,11 +532,11 @@ describe("RAGResults", () => {
         </TestWrapper>,
       );
 
-      const input = container.querySelector("input") as HTMLInputElement;
-      const button = container.querySelector('button[type="submit"]') as HTMLButtonElement;
+      const input = screen.getByPlaceholderText(/ask a question/i);
+      const button = screen.getByRole("button", { name: /submit/i });
 
-      await userEvent.type(input, "test");
       await act(async () => {
+        await userEvent.type(input, "test");
         await userEvent.click(button);
       });
 
