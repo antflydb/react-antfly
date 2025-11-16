@@ -119,25 +119,19 @@ export default function AnswerResults({
 
     previousSubmissionRef.current = submittedAt;
 
-    // Get the query configuration from the QueryBox widget
-    const searchBoxQuery = searchBoxWidget?.query;
-    const searchBoxSemanticQuery = searchBoxWidget?.semanticQuery;
-    const searchBoxConfiguration = searchBoxWidget?.configuration;
-
     // Resolve table: prop > QueryBox widget > default
     const widgetTable = table || searchBoxWidget?.table;
     const resolvedTable = resolveTable(widgetTable, defaultTable);
 
     // Build the Answer Agent request with queries array (similar to RAG format)
+    // QueryBox only provides the text value, AnswerResults owns the query configuration
     const answerRequest: AnswerAgentRequest = {
       query: currentQuery,
       queries: [
         {
           table: resolvedTable,
-          full_text_search: searchBoxQuery as Record<string, unknown> | undefined,
-          semantic_search: searchBoxSemanticQuery,
-          indexes: searchBoxConfiguration?.indexes as string[] | undefined,
-          limit: (searchBoxConfiguration?.limit as number | undefined) || 10,
+          // Use the query value directly as semantic search
+          semantic_search: currentQuery,
           filter_query: filterQuery,
           exclusion_query: exclusionQuery,
         },

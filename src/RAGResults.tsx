@@ -130,23 +130,17 @@ export default function RAGResults({
 
     previousSubmissionRef.current = submittedAt;
 
-    // Get the query from the QueryBox widget
-    const searchBoxQuery = searchBoxWidget?.query;
-    const searchBoxSemanticQuery = searchBoxWidget?.semanticQuery;
-    const searchBoxConfiguration = searchBoxWidget?.configuration;
-
     // Resolve table: prop > QueryBox widget > default
     const widgetTable = table || searchBoxWidget?.table;
     const resolvedTable = resolveTable(widgetTable, defaultTable);
 
     // Build the RAG request (table will be added by streamRAG)
+    // QueryBox only provides the text value, RAGResults owns the query configuration
     const ragRequest: RAGRequest = {
       queries: [
         {
-          full_text_search: searchBoxQuery as Record<string, unknown> | undefined,
-          semantic_search: searchBoxSemanticQuery,
-          indexes: searchBoxConfiguration?.indexes as string[] | undefined,
-          limit: (searchBoxConfiguration?.limit as number | undefined) || 10,
+          // Use the query value directly as semantic search
+          semantic_search: currentQuery,
           fields: fields || [],
           filter_query: filterQuery,
           exclusion_query: exclusionQuery,

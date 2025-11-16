@@ -1,4 +1,8 @@
 import { ReactNode } from 'react';
+/**
+ * @deprecated Use QueryBox with mode="submit" instead.
+ * RAGBox is maintained for backward compatibility.
+ */
 export interface RAGBoxProps {
     customQuery?: (query?: string) => unknown;
     fields?: string[];
@@ -16,5 +20,21 @@ export interface RAGBoxProps {
     onInputChange?: (value: string) => void;
     onEscape?: (clearInput: () => void) => boolean;
 }
-export default function RAGBox({ customQuery, fields, id, initialValue, placeholder, semanticIndexes, limit, table, filterQuery, exclusionQuery, children, buttonLabel, onSubmit, onInputChange, onEscape, }: RAGBoxProps): import("react/jsx-runtime").JSX.Element;
+/**
+ * @deprecated Use QueryBox with mode="submit" instead.
+ *
+ * RAGBox is a legacy component maintained for backward compatibility.
+ * For new code, use QueryBox with RAGResults:
+ *
+ * @example
+ * ```tsx
+ * <QueryBox id="rag" mode="submit" buttonLabel="Ask" />
+ * <RAGResults
+ *   searchBoxId="rag"
+ *   summarizer={{...}}
+ *   fields={["content"]}
+ * />
+ * ```
+ */
+export default function RAGBox({ id, initialValue, placeholder, children, buttonLabel, onSubmit, onInputChange, onEscape, customQuery: _customQuery, fields: _fields, semanticIndexes: _semanticIndexes, limit: _limit, table: _table, filterQuery: _filterQuery, exclusionQuery: _exclusionQuery, }: RAGBoxProps): import("react/jsx-runtime").JSX.Element;
 //# sourceMappingURL=RAGBox.d.ts.map
