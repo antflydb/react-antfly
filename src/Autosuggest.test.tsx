@@ -209,14 +209,13 @@ describe("Autosuggest", () => {
     });
   });
 
-  describe("SearchBox integration", () => {
-    it("should work when nested inside SearchBox", () => {
+  describe("QueryBox integration", () => {
+    it("should work when nested inside QueryBox", () => {
       const { container } = render(
         <TestWrapper>
-          <QueryBox id="test-search" mode="live" />
-          <Results searchBoxId="test-search" fields={["title"]}>
+          <QueryBox id="test-search" mode="live">
             <Autosuggest fields={["title__keyword"]} minChars={1} />
-          </Results>
+          </QueryBox>
         </TestWrapper>,
       );
 
@@ -225,13 +224,12 @@ describe("Autosuggest", () => {
       expect(input).toBeTruthy();
     });
 
-    it("should receive searchValue prop from SearchBox", async () => {
+    it("should receive searchValue prop from QueryBox", async () => {
       const { container } = render(
         <TestWrapper>
-          <QueryBox id="test-search" mode="live" />
-          <Results searchBoxId="test-search" fields={["title"]}>
+          <QueryBox id="test-search" mode="live">
             <Autosuggest fields={["title__keyword"]} minChars={1} />
-          </Results>
+          </QueryBox>
         </TestWrapper>,
       );
 
@@ -245,19 +243,18 @@ describe("Autosuggest", () => {
       }
     });
 
-    it("should handle suggestion selection callback from SearchBox", async () => {
+    it("should handle suggestion selection callback from QueryBox", async () => {
       const handleSelect = vi.fn();
 
       const { container } = render(
         <TestWrapper>
-          <QueryBox id="test-search" mode="live" />
-          <Results searchBoxId="test-search" fields={["title"]}>
+          <QueryBox id="test-search" mode="live">
             <Autosuggest
               fields={["title__keyword"]}
               minChars={1}
               onSuggestionSelect={handleSelect}
             />
-          </Results>
+          </QueryBox>
         </TestWrapper>,
       );
 
@@ -270,13 +267,12 @@ describe("Autosuggest", () => {
       }
     });
 
-    it("should receive containerRef from SearchBox", () => {
+    it("should receive containerRef from QueryBox", () => {
       const { container } = render(
         <TestWrapper>
-          <QueryBox id="test-search" mode="live" />
-          <Results searchBoxId="test-search" fields={["title"]}>
+          <QueryBox id="test-search" mode="live">
             <Autosuggest fields={["title__keyword"]} minChars={1} />
-          </Results>
+          </QueryBox>
         </TestWrapper>,
       );
 
@@ -616,17 +612,16 @@ describe("Autosuggest", () => {
       expect(container).toBeTruthy();
     });
 
-    it("should handle returnFields in SearchBox integration", () => {
+    it("should handle returnFields in QueryBox integration", () => {
       const { container } = render(
         <TestWrapper>
-          <QueryBox id="test-search" mode="live" />
-          <Results searchBoxId="test-search" fields={["title"]}>
+          <QueryBox id="test-search" mode="live">
             <Autosuggest
               fields={["title__keyword"]}
               returnFields={["title", "url", "snippet"]}
               minChars={1}
             />
-          </Results>
+          </QueryBox>
         </TestWrapper>,
       );
 

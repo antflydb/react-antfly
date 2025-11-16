@@ -1,7 +1,7 @@
 import React from "react";
 import {
   Antfly,
-  AnswerBox,
+  QueryBox,
   AnswerResults,
   GeneratorConfig,
   AnswerFeedback,
@@ -35,14 +35,14 @@ export const BasicAnswer = () => {
     <Antfly url={url} table={tableName}>
       <h1>Basic Answer Agent</h1>
       <p>Ask a question and get an AI-generated answer with intelligent query routing.</p>
-      <pre>{`<AnswerBox id="question" />
+      <pre>{`<QueryBox id="question" />
 <AnswerResults
   id="answer"
   searchBoxId="question"
   generator={mockGenerator}
 />`}</pre>
 
-      <AnswerBox id="question" placeholder="Ask a question..." semanticIndexes={["full_text_index"]} />
+      <QueryBox id="question" placeholder="Ask a question..." semanticIndexes={["full_text_index"]} />
 
       <div style={{ marginTop: "20px" }}>
         <AnswerResults id="answer" searchBoxId="question" generator={mockGenerator} />
@@ -56,7 +56,7 @@ export const WithAllInsights = () => {
     <Antfly url={url} table={tableName}>
       <h1>Answer Agent with All Insights</h1>
       <p>See classification, keywords, generated query, reasoning, and follow-up questions.</p>
-      <pre>{`<AnswerBox id="question" />
+      <pre>{`<QueryBox id="question" />
 <AnswerResults
   id="answer"
   searchBoxId="question"
@@ -68,7 +68,7 @@ export const WithAllInsights = () => {
   showFollowUpQuestions={true}
 />`}</pre>
 
-      <AnswerBox id="question" placeholder="Ask a question..." semanticIndexes={["full_text_index"]} />
+      <QueryBox id="question" placeholder="Ask a question..." semanticIndexes={["full_text_index"]} />
 
       <div style={{ marginTop: "20px" }}>
         <AnswerResults
@@ -90,7 +90,7 @@ export const WithCustomRenderers = () => {
       <h1>Answer Agent with Custom Renderers</h1>
       <p>Customize how each part of the answer is displayed.</p>
 
-      <AnswerBox id="question" placeholder="Ask a question..." />
+      <QueryBox id="question" placeholder="Ask a question..." />
 
       <div style={{ marginTop: "20px" }}>
         <AnswerResults
@@ -149,7 +149,7 @@ export const WithSystemPrompt = () => {
     <Antfly url={url} table={tableName}>
       <h1>Answer Agent with Custom System Prompt</h1>
       <p>Guide the AI's behavior with a custom system prompt.</p>
-      <pre>{`<AnswerBox id="question" />
+      <pre>{`<QueryBox id="question" />
 <AnswerResults
   id="answer"
   searchBoxId="question"
@@ -158,7 +158,7 @@ export const WithSystemPrompt = () => {
   showReasoning={true}
 />`}</pre>
 
-      <AnswerBox id="question" placeholder="Ask about literature..." />
+      <QueryBox id="question" placeholder="Ask about literature..." />
 
       <div style={{ marginTop: "20px" }}>
         <AnswerResults
@@ -195,7 +195,7 @@ export const WithFeedback = () => {
       <h1>Answer Agent with Feedback</h1>
       <p>Collect user feedback on answer quality with rich context.</p>
 
-      <AnswerBox id="question" placeholder="Ask a question..." />
+      <QueryBox id="question" placeholder="Ask a question..." />
 
       <div style={{ marginTop: "20px" }}>
         <AnswerResults id="answer" searchBoxId="question" generator={mockGenerator} showReasoning={true}>
@@ -218,7 +218,7 @@ export const WithHits = () => {
     <Antfly url={url} table={tableName}>
       <h1>Answer Agent with Search Results</h1>
       <p>Show the underlying search results that informed the answer.</p>
-      <pre>{`<AnswerBox id="question" />
+      <pre>{`<QueryBox id="question" />
 <AnswerResults
   id="answer"
   searchBoxId="question"
@@ -226,7 +226,7 @@ export const WithHits = () => {
   showHits={true}
 />`}</pre>
 
-      <AnswerBox id="question" placeholder="Ask a question..." />
+      <QueryBox id="question" placeholder="Ask a question..." />
 
       <div style={{ marginTop: "20px" }}>
         <AnswerResults id="answer" searchBoxId="question" generator={mockGenerator} showHits={true} />
@@ -622,7 +622,7 @@ export const StyledExample = () => {
       `}</style>
 
       <div className="answer-container">
-        <AnswerBox
+        <QueryBox
           id="question"
           placeholder="Ask me anything about the books..."
           buttonLabel="Get AI Answer"
@@ -658,7 +658,7 @@ export const StyledExample = () => {
               )}
             />
           </Autosuggest>
-        </AnswerBox>
+        </QueryBox>
 
         <div style={{ marginTop: "20px" }}>
           <AnswerResults

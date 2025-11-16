@@ -1,5 +1,5 @@
 import React from "react";
-import { Antfly, SearchBox, Results, ActiveFilters, Facet } from "../src";
+import { Antfly, QueryBox, Results, ActiveFilters, Facet } from "../src";
 import { url, tableName } from "./utils";
 import "../src/style.css";
 
@@ -15,7 +15,7 @@ export const Active = () => {
       <pre>{`<ActiveFilters />`}</pre>
       Active Filters:
       <ActiveFilters />
-      <SearchBox id="main" fields={["TICO"]} initialValue={"chemin"} />
+      <QueryBox id="main" fields={["TICO"]} initialValue={"chemin"} />
       <Facet id="autr" fields={["AUTR"]} initialValue={["auteur inconnu"]} />
       <Results
         id="result"
@@ -38,7 +38,7 @@ export const ActiveFilterChangeComponentOrder = () => {
       <h1>Active filter (change component order)</h1>
       <Facet id="autr" fields={["AUTR"]} />
       Recherche:
-      <SearchBox id="main" fields={["TICO"]} initialValue={"chemin"} />
+      <QueryBox id="main" fields={["TICO"]} initialValue={"chemin"} />
       Filtres:
       <ActiveFilters />
       <Results

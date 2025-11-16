@@ -1,6 +1,6 @@
 import {
   Antfly,
-  RAGBox,
+  QueryBox,
   RAGResults,
   Results,
   GeneratorConfig,
@@ -33,14 +33,14 @@ export const BasicRAG = () => {
     <Antfly url={url} table={tableName}>
       <h1>Basic RAG Example</h1>
       <p>Ask a question and get an AI-generated summary based on search results.</p>
-      <pre>{`<RAGBox id="question" fields={["TICO", "AUTR"]} />
+      <pre>{`<QueryBox id="question" fields={["TICO", "AUTR"]} />
 <RAGResults
   id="rag-answer"
   searchBoxId="question"
   summarizer={mockSummarizer}
 />`}</pre>
 
-      <RAGBox id="question" fields={["TICO", "AUTR"]} placeholder="Ask a question..." />
+      <QueryBox id="question" fields={["TICO", "AUTR"]} placeholder="Ask a question..." />
 
       <div style={{ marginTop: "20px" }}>
         <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} />
@@ -54,7 +54,7 @@ export const WithSystemPrompt = () => {
     <Antfly url={url} table={tableName}>
       <h1>RAG with Custom System Prompt</h1>
       <p>Guide the AI's behavior with a custom system prompt.</p>
-      <pre>{`<RAGBox id="question" fields={["TICO"]} />
+      <pre>{`<QueryBox id="question" fields={["TICO"]} />
 <RAGResults
   id="rag-answer"
   searchBoxId="question"
@@ -62,7 +62,7 @@ export const WithSystemPrompt = () => {
   systemPrompt="You are a literary expert. Provide concise, scholarly answers."
 />`}</pre>
 
-      <RAGBox id="question" fields={["TICO"]} placeholder="Ask about literature..." />
+      <QueryBox id="question" fields={["TICO"]} placeholder="Ask about literature..." />
 
       <div style={{ marginTop: "20px" }}>
         <RAGResults
@@ -98,7 +98,7 @@ export const WithCustomRendering = () => {
   )}
 />`}</pre>
 
-      <RAGBox id="question" fields={["TICO", "AUTR"]} placeholder="Ask a question..." />
+      <QueryBox id="question" fields={["TICO", "AUTR"]} placeholder="Ask a question..." />
 
       <div style={{ marginTop: "20px" }}>
         <RAGResults
@@ -136,7 +136,7 @@ export const RAGWithSearchResults = () => {
       <p>
         Combine AI-generated summaries with traditional search results for the best of both worlds.
       </p>
-      <pre>{`<RAGBox id="question" fields={["TICO", "AUTR"]} />
+      <pre>{`<QueryBox id="question" fields={["TICO", "AUTR"]} />
 
 {/* AI Summary with inline citations */}
 <RAGResults
@@ -151,7 +151,7 @@ export const RAGWithSearchResults = () => {
   items={(data) => data.map(hit => ...)}
 />`}</pre>
 
-      <RAGBox
+      <QueryBox
         id="question"
         fields={["TICO", "AUTR"]}
         placeholder="Ask a question..."
@@ -498,7 +498,7 @@ export const StyledRAGExample = () => {
       `}</style>
 
       <div className="rag-container">
-        <RAGBox
+        <QueryBox
           id="question"
           semanticIndexes={["tico_embeddings"]}
           placeholder="Ask me anything about the books..."
@@ -534,7 +534,7 @@ export const StyledRAGExample = () => {
               )}
             />
           </Autosuggest>
-        </RAGBox>
+        </QueryBox>
 
         <RAGResults
           id="rag-answer"
@@ -815,7 +815,7 @@ export const ComposableAutosuggestWithFacets = () => {
         </div>
 
         <div className="composable-demo-answerbox">
-          <RAGBox
+          <QueryBox
             id="composable-question"
             fields={["TICO", "AUTR"]}
             placeholder="Start typing to see suggestions and facets..."
@@ -838,7 +838,7 @@ export const ComposableAutosuggestWithFacets = () => {
                 order="count"
               />
             </Autosuggest>
-          </RAGBox>
+          </QueryBox>
         </div>
 
         <div style={{ marginTop: "40px" }}>
@@ -921,7 +921,7 @@ export const MultipleLanguageModels = () => {
       <h1>Compare Different Language Models</h1>
       <p>See how different models respond to the same question.</p>
 
-      <RAGBox id="question" fields={["TICO", "AUTR"]} placeholder="Ask a question..." />
+      <QueryBox id="question" fields={["TICO", "AUTR"]} placeholder="Ask a question..." />
 
       <div
         style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginTop: "20px" }}

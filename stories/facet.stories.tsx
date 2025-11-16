@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Antfly, SearchBox, Results, Facet, FacetProps } from "../src";
+import { Antfly, QueryBox, Results, Facet, FacetProps } from "../src";
 import { url, tableName } from "./utils";
 
 export default {
@@ -36,7 +36,7 @@ function CollapsableFacet({ title, ...rest }: { title: string } & FacetProps) {
 export const Collapsable = () => {
   return (
     <Antfly url={url} table={tableName}>
-      <SearchBox id="main" fields={["TICO"]} />
+      <QueryBox id="main" fields={["TICO"]} />
       <CollapsableFacet title="Author" id="autr" fields={["AUTR"]} />
       <Results
         id="result"
@@ -103,7 +103,7 @@ export const ModifyFilterValue = () => {
 export const FacetWithCustomRenderItems = () => {
   return (
     <Antfly url={url} table={tableName}>
-      <SearchBox id="main" fields={["TICO"]} />
+      <QueryBox id="main" fields={["TICO"]} />
       <Facet
         id="autr"
         fields={["AUTR"]}
