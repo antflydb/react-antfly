@@ -316,8 +316,7 @@ describe("Integration Tests", () => {
     });
 
     it("should fire queries when SearchBox has fields but Autosuggest has empty fields", async () => {
-      // This is the exact configuration from the user's bug report:
-      // SearchBox with fields, Autosuggest with empty fields array
+      // This tests the configuration where Results has fields but Autosuggest has empty fields array
       // Bug: Autosuggest sets needsQuery=true but query=null, causing
       // queries.size + semanticQueries.size !== searchWidgets.size
 
@@ -334,10 +333,12 @@ describe("Integration Tests", () => {
 
       const { container } = render(
         <TestWrapper>
-          <SearchBox id="search" fields={["title__keyword"]}>
+          <SearchBox id="search">
             <Autosuggest fields={[]} minChars={2} />
           </SearchBox>
           <Results
+            searchBoxId="search"
+            fields={["title__keyword"]}
             id="results"
             items={(data) => <div className="results-content">{data.length} results</div>}
           />

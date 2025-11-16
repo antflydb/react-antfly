@@ -42,8 +42,8 @@ describe("RAGResults", () => {
     it("should render without crashing", () => {
       const { container } = render(
         <TestWrapper>
-          <AnswerBox id="question" fields={["content"]} />
-          <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} />
+          <AnswerBox id="question" />
+          <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} fields={["content"]} />
         </TestWrapper>,
       );
 
@@ -53,8 +53,8 @@ describe("RAGResults", () => {
     it("should show empty state when no question submitted", () => {
       const { container } = render(
         <TestWrapper>
-          <AnswerBox id="question" fields={["content"]} />
-          <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} />
+          <AnswerBox id="question" />
+          <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} fields={["content"]} />
         </TestWrapper>,
       );
 
@@ -96,14 +96,14 @@ describe("RAGResults", () => {
 
       const { container } = render(
         <TestWrapper>
-          <AnswerBox id="question" fields={["content"]} />
-          <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} />
+          <AnswerBox id="question" />
+          <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} fields={["content"]} />
         </TestWrapper>,
       );
 
       // Submit a question
       const input = container.querySelector("input") as HTMLInputElement;
-      const button = container.querySelector("button") as HTMLButtonElement;
+      const button = container.querySelector('button[type="submit"]') as HTMLButtonElement;
 
       await userEvent.type(input, "test question");
       await act(async () => {
@@ -132,13 +132,13 @@ describe("RAGResults", () => {
 
       const { container } = render(
         <TestWrapper>
-          <AnswerBox id="question" fields={["content"]} />
-          <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} />
+          <AnswerBox id="question" />
+          <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} fields={["content"]} />
         </TestWrapper>,
       );
 
       const input = container.querySelector("input") as HTMLInputElement;
-      const button = container.querySelector("button") as HTMLButtonElement;
+      const button = container.querySelector('button[type="submit"]') as HTMLButtonElement;
 
       await userEvent.type(input, "test question");
       await act(async () => {
@@ -163,13 +163,13 @@ describe("RAGResults", () => {
 
       const { container } = render(
         <TestWrapper>
-          <AnswerBox id="question" fields={["content"]} />
-          <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} />
+          <AnswerBox id="question" />
+          <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} fields={["content"]} />
         </TestWrapper>,
       );
 
       const input = container.querySelector("input") as HTMLInputElement;
-      const button = container.querySelector("button") as HTMLButtonElement;
+      const button = container.querySelector('button[type="submit"]') as HTMLButtonElement;
 
       await userEvent.type(input, "test question");
       await act(async () => {
@@ -196,13 +196,13 @@ describe("RAGResults", () => {
 
       const { container } = render(
         <TestWrapper>
-          <AnswerBox id="question" fields={["content"]} />
-          <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} />
+          <AnswerBox id="question" />
+          <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} fields={["content"]} />
         </TestWrapper>,
       );
 
       const input = container.querySelector("input") as HTMLInputElement;
-      const button = container.querySelector("button") as HTMLButtonElement;
+      const button = container.querySelector('button[type="submit"]') as HTMLButtonElement;
 
       await userEvent.type(input, "test question");
       await act(async () => {
@@ -225,13 +225,13 @@ describe("RAGResults", () => {
 
       const { container } = render(
         <TestWrapper>
-          <AnswerBox id="question" fields={["content"]} />
-          <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} />
+          <AnswerBox id="question" />
+          <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} fields={["content"]} />
         </TestWrapper>,
       );
 
       const input = container.querySelector("input") as HTMLInputElement;
-      const button = container.querySelector("button") as HTMLButtonElement;
+      const button = container.querySelector('button[type="submit"]') as HTMLButtonElement;
 
       await userEvent.type(input, "test question");
       await act(async () => {
@@ -254,13 +254,13 @@ describe("RAGResults", () => {
 
       const { container } = render(
         <TestWrapper>
-          <AnswerBox id="question" fields={["content"]} />
-          <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} />
+          <AnswerBox id="question" />
+          <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} fields={["content"]} />
         </TestWrapper>,
       );
 
       const input = container.querySelector("input") as HTMLInputElement;
-      const button = container.querySelector("button") as HTMLButtonElement;
+      const button = container.querySelector('button[type="submit"]') as HTMLButtonElement;
 
       await userEvent.type(input, "test question");
       await act(async () => {
@@ -285,13 +285,13 @@ describe("RAGResults", () => {
 
       const { container } = render(
         <TestWrapper>
-          <AnswerBox id="question" fields={["content"]} />
-          <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} />
+          <AnswerBox id="question" />
+          <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} fields={["content"]} />
         </TestWrapper>,
       );
 
       const input = container.querySelector("input") as HTMLInputElement;
-      const button = container.querySelector("button") as HTMLButtonElement;
+      const button = container.querySelector('button[type="submit"]') as HTMLButtonElement;
 
       await userEvent.type(input, "test question");
       await act(async () => {
@@ -328,7 +328,7 @@ describe("RAGResults", () => {
       );
 
       const input = container.querySelector("input") as HTMLInputElement;
-      const button = container.querySelector("button") as HTMLButtonElement;
+      const button = container.querySelector('button[type="submit"]') as HTMLButtonElement;
 
       await userEvent.type(input, "test question");
       await act(async () => {
@@ -362,7 +362,7 @@ describe("RAGResults", () => {
       );
 
       const input = container.querySelector("input") as HTMLInputElement;
-      const button = container.querySelector("button") as HTMLButtonElement;
+      const button = container.querySelector('button[type="submit"]') as HTMLButtonElement;
 
       await userEvent.type(input, "test question");
       await act(async () => {
@@ -386,13 +386,13 @@ describe("RAGResults", () => {
 
       const { container } = render(
         <TestWrapper>
-          <AnswerBox id="question" fields={["content"]} />
-          <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} />
+          <AnswerBox id="question" />
+          <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} fields={["content"]} />
         </TestWrapper>,
       );
 
       const input = container.querySelector("input") as HTMLInputElement;
-      const button = container.querySelector("button") as HTMLButtonElement;
+      const button = container.querySelector('button[type="submit"]') as HTMLButtonElement;
 
       // Submit question
       await userEvent.type(input, "test question");
@@ -417,13 +417,13 @@ describe("RAGResults", () => {
 
       const { container } = render(
         <TestWrapper>
-          <AnswerBox id="question" fields={["content"]} />
-          <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} />
+          <AnswerBox id="question" />
+          <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} fields={["content"]} />
         </TestWrapper>,
       );
 
       const input = container.querySelector("input") as HTMLInputElement;
-      const button = container.querySelector("button") as HTMLButtonElement;
+      const button = container.querySelector('button[type="submit"]') as HTMLButtonElement;
 
       await userEvent.type(input, "same question");
       await act(async () => {
@@ -455,13 +455,13 @@ describe("RAGResults", () => {
 
       const { container } = render(
         <TestWrapper>
-          <AnswerBox id="question" fields={["content"]} />
-          <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} />
+          <AnswerBox id="question" />
+          <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} fields={["content"]} />
         </TestWrapper>,
       );
 
       const input = container.querySelector("input") as HTMLInputElement;
-      const button = container.querySelector("button") as HTMLButtonElement;
+      const button = container.querySelector('button[type="submit"]') as HTMLButtonElement;
 
       // Submit a question
       await userEvent.type(input, "test question");
@@ -497,13 +497,13 @@ describe("RAGResults", () => {
 
       const { container } = render(
         <TestWrapper>
-          <AnswerBox id="question" fields={["content"]} />
-          <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} />
+          <AnswerBox id="question" />
+          <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} fields={["content"]} />
         </TestWrapper>,
       );
 
       const input = container.querySelector("input") as HTMLInputElement;
-      const button = container.querySelector("button") as HTMLButtonElement;
+      const button = container.querySelector('button[type="submit"]') as HTMLButtonElement;
 
       await userEvent.type(input, "test");
       await act(async () => {
@@ -522,13 +522,13 @@ describe("RAGResults", () => {
 
       const { container } = render(
         <TestWrapper>
-          <AnswerBox id="question" fields={["content"]} />
-          <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} />
+          <AnswerBox id="question" />
+          <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} fields={["content"]} />
         </TestWrapper>,
       );
 
       const input = container.querySelector("input") as HTMLInputElement;
-      const button = container.querySelector("button") as HTMLButtonElement;
+      const button = container.querySelector('button[type="submit"]') as HTMLButtonElement;
 
       await userEvent.type(input, "test");
       await act(async () => {
