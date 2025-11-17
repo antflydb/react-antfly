@@ -266,24 +266,24 @@ export const StyledExample = () => {
           max-width: 1200px;
           margin: 0 auto;
         }
-        .react-af-answerbox form {
+        .react-af-querybox form {
           display: flex;
           gap: 10px;
           margin: 20px 0;
         }
-        .react-af-answerbox input {
+        .react-af-querybox input {
           flex: 1;
           padding: 15px;
           border: 2px solid #667eea;
           border-radius: 12px;
           font-size: 16px;
         }
-        .react-af-answerbox input:focus {
+        .react-af-querybox input:focus {
           outline: none;
           border-color: #764ba2;
           box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
-        .react-af-answerbox button {
+        .react-af-querybox button {
           padding: 15px 30px;
           background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
           color: white;
@@ -294,10 +294,10 @@ export const StyledExample = () => {
           cursor: pointer;
           transition: transform 0.2s;
         }
-        .react-af-answerbox button:hover:not(:disabled) {
+        .react-af-querybox button:hover:not(:disabled) {
           transform: translateY(-2px);
         }
-        .react-af-answerbox button:disabled {
+        .react-af-querybox button:disabled {
           background: #ccc;
           cursor: not-allowed;
           transform: none;
@@ -495,11 +495,11 @@ export const StyledExample = () => {
         }
 
         /* Autosuggest styles */
-        .react-af-answerbox {
+        .react-af-querybox {
           position: relative;
         }
 
-        .react-af-answerbox .react-af-autosuggest-container {
+        .react-af-querybox .react-af-autosuggest-container {
           position: absolute;
           top: 100%;
           left: 0;
@@ -545,25 +545,25 @@ export const StyledExample = () => {
           flex: 1;
         }
 
-        .react-af-answerbox .react-af-autosuggest-results-list {
+        .react-af-querybox .react-af-autosuggest-results-list {
           list-style: none;
           padding: 0;
           margin: 0;
         }
 
-        .react-af-answerbox .react-af-autosuggest-result-item {
+        .react-af-querybox .react-af-autosuggest-result-item {
           padding: 12px 16px;
           cursor: pointer;
           border-bottom: 1px solid #f0f0f0;
           transition: all 0.2s;
         }
 
-        .react-af-answerbox .react-af-autosuggest-result-item:hover,
-        .react-af-answerbox .react-af-autosuggest-result-item.react-af-autosuggest-item-selected {
+        .react-af-querybox .react-af-autosuggest-result-item:hover,
+        .react-af-querybox .react-af-autosuggest-result-item.react-af-autosuggest-item-selected {
           background: #f0f3ff;
         }
 
-        .react-af-answerbox .react-af-autosuggest-facet-section-label {
+        .react-af-querybox .react-af-autosuggest-facet-section-label {
           padding: 12px 16px;
           font-weight: 600;
           font-size: 14px;
@@ -572,13 +572,13 @@ export const StyledExample = () => {
           border-bottom: 1px solid #e0e0e0;
         }
 
-        .react-af-answerbox .react-af-autosuggest-facets-list {
+        .react-af-querybox .react-af-autosuggest-facets-list {
           list-style: none;
           padding: 0;
           margin: 0;
         }
 
-        .react-af-answerbox .react-af-autosuggest-facet-item {
+        .react-af-querybox .react-af-autosuggest-facet-item {
           padding: 10px 16px;
           cursor: pointer;
           border-bottom: 1px solid #f0f0f0;
@@ -586,18 +586,18 @@ export const StyledExample = () => {
           font-size: 14px;
         }
 
-        .react-af-answerbox .react-af-autosuggest-facet-item:hover,
-        .react-af-answerbox .react-af-autosuggest-facet-item.react-af-autosuggest-item-selected {
+        .react-af-querybox .react-af-autosuggest-facet-item:hover,
+        .react-af-querybox .react-af-autosuggest-facet-item.react-af-autosuggest-item-selected {
           background: #e8f4ff;
         }
 
-        .react-af-answerbox .react-af-autosuggest-facet-term {
+        .react-af-querybox .react-af-autosuggest-facet-term {
           display: flex;
           justify-content: space-between;
           color: #333;
         }
 
-        .react-af-answerbox .react-af-autosuggest-facet-count {
+        .react-af-querybox .react-af-autosuggest-facet-count {
           color: #999;
           font-size: 12px;
           background: #fff;

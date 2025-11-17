@@ -53,7 +53,8 @@ export interface RAGResultsProps {
     withCitations?: boolean;
     showHits?: boolean;
     fields?: string[];
+    semanticIndexes?: string[];
     children?: ReactNode;
 }
-export default function RAGResults({ id, searchBoxId, summarizer, systemPrompt, table, filterQuery, exclusionQuery, renderSummary, showHits, fields, children, }: RAGResultsProps): import("react/jsx-runtime").JSX.Element;
+export default function RAGResults({ id, searchBoxId, summarizer, systemPrompt, table, filterQuery, exclusionQuery, renderSummary, showHits, fields, semanticIndexes, children, }: RAGResultsProps): import("react/jsx-runtime").JSX.Element;
 //# sourceMappingURL=RAGResults.d.ts.map

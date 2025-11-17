@@ -207,19 +207,19 @@ export const StyledRAGExample = () => {
           max-width: 1200px;
           margin: 0 auto;
         }
-        .react-af-ragbox form {
+        .react-af-querybox form {
           display: flex;
           gap: 10px;
           margin: 20px 0;
         }
-        .react-af-ragbox input {
+        .react-af-querybox input {
           flex: 1;
           padding: 14px;
           border: 2px solid #4a90e2;
           border-radius: 8px;
           font-size: 16px;
         }
-        .react-af-ragbox button {
+        .react-af-querybox button {
           padding: 14px 28px;
           background: #4a90e2;
           color: white;
@@ -229,7 +229,7 @@ export const StyledRAGExample = () => {
           font-weight: 600;
           cursor: pointer;
         }
-        .react-af-ragbox button:hover:not(:disabled) {
+        .react-af-querybox button:hover:not(:disabled) {
           background: #357abd;
         }
         .rag-summary-section {
@@ -351,7 +351,7 @@ export const StyledRAGExample = () => {
         }
 
         /* Autosuggest styles */
-        .react-af-ragbox {
+        .react-af-querybox {
           position: relative;
         }
 
