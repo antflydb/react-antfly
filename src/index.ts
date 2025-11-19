@@ -33,6 +33,7 @@ import {
   renderAsMarkdownLinks,
   renderAsSequentialLinks,
   getCitedDocumentIds,
+  getCitedResourceIds,
 } from "./citations";
 
 export {
@@ -68,6 +69,7 @@ export {
   renderAsMarkdownLinks,
   renderAsSequentialLinks,
   getCitedDocumentIds,
+  getCitedResourceIds,
 };
 
 // Export types for users of the library

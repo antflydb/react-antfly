@@ -15,6 +15,7 @@ export interface AnswerResultsProps {
     showFollowUpQuestions?: boolean;
     showHits?: boolean;
     renderLoading?: () => ReactNode;
+    renderEmpty?: () => ReactNode;
     renderClassification?: (data: {
         route_type: "question" | "search";
         improved_query: string;
@@ -30,5 +31,5 @@ export interface AnswerResultsProps {
     onError?: (error: string) => void;
     children?: ReactNode;
 }
-export default function AnswerResults({ id, searchBoxId, generator, systemPrompt, table, filterQuery, exclusionQuery, fields, semanticIndexes, showClassification, showReasoning, showFollowUpQuestions, showHits, renderLoading, renderClassification, renderReasoning, renderAnswer, renderFollowUpQuestions, renderHits, onStreamStart, onStreamEnd, onError: onErrorCallback, children, }: AnswerResultsProps): import("react/jsx-runtime").JSX.Element;
+export default function AnswerResults({ id, searchBoxId, generator, systemPrompt, table, filterQuery, exclusionQuery, fields, semanticIndexes, showClassification, showReasoning, showFollowUpQuestions, showHits, renderLoading, renderEmpty, renderClassification, renderReasoning, renderAnswer, renderFollowUpQuestions, renderHits, onStreamStart, onStreamEnd, onError: onErrorCallback, children, }: AnswerResultsProps): import("react/jsx-runtime").JSX.Element;
 //# sourceMappingURL=AnswerResults.d.ts.map
