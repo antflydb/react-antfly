@@ -397,7 +397,7 @@ export default function AnswerResults({
             Error: {error}
           </div>
         )}
-        {!error && !answer && isStreaming && (
+        {!error && !answer && !reasoning && isStreaming && (
           renderLoading ? renderLoading() : (
             <div className="react-af-answer-loading">
               Loading answer...
