@@ -64,14 +64,19 @@ export default function QueryBox({
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Sync with external updates (e.g., from ActiveFilters)
+  // NOTE: Only sync in "live" mode - in "submit" mode, local state is authoritative until form submission
   const widgetValue = widgets.get(id)?.value;
   useEffect(() => {
+    // Skip sync in submit mode - local state is authoritative
+    if (mode === "submit") {
+      return;
+    }
     if (widgetValue !== undefined && widgetValue !== value && !isExternalUpdate.current) {
       isExternalUpdate.current = true;
       setValue(String(widgetValue || ""));
       isExternalUpdate.current = false;
     }
-  }, [widgetValue, value, id]);
+  }, [widgetValue, value, id, mode]);
 
   // Handle input changes
   const handleChange = useCallback(
@@ -94,7 +99,7 @@ export default function QueryBox({
         setIsSuggestOpen(true);
       }
     },
-    [mode, updateWidget, onInputChange],
+    [mode, updateWidget, onInputChange, id],
   );
 
   // Handle form submission (submit mode only)
