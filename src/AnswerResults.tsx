@@ -30,6 +30,7 @@ export interface AnswerResultsProps {
 
   // Custom renderers
   renderLoading?: () => ReactNode;
+  renderEmpty?: () => ReactNode;
   renderClassification?: (data: {
     route_type: "question" | "search";
     improved_query: string;
@@ -64,6 +65,7 @@ export default function AnswerResults({
   showFollowUpQuestions = true,
   showHits = false,
   renderLoading,
+  renderEmpty,
   renderClassification,
   renderReasoning,
   renderAnswer,
@@ -405,9 +407,11 @@ export default function AnswerResults({
           )
         )}
         {!error && !answer && !isStreaming && (
-          <div className="react-af-answer-empty">
-            No results yet. Submit a question to get started.
-          </div>
+          renderEmpty ? renderEmpty() : (
+            <div className="react-af-answer-empty">
+              No results yet. Submit a question to get started.
+            </div>
+          )
         )}
         {showClassification && classification && (
           renderClassification ? renderClassification(classification) : defaultRenderClassification(classification)
