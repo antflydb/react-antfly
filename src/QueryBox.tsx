@@ -99,7 +99,7 @@ export default function QueryBox({
         setIsSuggestOpen(true);
       }
     },
-    [mode, updateWidget, onInputChange, id],
+    [mode, updateWidget, onInputChange],
   );
 
   // Handle form submission (submit mode only)
