@@ -289,9 +289,12 @@ export default function QueryBox({
           if (React.isValidElement(child)) {
             // Only clone props onto custom components (not native DOM elements)
             if (typeof child.type === "function" || typeof child.type === "object") {
+              // Preserve the original onSuggestionSelect if it exists
+              const originalOnSuggestionSelect = (child.props as Record<string, unknown>)?.onSuggestionSelect as ((hit: QueryHit) => void) | undefined;
+
               return React.cloneElement(child as React.ReactElement<Record<string, unknown>>, {
                 searchValue: mode === "submit" && !isSuggestOpen ? "" : value,
-                onSuggestionSelect: handleSuggestionSelect,
+                onSuggestionSelect: originalOnSuggestionSelect || handleSuggestionSelect,
                 containerRef: containerRefObject,
                 isOpen: isSuggestOpen,
                 onClose: () => setIsSuggestOpen(false),
