@@ -35,6 +35,9 @@ import {
   getCitedDocumentIds,
   getCitedResourceIds,
 } from "./citations";
+import { useSearchHistory } from "./hooks/useSearchHistory";
+import { useAnswerStream } from "./hooks/useAnswerStream";
+import { useCitations } from "./hooks/useCitations";
 
 export {
   Antfly,
@@ -70,6 +73,9 @@ export {
   renderAsSequentialLinks,
   getCitedDocumentIds,
   getCitedResourceIds,
+  useSearchHistory,
+  useAnswerStream,
+  useCitations,
 };
 
 // Export types for users of the library
@@ -99,3 +105,5 @@ export type {
   AnswerAgentResult,
 } from "@antfly/sdk";
 export type { Citation, CitationRenderOptions } from "./citations";
+export type { SearchResult, SearchHistory, CitationMetadata } from "./hooks/useSearchHistory";
+export type { QueryClassification } from "./hooks/useAnswerStream";

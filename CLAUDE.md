@@ -119,6 +119,11 @@ The library uses Antfly's query DSL (match, conjuncts, disjuncts) and communicat
 - **AnswerResults**: Display Answer Agent results with streaming reasoning and answers
 - **AnswerFeedback**: Collect user ratings and comments on AI-generated answers (see `docs/feedback.md`)
 
+### Hooks
+- **useSearchHistory**: Manage search history with localStorage persistence (max results configurable, 0 to disable)
+- **useAnswerStream**: Stream Answer Agent responses with state management (answer, reasoning, classification, hits, follow-up questions)
+- **useCitations**: Parse and render citations in RAG/Answer Agent responses (supports `[resource_id X]` and `[X]` formats)
+
 ### Internal Components
 - **Listener**: Internal component that coordinates queries (not typically used directly)
 - **CustomWidget**: Extensibility point for custom search widgets

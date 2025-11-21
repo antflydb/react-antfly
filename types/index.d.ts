@@ -15,7 +15,10 @@ import { default as AnswerFeedback } from './AnswerFeedback';
 import { renderThumbsUpDown, renderStars, renderNumeric } from './feedback-renderers';
 import { fromUrlQueryString, toUrlQueryString, multiquery, initializeAntflyClient, getAntflyClient, streamRAG, streamAnswer } from './utils';
 import { parseCitations, replaceCitations, renderAsMarkdownLinks, renderAsSequentialLinks, getCitedDocumentIds, getCitedResourceIds } from './citations';
-export { Antfly, Results, QueryBox, Facet, Pagination, Listener, fromUrlQueryString, toUrlQueryString, ActiveFilters, QueryBuilder, CustomWidget, Autosuggest, AutosuggestResults, AutosuggestFacets, RAGResults, useRAGResultsContext, AnswerResults, useAnswerResultsContext, AnswerFeedback, renderThumbsUpDown, renderStars, renderNumeric, multiquery as msearch, initializeAntflyClient, getAntflyClient, streamRAG, streamAnswer, parseCitations, replaceCitations, renderAsMarkdownLinks, renderAsSequentialLinks, getCitedDocumentIds, getCitedResourceIds, };
+import { useSearchHistory } from './hooks/useSearchHistory';
+import { useAnswerStream } from './hooks/useAnswerStream';
+import { useCitations } from './hooks/useCitations';
+export { Antfly, Results, QueryBox, Facet, Pagination, Listener, fromUrlQueryString, toUrlQueryString, ActiveFilters, QueryBuilder, CustomWidget, Autosuggest, AutosuggestResults, AutosuggestFacets, RAGResults, useRAGResultsContext, AnswerResults, useAnswerResultsContext, AnswerFeedback, renderThumbsUpDown, renderStars, renderNumeric, multiquery as msearch, initializeAntflyClient, getAntflyClient, streamRAG, streamAnswer, parseCitations, replaceCitations, renderAsMarkdownLinks, renderAsSequentialLinks, getCitedDocumentIds, getCitedResourceIds, useSearchHistory, useAnswerStream, useCitations, };
 export type { AntflyProps } from './Antfly';
 export type { ResultsProps } from './Results';
 export type { QueryBoxProps } from './QueryBox';
@@ -35,4 +38,6 @@ export type { SharedState, SharedAction, Widget } from './SharedContext';
 export type { MultiqueryRequest, RAGCallbacks, AnswerCallbacks } from './utils';
 export type { RAGRequest, RAGResult, SummarizeResult, GeneratorConfig, AnswerAgentRequest, AnswerAgentResult, } from '@antfly/sdk';
 export type { Citation, CitationRenderOptions } from './citations';
+export type { SearchResult, SearchHistory, CitationMetadata } from './hooks/useSearchHistory';
+export type { QueryClassification } from './hooks/useAnswerStream';
 //# sourceMappingURL=index.d.ts.map

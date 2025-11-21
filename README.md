@@ -26,6 +26,92 @@ const MySearchComponent = () => (
 );
 ```
 
+## Hooks
+
+React Antfly provides hooks for common search and RAG functionality:
+
+### useSearchHistory
+
+Manage search history with localStorage persistence.
+
+```jsx
+import { useSearchHistory } from '@antfly/components';
+
+function MyComponent() {
+  const { history, isReady, saveSearch, clearHistory } = useSearchHistory(10);
+
+  // Save a search result
+  saveSearch({
+    query: "how does raft work",
+    timestamp: Date.now(),
+    summary: "Raft is a consensus algorithm...",
+    hits: [...],
+    citations: [{ id: "doc1", score: 0.95 }]
+  });
+
+  // Clear all history
+  clearHistory();
+}
+```
+
+### useAnswerStream
+
+Stream Answer Agent responses with state management.
+
+```jsx
+import { useAnswerStream } from '@antfly/components';
+
+function MyComponent() {
+  const {
+    answer,
+    reasoning,
+    classification,
+    hits,
+    followUpQuestions,
+    isStreaming,
+    error,
+    startStream,
+    stopStream,
+    reset
+  } = useAnswerStream();
+
+  // Start streaming
+  startStream({
+    url: 'http://localhost:8080/api/v1',
+    request: {
+      query: 'how does raft work',
+      tables: ['docs']
+    },
+    headers: { 'X-API-Key': 'key' }
+  });
+}
+```
+
+### useCitations
+
+Parse and render citations in RAG/Answer Agent responses.
+
+```jsx
+import { useCitations } from '@antfly/components';
+
+function MyComponent() {
+  const {
+    parseCitations,
+    highlightCitations,
+    extractCitationUrls,
+    renderAsMarkdown,
+    renderAsSequential
+  } = useCitations();
+
+  // Parse citations from answer text
+  const citations = parseCitations("See docs [resource_id 1, 2]");
+
+  // Get IDs of cited resources
+  const citedIds = extractCitationUrls(answer);
+  const citedHits = hits.filter(hit => citedIds.includes(hit._id));
+}
+```
+
 ## Install
 
 ```
