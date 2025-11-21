@@ -82,6 +82,17 @@
     overflow-y: auto;
     margin-top: 4px;
     min-height: 50px;
+    /* Hide by default to prevent flash when typing starts */
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.15s ease-in-out, visibility 0.15s ease-in-out;
+}
+
+/* Show autosuggest container when it has content - prevents empty container flash */
+.react-af-autosuggest-container:has(.react-af-autosuggest-facets-list),
+.react-af-autosuggest-container:has(.react-af-autosuggest-results-list) {
+    opacity: 1;
+    visibility: visible;
 }
 
 .react-af-autosuggest-dropdown {
