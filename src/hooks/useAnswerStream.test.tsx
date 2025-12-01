@@ -40,6 +40,8 @@ describe('useAnswerStream', () => {
         setTimeout(() => {
           callbacks.onClassification?.({
             route_type: 'question',
+            strategy: 'simple',
+            semantic_mode: 'rewrite',
             improved_query: 'improved',
             semantic_query: 'semantic',
             confidence: 0.9,
@@ -70,7 +72,7 @@ describe('useAnswerStream', () => {
 
     const request: AnswerAgentRequest = {
       query: 'how does raft work',
-      tables: ['docs'],
+      generator: { provider: 'openai', model: 'gpt-4' }, queries: [{ table: 'docs' }],
     };
 
     await act(async () => {
@@ -95,6 +97,8 @@ describe('useAnswerStream', () => {
     // Check all state was updated
     expect(result.current.classification).toEqual({
       route_type: 'question',
+      strategy: 'simple',
+      semantic_mode: 'rewrite',
       improved_query: 'improved',
       semantic_query: 'semantic',
       confidence: 0.9,
@@ -127,7 +131,7 @@ describe('useAnswerStream', () => {
     await act(async () => {
       await result.current.startStream({
         url: 'http://localhost:8080/api/v1',
-        request: { query: 'test', tables: ['docs'] },
+        request: { query: 'test', generator: { provider: 'openai', model: 'gpt-4' }, queries: [{ table: 'docs' }] },
       });
     });
 
@@ -158,7 +162,7 @@ describe('useAnswerStream', () => {
     await act(async () => {
       await result.current.startStream({
         url: 'http://localhost:8080/api/v1',
-        request: { query: 'test', tables: ['docs'] },
+        request: { query: 'test', generator: { provider: 'openai', model: 'gpt-4' }, queries: [{ table: 'docs' }] },
       });
     });
 
@@ -191,7 +195,7 @@ describe('useAnswerStream', () => {
     await act(async () => {
       await result.current.startStream({
         url: 'http://localhost:8080/api/v1',
-        request: { query: 'first', tables: ['docs'] },
+        request: { query: 'first', generator: { provider: 'openai', model: 'gpt-4' }, queries: [{ table: 'docs' }] },
       });
     });
 
@@ -213,7 +217,7 @@ describe('useAnswerStream', () => {
     await act(async () => {
       await result.current.startStream({
         url: 'http://localhost:8080/api/v1',
-        request: { query: 'second', tables: ['docs'] },
+        request: { query: 'second', generator: { provider: 'openai', model: 'gpt-4' }, queries: [{ table: 'docs' }] },
       });
     });
 
@@ -239,7 +243,7 @@ describe('useAnswerStream', () => {
     await act(async () => {
       await result.current.startStream({
         url: 'http://localhost:8080/api/v1',
-        request: { query: 'test', tables: ['docs'] },
+        request: { query: 'test', generator: { provider: 'openai', model: 'gpt-4' }, queries: [{ table: 'docs' }] },
       });
     });
 
@@ -274,7 +278,7 @@ describe('useAnswerStream', () => {
     await act(async () => {
       await result.current.startStream({
         url: 'http://localhost:8080/api/v1',
-        request: { query: 'test', tables: ['docs'] },
+        request: { query: 'test', generator: { provider: 'openai', model: 'gpt-4' }, queries: [{ table: 'docs' }] },
       });
     });
 
@@ -315,7 +319,7 @@ describe('useAnswerStream', () => {
     await act(async () => {
       await result.current.startStream({
         url: 'http://localhost:8080/api/v1',
-        request: { query: 'test', tables: ['docs'] },
+        request: { query: 'test', generator: { provider: 'openai', model: 'gpt-4' }, queries: [{ table: 'docs' }] },
       });
     });
 
@@ -348,7 +352,7 @@ describe('useAnswerStream', () => {
     await act(async () => {
       await result.current.startStream({
         url: 'http://localhost:8080/api/v1',
-        request: { query: 'test', tables: ['docs'] },
+        request: { query: 'test', generator: { provider: 'openai', model: 'gpt-4' }, queries: [{ table: 'docs' }] },
       });
     });
 
@@ -381,7 +385,7 @@ describe('useAnswerStream', () => {
     await act(async () => {
       await result.current.startStream({
         url: 'http://localhost:8080/api/v1',
-        request: { query: 'first', tables: ['docs'] },
+        request: { query: 'first', generator: { provider: 'openai', model: 'gpt-4' }, queries: [{ table: 'docs' }] },
       });
     });
 
@@ -391,7 +395,7 @@ describe('useAnswerStream', () => {
     await act(async () => {
       await result.current.startStream({
         url: 'http://localhost:8080/api/v1',
-        request: { query: 'second', tables: ['docs'] },
+        request: { query: 'second', generator: { provider: 'openai', model: 'gpt-4' }, queries: [{ table: 'docs' }] },
       });
     });
 

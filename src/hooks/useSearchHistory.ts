@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import type { QueryHit } from '@antfly/sdk';
 
 /**
@@ -55,28 +55,25 @@ export interface SearchHistory {
  * ```
  */
 export function useSearchHistory(maxResults = 10) {
-  const [history, setHistory] = useState<SearchResult[]>([]);
-  const [isReady, setIsReady] = useState(false);
-
-  // Load from localStorage on mount
-  useEffect(() => {
+  // Load from localStorage on initialization
+  const [history, setHistory] = useState<SearchResult[]>(() => {
     if (typeof window === 'undefined') {
-      setIsReady(true);
-      return;
+      return [];
     }
-
     try {
       const stored = localStorage.getItem('antfly-search-history');
       if (stored) {
         const parsed: SearchHistory = JSON.parse(stored);
-        setHistory(parsed.results || []);
+        return parsed.results || [];
       }
     } catch (error) {
       console.warn('Failed to load search history:', error);
     }
+    return [];
+  });
 
-    setIsReady(true);
-  }, []);
+  // History is loaded synchronously via lazy initializer, so always ready
+  const isReady = true;
 
   // Save search result
   const saveSearch = useCallback(

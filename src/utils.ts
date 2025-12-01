@@ -1,5 +1,11 @@
 import qs from "qs";
-import type { RAGStreamCallbacks, AnswerAgentStreamCallbacks, QueryHit } from "@antfly/sdk";
+import type {
+  RAGStreamCallbacks,
+  AnswerAgentStreamCallbacks,
+  QueryHit,
+  ClassificationTransformationResult,
+  AnswerConfidence,
+} from "@antfly/sdk";
 import {
   AntflyClient,
   QueryRequest,
@@ -268,15 +274,11 @@ export async function streamRAG(
 
 // Answer Agent-related types and functions
 export interface AnswerCallbacks {
-  onClassification?: (data: {
-    route_type: "question" | "search";
-    improved_query: string;
-    semantic_query: string;
-    confidence: number;
-  }) => void;
-  onHit?: (hit: QueryHit) => void;
+  onClassification?: (data: ClassificationTransformationResult) => void;
   onReasoning?: (chunk: string) => void;
+  onHit?: (hit: QueryHit) => void;
   onAnswer?: (chunk: string) => void;
+  onConfidence?: (data: AnswerConfidence) => void;
   onFollowUpQuestion?: (question: string) => void;
   onComplete?: () => void;
   onError?: (error: Error | string) => void;
@@ -307,9 +309,10 @@ export async function streamAnswer(
     // Determine if we should stream based on presence of streaming callbacks
     const shouldStream = !!(
       callbacks.onClassification ||
-      callbacks.onHit ||
       callbacks.onReasoning ||
+      callbacks.onHit ||
       callbacks.onAnswer ||
+      callbacks.onConfidence ||
       callbacks.onFollowUpQuestion
     );
 
@@ -322,36 +325,12 @@ export async function streamAnswer(
     // Build SDK callbacks if streaming
     const sdkCallbacks: AnswerAgentStreamCallbacks | undefined = shouldStream
       ? {
-          onClassification: callbacks.onClassification
-            ? (data: {
-                route_type: "question" | "search";
-                improved_query: string;
-                semantic_query: string;
-                confidence: number;
-              }) => {
-                callbacks.onClassification!(data);
-              }
-            : undefined,
-          onHit: callbacks.onHit
-            ? (hit: QueryHit) => {
-                callbacks.onHit!(hit);
-              }
-            : undefined,
-          onReasoning: callbacks.onReasoning
-            ? (chunk: string) => {
-                callbacks.onReasoning!(chunk);
-              }
-            : undefined,
-          onAnswer: callbacks.onAnswer
-            ? (chunk: string) => {
-                callbacks.onAnswer!(chunk);
-              }
-            : undefined,
-          onFollowUpQuestion: callbacks.onFollowUpQuestion
-            ? (question: string) => {
-                callbacks.onFollowUpQuestion!(question);
-              }
-            : undefined,
+          onClassification: callbacks.onClassification,
+          onReasoning: callbacks.onReasoning,
+          onHit: callbacks.onHit,
+          onAnswer: callbacks.onAnswer,
+          onConfidence: callbacks.onConfidence,
+          onFollowUpQuestion: callbacks.onFollowUpQuestion,
           onDone: () => {
             if (callbacks.onComplete) {
               callbacks.onComplete();

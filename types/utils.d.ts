@@ -1,4 +1,4 @@
-import { QueryHit, AntflyClient, QueryRequest, QueryResponses, RAGRequest, RAGResult, AnswerAgentRequest, AnswerAgentResult } from '@antfly/sdk';
+import { QueryHit, ClassificationTransformationResult, AnswerConfidence, AntflyClient, QueryRequest, QueryResponses, RAGRequest, RAGResult, AnswerAgentRequest, AnswerAgentResult } from '@antfly/sdk';
 export interface MultiqueryRequest {
     query: QueryRequest;
 }
@@ -40,15 +40,11 @@ export interface RAGCallbacks {
  */
 export declare function streamRAG(url: string, tableName: string, request: RAGRequest, headers: Record<string, string> | undefined, callbacks: RAGCallbacks): Promise<AbortController>;
 export interface AnswerCallbacks {
-    onClassification?: (data: {
-        route_type: "question" | "search";
-        improved_query: string;
-        semantic_query: string;
-        confidence: number;
-    }) => void;
-    onHit?: (hit: QueryHit) => void;
+    onClassification?: (data: ClassificationTransformationResult) => void;
     onReasoning?: (chunk: string) => void;
+    onHit?: (hit: QueryHit) => void;
     onAnswer?: (chunk: string) => void;
+    onConfidence?: (data: AnswerConfidence) => void;
     onFollowUpQuestion?: (question: string) => void;
     onComplete?: () => void;
     onError?: (error: Error | string) => void;

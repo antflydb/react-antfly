@@ -8,7 +8,14 @@ import React, {
 } from "react";
 import { useSharedContext } from "./SharedContext";
 import { streamAnswer, resolveTable } from "./utils";
-import { GeneratorConfig, AnswerAgentRequest, QueryHit, AnswerAgentResult } from "@antfly/sdk";
+import {
+  GeneratorConfig,
+  AnswerAgentRequest,
+  QueryHit,
+  AnswerAgentResult,
+  ClassificationTransformationResult,
+  AnswerConfidence,
+} from "@antfly/sdk";
 import { AnswerResultsContext, AnswerResultsContextValue } from "./AnswerResultsContext";
 
 export interface AnswerResultsProps {
@@ -26,19 +33,16 @@ export interface AnswerResultsProps {
   showClassification?: boolean;
   showReasoning?: boolean;
   showFollowUpQuestions?: boolean;
+  showConfidence?: boolean;
   showHits?: boolean;
 
   // Custom renderers
   renderLoading?: () => ReactNode;
   renderEmpty?: () => ReactNode;
-  renderClassification?: (data: {
-    route_type: "question" | "search";
-    improved_query: string;
-    semantic_query: string;
-    confidence: number;
-  }) => ReactNode;
+  renderClassification?: (data: ClassificationTransformationResult) => ReactNode;
   renderReasoning?: (reasoning: string, isStreaming: boolean) => ReactNode;
   renderAnswer?: (answer: string, isStreaming: boolean, hits?: QueryHit[]) => ReactNode;
+  renderConfidence?: (confidence: AnswerConfidence) => ReactNode;
   renderFollowUpQuestions?: (questions: string[]) => ReactNode;
   renderHits?: (hits: QueryHit[]) => ReactNode;
 
@@ -63,12 +67,14 @@ export default function AnswerResults({
   showClassification = false,
   showReasoning = false,
   showFollowUpQuestions = true,
+  showConfidence = false,
   showHits = false,
   renderLoading,
   renderEmpty,
   renderClassification,
   renderReasoning,
   renderAnswer,
+  renderConfidence,
   renderFollowUpQuestions,
   renderHits,
   onStreamStart,
@@ -79,15 +85,11 @@ export default function AnswerResults({
   const [{ widgets, url, table: defaultTable, headers }, dispatch] = useSharedContext();
 
   // Answer agent state
-  const [classification, setClassification] = useState<{
-    route_type: "question" | "search";
-    improved_query: string;
-    semantic_query: string;
-    confidence: number;
-  } | null>(null);
+  const [classification, setClassification] = useState<ClassificationTransformationResult | null>(null);
   const [hits, setHits] = useState<QueryHit[]>([]);
   const [reasoning, setReasoning] = useState("");
   const [answer, setAnswer] = useState("");
+  const [confidence, setConfidence] = useState<AnswerConfidence | null>(null);
   const [followUpQuestions, setFollowUpQuestions] = useState<string[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -144,11 +146,8 @@ export default function AnswerResults({
           exclusion_query: exclusionQuery,
         },
       ],
-      summarizer: generator,
-      system_prompt: systemPrompt,
+      generator: generator,
       with_streaming: true,
-      with_reasoning: showReasoning || false,
-      with_followup: showFollowUpQuestions || false,
     };
 
     // Start streaming
@@ -158,6 +157,7 @@ export default function AnswerResults({
       setHits([]);
       setReasoning("");
       setAnswer("");
+      setConfidence(null);
       setFollowUpQuestions([]);
       setError(null);
       setIsStreaming(true);
@@ -171,14 +171,17 @@ export default function AnswerResults({
           onClassification: (data) => {
             setClassification(data);
           },
-          onHit: (hit) => {
-            setHits((prev) => [...prev, hit]);
-          },
           onReasoning: (chunk) => {
             setReasoning((prev) => prev + chunk);
           },
+          onHit: (hit) => {
+            setHits((prev) => [...prev, hit]);
+          },
           onAnswer: (chunk) => {
             setAnswer((prev) => prev + chunk);
+          },
+          onConfidence: (data) => {
+            setConfidence(data);
           },
           onFollowUpQuestion: (question) => {
             setFollowUpQuestions((prev) => [...prev, question]);
@@ -199,10 +202,16 @@ export default function AnswerResults({
           },
           onAnswerAgentResult: (result) => {
             // Non-streaming response
+            setClassification(result.classification_transformation || null);
             setAnswer(result.answer || "");
-            setReasoning(result.reasoning || "");
             setFollowUpQuestions(result.followup_questions || []);
             setHits(result.query_results?.[0]?.hits?.hits || []);
+            if (result.answer_confidence !== undefined && result.context_relevance !== undefined) {
+              setConfidence({
+                answer_confidence: result.answer_confidence,
+                context_relevance: result.context_relevance,
+              });
+            }
             setIsStreaming(false);
             if (onStreamEnd) {
               onStreamEnd();
@@ -277,20 +286,23 @@ export default function AnswerResults({
 
   // Default renderers
   const defaultRenderClassification = useCallback(
-    (data: {
-      route_type: "question" | "search";
-      improved_query: string;
-      semantic_query: string;
-      confidence: number;
-    }) => (
+    (data: ClassificationTransformationResult) => (
       <div className="react-af-answer-classification">
         <strong>Classification:</strong> {data.route_type} (confidence: {(data.confidence * 100).toFixed(1)}%)
+        <div>
+          <strong>Strategy:</strong> {data.strategy}, <strong>Semantic Mode:</strong> {data.semantic_mode}
+        </div>
         <div>
           <strong>Improved Query:</strong> {data.improved_query}
         </div>
         <div>
           <strong>Semantic Query:</strong> {data.semantic_query}
         </div>
+        {data.reasoning && (
+          <div>
+            <strong>Reasoning:</strong> {data.reasoning}
+          </div>
+        )}
       </div>
     ),
     [],
@@ -315,6 +327,21 @@ export default function AnswerResults({
       <div className="react-af-answer-text">
         {answerText}
         {streaming && <span className="react-af-answer-streaming"> ...</span>}
+      </div>
+    ),
+    [],
+  );
+
+  const defaultRenderConfidence = useCallback(
+    (confidenceData: AnswerConfidence) => (
+      <div className="react-af-answer-confidence">
+        <strong>Confidence Assessment:</strong>
+        <div>
+          <strong>Answer Confidence:</strong> {(confidenceData.answer_confidence * 100).toFixed(1)}%
+        </div>
+        <div>
+          <strong>Context Relevance:</strong> {(confidenceData.context_relevance * 100).toFixed(1)}%
+        </div>
       </div>
     ),
     [],
@@ -420,6 +447,9 @@ export default function AnswerResults({
           renderReasoning ? renderReasoning(reasoning, isStreaming) : defaultRenderReasoning(reasoning, isStreaming)
         )}
         {answer && (renderAnswer ? renderAnswer(answer, isStreaming, hits) : defaultRenderAnswer(answer, isStreaming, hits))}
+        {showConfidence && confidence && !isStreaming && (
+          renderConfidence ? renderConfidence(confidence) : defaultRenderConfidence(confidence)
+        )}
         {showFollowUpQuestions && followUpQuestions.length > 0 && !isStreaming && (
           renderFollowUpQuestions
             ? renderFollowUpQuestions(followUpQuestions)

@@ -149,7 +149,7 @@ export default function RAGResults({
           exclusion_query: exclusionQuery,
         },
       ],
-      summarizer,
+      generator: summarizer,
       system_prompt: systemPrompt,
       // Note: with_citations is deprecated - citations are now inline in markdown summary
     };
