@@ -6,7 +6,6 @@ import Facet from "./Facet";
 import Pagination from "./Pagination";
 import Listener from "./Listener";
 import ActiveFilters from "./ActiveFilters";
-import QueryBuilder from "./QueryBuilder/QueryBuilder";
 import CustomWidget from "./CustomWidget";
 import Autosuggest, { AutosuggestResults, AutosuggestFacets } from "./Autosuggest";
 import RAGResults, { useRAGResultsContext } from "./RAGResults";
@@ -49,7 +48,6 @@ export {
   fromUrlQueryString,
   toUrlQueryString,
   ActiveFilters,
-  QueryBuilder,
   CustomWidget,
   Autosuggest,
   AutosuggestResults,
@@ -91,9 +89,6 @@ export type { RAGResultsProps } from "./RAGResults";
 export type { AnswerResultsProps } from "./AnswerResults";
 export type { AnswerResultsContextValue } from "./AnswerResultsContext";
 export type { AnswerFeedbackProps, FeedbackResult } from "./AnswerFeedback";
-export type { QueryBuilderProps, QueryBuilderRule, FieldOption } from "./QueryBuilder/QueryBuilder";
-export type { RuleProps } from "./QueryBuilder/Rule";
-export type { Operator, Combinator } from "./QueryBuilder/utils";
 export type { SharedState, SharedAction, Widget } from "./SharedContext";
 export type { MultiqueryRequest, RAGCallbacks, AnswerCallbacks } from "./utils";
 export type {

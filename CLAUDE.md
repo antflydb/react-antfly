@@ -109,7 +109,6 @@ The library uses Antfly's query DSL (match, conjuncts, disjuncts) and communicat
 - **Facet**: Faceted navigation with term aggregations
 - **Results**: Render search results with customizable item rendering
 - **Pagination**: Page navigation controls
-- **QueryBuilder**: Advanced query building UI with rules and combinators
 - **ActiveFilters**: Display and remove active filters
 
 ### RAG/AI Components
