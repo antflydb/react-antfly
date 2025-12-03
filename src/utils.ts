@@ -272,6 +272,40 @@ export async function streamRAG(
   }
 }
 
+// Error classification for fallback behavior
+export type AnswerErrorType = 'rate-limit' | 'timeout' | 'generation-failed' | 'network' | 'unknown';
+
+/**
+ * Classify an error message to determine the appropriate fallback behavior
+ * @param error - The error message string
+ * @returns The classified error type
+ */
+export function classifyAnswerError(error: string): AnswerErrorType {
+  const lowerError = error.toLowerCase();
+
+  // Rate limit errors (HTTP 429 or rate limit messages)
+  if (/429|rate.?limit|too many requests|quota exceeded/i.test(lowerError)) {
+    return 'rate-limit';
+  }
+
+  // Timeout errors
+  if (/timeout|timed out|408|deadline|exceeded time/i.test(lowerError)) {
+    return 'timeout';
+  }
+
+  // Generation/AI-specific failures
+  if (/generation|llm|model|openai|anthropic|ollama|context.?length|token/i.test(lowerError)) {
+    return 'generation-failed';
+  }
+
+  // Network errors
+  if (/network|fetch|connection|econnrefused|dns|socket|offline/i.test(lowerError)) {
+    return 'network';
+  }
+
+  return 'unknown';
+}
+
 // Answer Agent-related types and functions
 export interface AnswerCallbacks {
   onClassification?: (data: ClassificationTransformationResult) => void;

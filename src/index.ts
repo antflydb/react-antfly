@@ -25,6 +25,7 @@ import {
   getAntflyClient,
   streamRAG,
   streamAnswer,
+  classifyAnswerError,
 } from "./utils";
 import {
   parseCitations,
@@ -65,6 +66,7 @@ export {
   getAntflyClient,
   streamRAG,
   streamAnswer,
+  classifyAnswerError,
   parseCitations,
   replaceCitations,
   renderAsMarkdownLinks,
@@ -90,7 +92,7 @@ export type { AnswerResultsProps } from "./AnswerResults";
 export type { AnswerResultsContextValue } from "./AnswerResultsContext";
 export type { AnswerFeedbackProps, FeedbackResult } from "./AnswerFeedback";
 export type { SharedState, SharedAction, Widget } from "./SharedContext";
-export type { MultiqueryRequest, RAGCallbacks, AnswerCallbacks } from "./utils";
+export type { MultiqueryRequest, RAGCallbacks, AnswerCallbacks, AnswerErrorType } from "./utils";
 export type {
   RAGRequest,
   RAGResult,

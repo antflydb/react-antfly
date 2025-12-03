@@ -7,7 +7,7 @@ import React, {
   useMemo,
 } from "react";
 import { useSharedContext } from "./SharedContext";
-import { streamAnswer, resolveTable } from "./utils";
+import { streamAnswer, resolveTable, classifyAnswerError, AnswerErrorType } from "./utils";
 import {
   GeneratorConfig,
   AnswerAgentRequest,
@@ -36,6 +36,15 @@ export interface AnswerResultsProps {
   showConfidence?: boolean;
   showHits?: boolean;
 
+  // Fallback behavior when answer generation fails but hits are available
+  /**
+   * How to handle failures when search hits are available:
+   * - 'show-error': Show error message, hide hits (default legacy behavior)
+   * - 'show-hits': Show hits as primary content when answer fails
+   * - 'auto': Automatically show hits with a subtle notice when answer fails
+   */
+  fallbackBehavior?: 'show-error' | 'show-hits' | 'auto';
+
   // Custom renderers
   renderLoading?: () => ReactNode;
   renderEmpty?: () => ReactNode;
@@ -45,11 +54,25 @@ export interface AnswerResultsProps {
   renderConfidence?: (confidence: AnswerConfidence) => ReactNode;
   renderFollowUpQuestions?: (questions: string[]) => ReactNode;
   renderHits?: (hits: QueryHit[]) => ReactNode;
+  /**
+   * Custom renderer for fallback mode (when answer fails but hits are available)
+   * @param hits - The search hits that were retrieved
+   * @param errorType - The classified type of error that caused the fallback
+   * @param errorMessage - The original error message
+   */
+  renderFallback?: (hits: QueryHit[], errorType: AnswerErrorType, errorMessage: string) => ReactNode;
 
   // Callbacks
   onStreamStart?: () => void;
   onStreamEnd?: () => void;
   onError?: (error: string) => void;
+  /**
+   * Called when falling back to search-only mode due to answer generation failure
+   * @param errorType - The classified type of error
+   * @param hits - The search hits being displayed
+   * @param errorMessage - The original error message
+   */
+  onFallback?: (errorType: AnswerErrorType, hits: QueryHit[], errorMessage: string) => void;
 
   children?: ReactNode;
 }
@@ -69,6 +92,7 @@ export default function AnswerResults({
   showFollowUpQuestions = true,
   showConfidence = false,
   showHits = false,
+  fallbackBehavior = 'show-error',
   renderLoading,
   renderEmpty,
   renderClassification,
@@ -77,9 +101,11 @@ export default function AnswerResults({
   renderConfidence,
   renderFollowUpQuestions,
   renderHits,
+  renderFallback,
   onStreamStart,
   onStreamEnd,
   onError: onErrorCallback,
+  onFallback,
   children,
 }: AnswerResultsProps) {
   const [{ widgets, url, table: defaultTable, headers }, dispatch] = useSharedContext();
@@ -93,6 +119,8 @@ export default function AnswerResults({
   const [followUpQuestions, setFollowUpQuestions] = useState<string[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Track the last processed submission timestamp (also serves as hasSubmitted indicator)
+  const [lastProcessedSubmission, setLastProcessedSubmission] = useState<number | undefined>(undefined);
 
   const abortControllerRef = useRef<AbortController | null>(null);
   const previousSubmissionRef = useRef<number | undefined>(undefined);
@@ -101,6 +129,9 @@ export default function AnswerResults({
   const searchBoxWidget = widgets.get(searchBoxId);
   const currentQuery = searchBoxWidget?.value as string | undefined;
   const submittedAt = searchBoxWidget?.submittedAt;
+
+  // Derive hasSubmitted from state (safe to use during render)
+  const hasSubmitted = lastProcessedSubmission !== undefined;
 
   // Trigger Answer Agent request when QueryBox is submitted (based on timestamp, not just query value)
   useEffect(() => {
@@ -157,6 +188,7 @@ export default function AnswerResults({
       setHits([]);
       setReasoning("");
       setAnswer("");
+      setLastProcessedSubmission(submittedAt); // Track that we've processed this submission
       setConfidence(null);
       setFollowUpQuestions([]);
       setError(null);
@@ -378,6 +410,62 @@ export default function AnswerResults({
     [],
   );
 
+  // Fallback mode detection
+  // We're in fallback mode when:
+  // 1. There's an error OR no answer was generated (after streaming completed)
+  // 2. We have search hits available
+  // 3. Fallback behavior is not 'show-error'
+  const canFallback = hits.length > 0 && fallbackBehavior !== 'show-error';
+  const hasAnswerFailure = !isStreaming && (error || (!answer && !reasoning && hasSubmitted));
+  const isFallbackMode = canFallback && hasAnswerFailure;
+  const errorType: AnswerErrorType = error ? classifyAnswerError(error) : 'unknown';
+
+  // Track if we've already fired the onFallback callback for this submission
+  const fallbackFiredRef = useRef<number | undefined>(undefined);
+
+  // Call onFallback when entering fallback mode
+  useEffect(() => {
+    if (isFallbackMode && onFallback && previousSubmissionRef.current !== fallbackFiredRef.current) {
+      fallbackFiredRef.current = previousSubmissionRef.current;
+      onFallback(errorType, hits, error || 'No answer generated');
+    }
+  }, [isFallbackMode, onFallback, errorType, hits, error]);
+
+  // Default fallback renderer - shows hits prominently with an optional notice
+  const defaultRenderFallback = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    (hitList: QueryHit[], errType: AnswerErrorType, _errMessage: string) => {
+      const noticeMessages: Record<AnswerErrorType, string> = {
+        'rate-limit': 'AI answer temporarily unavailable due to rate limits. Showing search results instead.',
+        'timeout': 'AI answer timed out. Showing search results instead.',
+        'generation-failed': 'AI answer generation failed. Showing search results instead.',
+        'network': 'Network error occurred. Showing search results instead.',
+        'unknown': 'Showing search results.',
+      };
+
+      return (
+        <div className="react-af-answer-fallback">
+          {fallbackBehavior === 'auto' && (
+            <div className="react-af-answer-fallback-notice">
+              {noticeMessages[errType]}
+            </div>
+          )}
+          <div className="react-af-answer-fallback-hits">
+            <ul>
+              {hitList.map((hit, idx) => (
+                <li key={hit._id || idx} className="react-af-answer-fallback-hit">
+                  <strong>Score:</strong> {hit._score.toFixed(3)}
+                  <pre>{JSON.stringify(hit._source, null, 2)}</pre>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      );
+    },
+    [fallbackBehavior],
+  );
+
   // Build context value for child components (e.g., AnswerFeedback)
   const contextValue = useMemo<AnswerResultsContextValue>(() => {
     const result: AnswerAgentResult | null = answer
@@ -421,41 +509,59 @@ export default function AnswerResults({
   return (
     <AnswerResultsContext.Provider value={contextValue}>
       <div className="react-af-answer-results">
-        {error && (
-          <div className="react-af-answer-error" style={{ color: "red" }}>
-            Error: {error}
-          </div>
+        {/* Fallback mode: show hits as primary content when answer fails */}
+        {isFallbackMode ? (
+          renderFallback
+            ? renderFallback(hits, errorType, error || 'No answer generated')
+            : defaultRenderFallback(hits, errorType, error || 'No answer generated')
+        ) : (
+          <>
+            {/* Error display - only when not in fallback mode */}
+            {error && (
+              <div className="react-af-answer-error" style={{ color: "red" }}>
+                Error: {error}
+              </div>
+            )}
+            {/* Loading state */}
+            {!error && !answer && !reasoning && isStreaming && (
+              renderLoading ? renderLoading() : (
+                <div className="react-af-answer-loading">
+                  Loading answer...
+                </div>
+              )
+            )}
+            {/* Empty state - only when not submitted yet */}
+            {!error && !answer && !isStreaming && !hasSubmitted && (
+              renderEmpty ? renderEmpty() : (
+                <div className="react-af-answer-empty">
+                  No results yet. Submit a question to get started.
+                </div>
+              )
+            )}
+            {/* Classification */}
+            {showClassification && classification && (
+              renderClassification ? renderClassification(classification) : defaultRenderClassification(classification)
+            )}
+            {/* Reasoning */}
+            {showReasoning && reasoning && (
+              renderReasoning ? renderReasoning(reasoning, isStreaming) : defaultRenderReasoning(reasoning, isStreaming)
+            )}
+            {/* Answer */}
+            {answer && (renderAnswer ? renderAnswer(answer, isStreaming, hits) : defaultRenderAnswer(answer, isStreaming, hits))}
+            {/* Confidence */}
+            {showConfidence && confidence && !isStreaming && (
+              renderConfidence ? renderConfidence(confidence) : defaultRenderConfidence(confidence)
+            )}
+            {/* Follow-up questions */}
+            {showFollowUpQuestions && followUpQuestions.length > 0 && !isStreaming && (
+              renderFollowUpQuestions
+                ? renderFollowUpQuestions(followUpQuestions)
+                : defaultRenderFollowUpQuestions(followUpQuestions)
+            )}
+            {/* Hits (when not in fallback mode, shown based on showHits prop) */}
+            {showHits && hits.length > 0 && (renderHits ? renderHits(hits) : defaultRenderHits(hits))}
+          </>
         )}
-        {!error && !answer && !reasoning && isStreaming && (
-          renderLoading ? renderLoading() : (
-            <div className="react-af-answer-loading">
-              Loading answer...
-            </div>
-          )
-        )}
-        {!error && !answer && !isStreaming && (
-          renderEmpty ? renderEmpty() : (
-            <div className="react-af-answer-empty">
-              No results yet. Submit a question to get started.
-            </div>
-          )
-        )}
-        {showClassification && classification && (
-          renderClassification ? renderClassification(classification) : defaultRenderClassification(classification)
-        )}
-        {showReasoning && reasoning && (
-          renderReasoning ? renderReasoning(reasoning, isStreaming) : defaultRenderReasoning(reasoning, isStreaming)
-        )}
-        {answer && (renderAnswer ? renderAnswer(answer, isStreaming, hits) : defaultRenderAnswer(answer, isStreaming, hits))}
-        {showConfidence && confidence && !isStreaming && (
-          renderConfidence ? renderConfidence(confidence) : defaultRenderConfidence(confidence)
-        )}
-        {showFollowUpQuestions && followUpQuestions.length > 0 && !isStreaming && (
-          renderFollowUpQuestions
-            ? renderFollowUpQuestions(followUpQuestions)
-            : defaultRenderFollowUpQuestions(followUpQuestions)
-        )}
-        {showHits && hits.length > 0 && (renderHits ? renderHits(hits) : defaultRenderHits(hits))}
       </div>
       {children}
     </AnswerResultsContext.Provider>

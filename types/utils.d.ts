@@ -39,6 +39,13 @@ export interface RAGCallbacks {
  * @returns AbortController to cancel the stream
  */
 export declare function streamRAG(url: string, tableName: string, request: RAGRequest, headers: Record<string, string> | undefined, callbacks: RAGCallbacks): Promise<AbortController>;
+export type AnswerErrorType = 'rate-limit' | 'timeout' | 'generation-failed' | 'network' | 'unknown';
+/**
+ * Classify an error message to determine the appropriate fallback behavior
+ * @param error - The error message string
+ * @returns The classified error type
+ */
+export declare function classifyAnswerError(error: string): AnswerErrorType;
 export interface AnswerCallbacks {
     onClassification?: (data: ClassificationTransformationResult) => void;
     onReasoning?: (chunk: string) => void;

@@ -899,3 +899,166 @@ export const StyledExample = () => {
     </Antfly>
   );
 };
+
+export const WithFallbackBehavior = () => {
+  const [fallbackMode, setFallbackMode] = React.useState<'show-error' | 'show-hits' | 'auto'>('auto');
+  const [lastFallbackEvent, setLastFallbackEvent] = React.useState<string | null>(null);
+
+  const handleFallback = (
+    errorType: string,
+    hits: Array<{ _id: string }>,
+    errorMessage: string,
+  ) => {
+    setLastFallbackEvent(
+      `Fallback triggered!\nError type: ${errorType}\nHits available: ${hits.length}\nMessage: ${errorMessage}`,
+    );
+  };
+
+  return (
+    <Antfly url={url} table={tableName}>
+      <h1>Answer Agent with Fallback Behavior</h1>
+      <p>
+        This example demonstrates the fallback behavior when AI answer generation fails but search
+        results are available. The component gracefully falls back to showing search results instead
+        of an error.
+      </p>
+
+      <div style={{ marginBottom: "20px", padding: "15px", background: "#f5f5f5", borderRadius: "8px" }}>
+        <strong>Fallback Mode:</strong>
+        <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
+          <label>
+            <input
+              type="radio"
+              name="fallbackMode"
+              value="show-error"
+              checked={fallbackMode === "show-error"}
+              onChange={() => setFallbackMode("show-error")}
+            />
+            {" "}show-error (default - shows error message)
+          </label>
+          <label>
+            <input
+              type="radio"
+              name="fallbackMode"
+              value="show-hits"
+              checked={fallbackMode === "show-hits"}
+              onChange={() => setFallbackMode("show-hits")}
+            />
+            {" "}show-hits (shows search results only)
+          </label>
+          <label>
+            <input
+              type="radio"
+              name="fallbackMode"
+              value="auto"
+              checked={fallbackMode === "auto"}
+              onChange={() => setFallbackMode("auto")}
+            />
+            {" "}auto (shows results with notice)
+          </label>
+        </div>
+      </div>
+
+      <pre style={{ background: "#f0f0f0", padding: "10px", borderRadius: "4px", fontSize: "12px" }}>{`<AnswerResults
+  id="answer"
+  searchBoxId="question"
+  generator={mockGenerator}
+  fallbackBehavior="${fallbackMode}"
+  onFallback={(errorType, hits, message) => console.log('Fallback:', errorType)}
+/>`}</pre>
+
+      <QueryBox id="question" placeholder="Ask a question..." />
+
+      <div style={{ marginTop: "20px" }}>
+        <AnswerResults
+          key={fallbackMode} // Force remount when mode changes
+          id="answer"
+          searchBoxId="question"
+          generator={mockGenerator}
+          fallbackBehavior={fallbackMode}
+          showHits={true}
+          onFallback={handleFallback}
+          renderFallback={(hits, errorType, errorMessage) => (
+            <div style={{ padding: "20px", background: "#fff3cd", borderRadius: "8px", border: "1px solid #ffc107" }}>
+              <div style={{ marginBottom: "15px", color: "#856404" }}>
+                <strong>
+                  {errorType === "rate-limit" && "AI temporarily unavailable due to rate limits."}
+                  {errorType === "timeout" && "AI response timed out."}
+                  {errorType === "generation-failed" && "AI generation failed."}
+                  {errorType === "network" && "Network error occurred."}
+                  {errorType === "unknown" && "An error occurred."}
+                </strong>
+                <p style={{ fontSize: "14px", marginTop: "5px" }}>
+                  Showing search results instead. Error: {errorMessage}
+                </p>
+              </div>
+              <div>
+                <h3 style={{ marginBottom: "10px" }}>Search Results ({hits.length})</h3>
+                <ul style={{ listStyle: "none", padding: 0 }}>
+                  {hits.map((hit) => (
+                    <li
+                      key={hit._id}
+                      style={{
+                        padding: "15px",
+                        marginBottom: "10px",
+                        background: "white",
+                        borderRadius: "8px",
+                        boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                      }}
+                    >
+                      <strong>{String(hit._source?.TICO || `Document ${hit._id}`)}</strong>
+                      <div style={{ fontSize: "14px", color: "#666", marginTop: "5px" }}>
+                        {hit._source?.AUTR ? <span>By {String(hit._source?.AUTR)}</span> : null}
+                      </div>
+                      <p style={{ fontSize: "14px", marginTop: "10px" }}>
+                        {String(hit._source?.DESC || "")}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          )}
+        />
+      </div>
+
+      {lastFallbackEvent && (
+        <div
+          style={{
+            marginTop: "20px",
+            padding: "15px",
+            background: "#d4edda",
+            borderRadius: "8px",
+            border: "1px solid #28a745",
+          }}
+        >
+          <strong>onFallback callback fired:</strong>
+          <pre style={{ marginTop: "10px", whiteSpace: "pre-wrap" }}>{lastFallbackEvent}</pre>
+        </div>
+      )}
+
+      <div style={{ marginTop: "30px", padding: "20px", background: "#e7f3ff", borderRadius: "8px" }}>
+        <h3>How Fallback Works</h3>
+        <ul style={{ lineHeight: "1.8" }}>
+          <li>
+            <strong>show-error</strong>: Default behavior. Shows the error message when AI fails.
+          </li>
+          <li>
+            <strong>show-hits</strong>: Shows search results without any notice when AI fails.
+          </li>
+          <li>
+            <strong>auto</strong>: Shows search results with a contextual notice explaining why
+            (rate limit, timeout, etc.).
+          </li>
+        </ul>
+        <p style={{ marginTop: "15px" }}>
+          The <code>onFallback</code> callback is triggered when entering fallback mode, providing
+          the error type, available hits, and error message for analytics or custom handling.
+        </p>
+        <p style={{ marginTop: "10px" }}>
+          Use <code>renderFallback</code> to customize how fallback results are displayed.
+        </p>
+      </div>
+    </Antfly>
+  );
+};
