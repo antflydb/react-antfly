@@ -100,9 +100,9 @@ export default function Listener({ children, onChange }: ListenerProps) {
   const values = mapFrom('value')
 
   // Create stable keys for dependency comparison
-  const _queriesKey = JSON.stringify(Array.from(queries.entries()).sort())
-  const _semanticQueriesKey = JSON.stringify(Array.from(semanticQueries.entries()).sort())
-  const _configurationsKey = JSON.stringify(Array.from(configurations.entries()).sort())
+  const queriesKey = JSON.stringify(Array.from(queries.entries()).sort())
+  const semanticQueriesKey = JSON.stringify(Array.from(semanticQueries.entries()).sort())
+  const configurationsKey = JSON.stringify(Array.from(configurations.entries()).sort())
 
   useEffect(() => {
     // Apply custom callback effect on every change, useful for query params.
@@ -121,6 +121,7 @@ export default function Listener({ children, onChange }: ListenerProps) {
   })
 
   // Run effect on update for each change in queries or configuration.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: We intentionally use stable JSON keys instead of Map objects/methods to prevent infinite re-renders. The Maps are recreated on every render, so we use serialized keys to track actual content changes.
   useEffect(() => {
     // Clear any existing timeout to debounce multiple rapid updates
     if (debounceTimeoutRef.current) {
@@ -461,16 +462,16 @@ export default function Listener({ children, onChange }: ListenerProps) {
     headers,
     searchWidgets.size,
     configurableWidgets.size,
-    configurations.size, // Fetch data for internal facet components.
-    facetWidgets.forEach,
-    queries,
-    resultWidgets.forEach,
-    semanticQueries.entries,
+    configurationsKey,
+    facetWidgets.size,
+    queriesKey,
+    resultWidgets.size,
+    semanticQueriesKey,
     semanticQueries.size,
     table,
-    widgets.get,
+    widgets.size,
     // listenerEffect removed to prevent infinite loop
-    // Note: We intentionally use stable keys instead of the Map objects themselves
+    // Note: We use stable JSON keys instead of Map objects/methods
     // to avoid constant re-renders while still tracking changes
   ])
 
