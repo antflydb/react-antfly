@@ -1,28 +1,29 @@
-import React, { useState } from "react";
-import { Antfly, QueryBox, Results, Facet, FacetProps } from "../src";
-import { url, tableName } from "./utils";
+import { useState } from 'react'
+import { Antfly, Facet, type FacetProps, QueryBox, Results } from '../src'
+import { tableName, url } from './utils'
 
 export default {
-  title: "Facet",
+  title: 'Facet',
   component: Facet,
-};
+}
 
 function CollapsableFacet({ title, ...rest }: { title: string } & FacetProps) {
-  const [collapsed, setCollapsed] = useState(true);
+  const [collapsed, setCollapsed] = useState(true)
 
   function FacetWrapper() {
     if (!collapsed) {
-      return <Facet {...rest} />;
+      return <Facet {...rest} />
     }
-    return <div />;
+    return <div />
   }
   return (
     <div>
       <div>
         {title}
         <button
+          type="button"
           onClick={() => {
-            setCollapsed(!collapsed);
+            setCollapsed(!collapsed)
           }}
         >
           open
@@ -30,14 +31,14 @@ function CollapsableFacet({ title, ...rest }: { title: string } & FacetProps) {
       </div>
       {FacetWrapper()}
     </div>
-  );
+  )
 }
 
 export const Collapsable = () => {
   return (
     <Antfly url={url} table={tableName}>
       <QueryBox id="main" />
-      <CollapsableFacet title="Author" id="autr" fields={["AUTR"]} />
+      <CollapsableFacet title="Author" id="autr" fields={['AUTR']} />
       <Results
         id="result"
         items={(data) =>
@@ -50,8 +51,8 @@ export const Collapsable = () => {
         pagination={() => <></>}
       />
     </Antfly>
-  );
-};
+  )
+}
 
 export const Customized = () => {
   return (
@@ -60,7 +61,7 @@ export const Customized = () => {
         seeMore="SEE MORE CUSTOM"
         placeholder="MY PLACEHOLDER"
         id="autr"
-        fields={["AUTR"]}
+        fields={['AUTR']}
         itemsPerBlock={10}
       />
       <Results
@@ -74,8 +75,8 @@ export const Customized = () => {
         }
       />
     </Antfly>
-  );
-};
+  )
+}
 
 export const ModifyFilterValue = () => {
   return (
@@ -84,7 +85,7 @@ export const ModifyFilterValue = () => {
         filterValueModifier={(v) => `${v}.*`}
         placeholder="type first letters"
         id="autr"
-        fields={["AUTR"]}
+        fields={['AUTR']}
       />
       <Results
         id="result"
@@ -97,8 +98,8 @@ export const ModifyFilterValue = () => {
         }
       />
     </Antfly>
-  );
-};
+  )
+}
 
 export const FacetWithCustomRenderItems = () => {
   return (
@@ -106,17 +107,21 @@ export const FacetWithCustomRenderItems = () => {
       <QueryBox id="main" />
       <Facet
         id="autr"
-        fields={["AUTR"]}
+        fields={['AUTR']}
         items={(data, { handleChange, isChecked }) => {
           return data.map((item) => (
-            <div
-              style={{ color: isChecked(item) ? "green" : "black" }}
-              onClick={() => handleChange(item, !isChecked(item))}
-              key={item.term}
-            >
-              -`{">"}` {item.term}
-            </div>
-          ));
+            <label key={item.term} style={{ display: 'block' }}>
+              <input
+                type="checkbox"
+                checked={isChecked(item)}
+                onChange={(e) => handleChange(item, e.target.checked)}
+                style={{ marginRight: '8px' }}
+              />
+              <span style={{ color: isChecked(item) ? 'green' : 'black' }}>
+                -`{'>'}` {item.term}
+              </span>
+            </label>
+          ))
         }}
       />
       <Results
@@ -131,5 +136,5 @@ export const FacetWithCustomRenderItems = () => {
         pagination={() => <></>}
       />
     </Antfly>
-  );
-};
+  )
+}

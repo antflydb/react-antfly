@@ -1,5 +1,5 @@
-import { ReactNode } from 'react';
 import { QueryHit } from '@antfly/sdk';
+import { ReactNode } from 'react';
 export interface ResultsProps {
     id: string;
     searchBoxId?: string;

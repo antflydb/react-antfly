@@ -1,5 +1,5 @@
-import { default as React, ReactNode } from 'react';
 import { QueryHit, TermFacetResult } from '@antfly/sdk';
+import { default as React, ReactNode } from 'react';
 interface AutosuggestContextValue {
     query: string;
     results: QueryHit[];
@@ -28,7 +28,7 @@ export interface AutosuggestProps {
     containerRef?: React.RefObject<HTMLDivElement | null>;
     isOpen?: boolean;
     children?: ReactNode;
-    layout?: "vertical" | "horizontal" | "grid" | "custom";
+    layout?: 'vertical' | 'horizontal' | 'grid' | 'custom';
     className?: string;
     dropdownClassName?: string;
 }
@@ -48,7 +48,7 @@ export interface AutosuggestFacetsProps {
     field: string;
     size?: number;
     label?: string;
-    order?: "count" | "term" | "reverse_count" | "reverse_term";
+    order?: 'count' | 'term' | 'reverse_count' | 'reverse_term';
     renderItem?: (facet: TermFacetResult, index: number) => ReactNode;
     renderSection?: (field: string, label: string, terms: TermFacetResult[]) => ReactNode;
     onSelect?: (facet: TermFacetResult) => void;

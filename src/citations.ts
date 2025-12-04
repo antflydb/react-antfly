@@ -33,13 +33,13 @@
  */
 export interface Citation {
   /** The original citation text as it appears in the source (e.g., "[resource_id 1, 2, 3]") */
-  originalText: string;
+  originalText: string
   /** Array of resource IDs referenced in this citation (e.g., ["1", "2", "3"]) */
-  ids: string[];
+  ids: string[]
   /** Starting character position of the citation in the original text */
-  startIndex: number;
+  startIndex: number
   /** Ending character position of the citation in the original text */
-  endIndex: number;
+  endIndex: number
 }
 
 /**
@@ -73,7 +73,7 @@ export interface CitationRenderOptions {
    * }
    * ```
    */
-  renderCitation: (ids: string[], allCitationIds: string[]) => string;
+  renderCitation: (ids: string[], allCitationIds: string[]) => string
 }
 
 /**
@@ -81,7 +81,7 @@ export interface CitationRenderOptions {
  * Matches both `[resource_id X]` and `[X]` formats with comma-separated IDs.
  * Also supports legacy `[doc_id X]` format for backward compatibility.
  */
-const CITATION_REGEX = /\[(?:(?:resource_id|doc_id)\s+)?([^\]]+)\]/g;
+const CITATION_REGEX = /\[(?:(?:resource_id|doc_id)\s+)?([^\]]+)\]/g
 
 /**
  * Extract all citation IDs from text in order of first appearance.
@@ -90,18 +90,18 @@ const CITATION_REGEX = /\[(?:(?:resource_id|doc_id)\s+)?([^\]]+)\]/g;
  * @returns Array of unique citation IDs in order of first appearance
  */
 function extractAllCitationIds(text: string): string[] {
-  const allIds: string[] = [];
-  const citations = parseCitations(text);
+  const allIds: string[] = []
+  const citations = parseCitations(text)
 
   for (const citation of citations) {
     for (const id of citation.ids) {
       if (!allIds.includes(id)) {
-        allIds.push(id);
+        allIds.push(id)
       }
     }
   }
 
-  return allIds;
+  return allIds
 }
 
 /**
@@ -122,26 +122,28 @@ function extractAllCitationIds(text: string): string[] {
  * ```
  */
 export function parseCitations(text: string): Citation[] {
-  const citations: Citation[] = [];
-  const regex = new RegExp(CITATION_REGEX);
-  let match;
+  const citations: Citation[] = []
+  const regex = new RegExp(CITATION_REGEX)
 
-  while ((match = regex.exec(text)) !== null) {
-    const originalText = match[0];
-    const idsString = match[1];
+  for (const match of text.matchAll(regex)) {
+    const originalText = match[0]
+    const idsString = match[1]
 
     // Split by comma and trim whitespace
-    const ids = idsString.split(',').map(id => id.trim()).filter(id => id.length > 0);
+    const ids = idsString
+      .split(',')
+      .map((id) => id.trim())
+      .filter((id) => id.length > 0)
 
     citations.push({
       originalText,
       ids,
-      startIndex: match.index,
-      endIndex: match.index + originalText.length
-    });
+      startIndex: match.index ?? 0,
+      endIndex: (match.index ?? 0) + originalText.length,
+    })
   }
 
-  return citations;
+  return citations
 }
 
 /**
@@ -161,14 +163,17 @@ export function parseCitations(text: string): Citation[] {
  * ```
  */
 export function replaceCitations(text: string, options: CitationRenderOptions): string {
-  const allCitationIds = extractAllCitationIds(text);
+  const allCitationIds = extractAllCitationIds(text)
 
-  return text.replace(CITATION_REGEX, (match, idsString) => {
+  return text.replace(CITATION_REGEX, (_match, idsString) => {
     // Split by comma and trim whitespace
-    const ids = idsString.split(',').map((id: string) => id.trim()).filter((id: string) => id.length > 0);
+    const ids = idsString
+      .split(',')
+      .map((id: string) => id.trim())
+      .filter((id: string) => id.length > 0)
 
-    return options.renderCitation(ids, allCitationIds);
-  });
+    return options.renderCitation(ids, allCitationIds)
+  })
 }
 
 /**
@@ -184,7 +189,7 @@ export function replaceCitations(text: string, options: CitationRenderOptions): 
  * ```
  */
 export function renderAsMarkdownLinks(ids: string[]): string {
-  return ids.map(id => `[[${id}]](#hit-${id})`).join(', ');
+  return ids.map((id) => `[[${id}]](#hit-${id})`).join(', ')
 }
 
 /**
@@ -203,10 +208,12 @@ export function renderAsMarkdownLinks(ids: string[]): string {
  * ```
  */
 export function renderAsSequentialLinks(ids: string[], allCitationIds: string[]): string {
-  return ids.map(id => {
-    const sequentialNum = allCitationIds.indexOf(id) + 1;
-    return `[[${sequentialNum}]](#hit-${id})`;
-  }).join(', ');
+  return ids
+    .map((id) => {
+      const sequentialNum = allCitationIds.indexOf(id) + 1
+      return `[[${sequentialNum}]](#hit-${id})`
+    })
+    .join(', ')
 }
 
 /**
@@ -227,16 +234,16 @@ export function renderAsSequentialLinks(ids: string[], allCitationIds: string[])
  * ```
  */
 export function getCitedResourceIds(summary: string): string[] {
-  const citations = parseCitations(summary);
-  const uniqueIds = new Set<string>();
+  const citations = parseCitations(summary)
+  const uniqueIds = new Set<string>()
 
   for (const citation of citations) {
     for (const id of citation.ids) {
-      uniqueIds.add(id);
+      uniqueIds.add(id)
     }
   }
 
-  return Array.from(uniqueIds);
+  return Array.from(uniqueIds)
 }
 
 /**
@@ -244,5 +251,5 @@ export function getCitedResourceIds(summary: string): string[] {
  * Extract all cited resource IDs from a summary text.
  */
 export function getCitedDocumentIds(summary: string): string[] {
-  return getCitedResourceIds(summary);
+  return getCitedResourceIds(summary)
 }

@@ -1,42 +1,38 @@
+import type { RAGResult } from '@antfly/sdk'
 import {
+  AnswerFeedback,
   Antfly,
+  type FeedbackResult,
+  type GeneratorConfig,
   QueryBox,
   RAGResults,
-  AnswerFeedback,
-  GeneratorConfig,
-  renderThumbsUpDown,
-  renderStars,
   renderNumeric,
-  FeedbackResult,
-} from "../src";
-import { RAGResult } from "@antfly/sdk";
-import { url, tableName } from "./utils";
+  renderStars,
+  renderThumbsUpDown,
+} from '../src'
+import { tableName, url } from './utils'
 
 export default {
-  title: "Answer Feedback",
+  title: 'Answer Feedback',
   component: AnswerFeedback,
-};
+}
 
 // Mock summarizer configuration
 const mockSummarizer: GeneratorConfig = {
-  provider: "ollama",
-  model: "gemma3:4b",
-};
+  provider: 'ollama',
+  model: 'gemma3:4b',
+}
 
 export const ThumbsUpDown = () => {
-  const handleFeedback = (data: {
-    feedback: FeedbackResult;
-    result: RAGResult;
-    query: string;
-  }) => {
-    console.log("Feedback received:", data);
+  const handleFeedback = (data: { feedback: FeedbackResult; result: RAGResult; query: string }) => {
+    console.log('Feedback received:', data)
     alert(
       `Thank you for your feedback!\n\n` +
-        `Rating: ${data.feedback.rating === 1 ? "👍 Thumbs Up" : "👎 Thumbs Down"}\n` +
+        `Rating: ${data.feedback.rating === 1 ? '👍 Thumbs Up' : '👎 Thumbs Down'}\n` +
         `Query: "${data.query}"\n` +
-        `Comment: ${data.feedback.comment || "(none)"}`,
-    );
-  };
+        `Comment: ${data.feedback.comment || '(none)'}`,
+    )
+  }
 
   return (
     <Antfly url={url} table={tableName}>
@@ -132,7 +128,9 @@ export const ThumbsUpDown = () => {
       `}</style>
 
       <div className="feedback-demo">
-        <pre style={{ background: "#f5f5f5", padding: "16px", borderRadius: "8px" }}>{`<RAGResults id="answer" searchBoxId="question" summarizer={summarizer}>
+        <pre
+          style={{ background: '#f5f5f5', padding: '16px', borderRadius: '8px' }}
+        >{`<RAGResults id="answer" searchBoxId="question" summarizer={summarizer}>
   <AnswerFeedback
     scale={1}
     renderRating={renderThumbsUpDown}
@@ -143,30 +141,22 @@ export const ThumbsUpDown = () => {
         <QueryBox id="question" placeholder="Ask a question..." />
 
         <RAGResults id="answer" searchBoxId="question" summarizer={mockSummarizer}>
-          <AnswerFeedback
-            scale={1}
-            renderRating={renderThumbsUpDown}
-            onFeedback={handleFeedback}
-          />
+          <AnswerFeedback scale={1} renderRating={renderThumbsUpDown} onFeedback={handleFeedback} />
         </RAGResults>
       </div>
     </Antfly>
-  );
-};
+  )
+}
 
 export const StarRating = () => {
-  const handleFeedback = (data: {
-    feedback: FeedbackResult;
-    result: RAGResult;
-    query: string;
-  }) => {
-    console.log("Feedback received:", data);
+  const handleFeedback = (data: { feedback: FeedbackResult; result: RAGResult; query: string }) => {
+    console.log('Feedback received:', data)
     alert(
       `Thank you for your ${data.feedback.rating + 1}-star rating!\n\n` +
         `Query: "${data.query}"\n` +
-        `Comment: ${data.feedback.comment || "(none)"}`,
-    );
-  };
+        `Comment: ${data.feedback.comment || '(none)'}`,
+    )
+  }
 
   return (
     <Antfly url={url} table={tableName}>
@@ -255,7 +245,9 @@ export const StarRating = () => {
       `}</style>
 
       <div className="feedback-demo">
-        <pre style={{ background: "#f5f5f5", padding: "16px", borderRadius: "8px" }}>{`<RAGResults id="answer" searchBoxId="question" summarizer={summarizer}>
+        <pre
+          style={{ background: '#f5f5f5', padding: '16px', borderRadius: '8px' }}
+        >{`<RAGResults id="answer" searchBoxId="question" summarizer={summarizer}>
   <AnswerFeedback
     scale={4}
     renderRating={renderStars}
@@ -270,22 +262,18 @@ export const StarRating = () => {
         </RAGResults>
       </div>
     </Antfly>
-  );
-};
+  )
+}
 
 export const NumericScale = () => {
-  const handleFeedback = (data: {
-    feedback: FeedbackResult;
-    result: RAGResult;
-    query: string;
-  }) => {
-    console.log("Feedback received:", data);
+  const handleFeedback = (data: { feedback: FeedbackResult; result: RAGResult; query: string }) => {
+    console.log('Feedback received:', data)
     alert(
       `Thank you for rating ${data.feedback.rating}/${data.feedback.scale}!\n\n` +
         `Query: "${data.query}"\n` +
-        `Comment: ${data.feedback.comment || "(none)"}`,
-    );
-  };
+        `Comment: ${data.feedback.comment || '(none)'}`,
+    )
+  }
 
   return (
     <Antfly url={url} table={tableName}>
@@ -383,7 +371,9 @@ export const NumericScale = () => {
       `}</style>
 
       <div className="feedback-demo">
-        <pre style={{ background: "#f5f5f5", padding: "16px", borderRadius: "8px" }}>{`<RAGResults id="answer" searchBoxId="question" summarizer={summarizer}>
+        <pre
+          style={{ background: '#f5f5f5', padding: '16px', borderRadius: '8px' }}
+        >{`<RAGResults id="answer" searchBoxId="question" summarizer={summarizer}>
   <AnswerFeedback
     scale={3}
     renderRating={(rating, onRate) => renderNumeric(rating, onRate, 3)}
@@ -402,20 +392,14 @@ export const NumericScale = () => {
         </RAGResults>
       </div>
     </Antfly>
-  );
-};
+  )
+}
 
 export const WithoutComments = () => {
-  const handleFeedback = (data: {
-    feedback: FeedbackResult;
-    result: RAGResult;
-    query: string;
-  }) => {
-    console.log("Feedback received:", data);
-    alert(
-      `Rating: ${data.feedback.rating}/${data.feedback.scale}\n` + `Query: "${data.query}"`,
-    );
-  };
+  const handleFeedback = (data: { feedback: FeedbackResult; result: RAGResult; query: string }) => {
+    console.log('Feedback received:', data)
+    alert(`Rating: ${data.feedback.rating}/${data.feedback.scale}\n` + `Query: "${data.query}"`)
+  }
 
   return (
     <Antfly url={url} table={tableName}>
@@ -492,7 +476,9 @@ export const WithoutComments = () => {
       `}</style>
 
       <div className="feedback-demo">
-        <pre style={{ background: "#f5f5f5", padding: "16px", borderRadius: "8px" }}>{`<AnswerFeedback
+        <pre
+          style={{ background: '#f5f5f5', padding: '16px', borderRadius: '8px' }}
+        >{`<AnswerFeedback
   scale={4}
   renderRating={renderStars}
   enableComments={false}
@@ -511,69 +497,66 @@ export const WithoutComments = () => {
         </RAGResults>
       </div>
     </Antfly>
-  );
-};
+  )
+}
 
 export const CustomRenderer = () => {
-  const handleFeedback = (data: {
-    feedback: FeedbackResult;
-    result: RAGResult;
-    query: string;
-  }) => {
-    console.log("Feedback received:", data);
-    const labels = ["Poor", "Fair", "Good", "Great", "Excellent"];
+  const handleFeedback = (data: { feedback: FeedbackResult; result: RAGResult; query: string }) => {
+    console.log('Feedback received:', data)
+    const labels = ['Poor', 'Fair', 'Good', 'Great', 'Excellent']
     alert(
       `Rating: ${labels[data.feedback.rating]} (${data.feedback.rating}/${data.feedback.scale})\n` +
         `Query: "${data.query}"\n` +
-        `Comment: ${data.feedback.comment || "(none)"}`,
-    );
-  };
+        `Comment: ${data.feedback.comment || '(none)'}`,
+    )
+  }
 
   // Custom renderer with emoji and labels
   const customRender = (currentRating: number | null, onRate: (rating: number) => void) => {
     const options = [
-      { emoji: "😞", label: "Poor", value: 0 },
-      { emoji: "😐", label: "Fair", value: 1 },
-      { emoji: "🙂", label: "Good", value: 2 },
-      { emoji: "😊", label: "Great", value: 3 },
-      { emoji: "🤩", label: "Excellent", value: 4 },
-    ];
+      { emoji: '😞', label: 'Poor', value: 0 },
+      { emoji: '😐', label: 'Fair', value: 1 },
+      { emoji: '🙂', label: 'Good', value: 2 },
+      { emoji: '😊', label: 'Great', value: 3 },
+      { emoji: '🤩', label: 'Excellent', value: 4 },
+    ]
 
     return (
       <div
         style={{
-          display: "flex",
-          gap: "12px",
-          justifyContent: "center",
-          flexWrap: "wrap",
+          display: 'flex',
+          gap: '12px',
+          justifyContent: 'center',
+          flexWrap: 'wrap',
         }}
       >
         {options.map((option) => (
           <button
+            type="button"
             key={option.value}
             onClick={() => onRate(option.value)}
             style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: "6px",
-              padding: "12px 16px",
-              background: currentRating === option.value ? "#4a90e2" : "white",
-              color: currentRating === option.value ? "white" : "#333",
-              border: `2px solid ${currentRating === option.value ? "#4a90e2" : "#e0e0e0"}`,
-              borderRadius: "8px",
-              cursor: "pointer",
-              transition: "all 0.2s",
-              fontSize: "14px",
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '12px 16px',
+              background: currentRating === option.value ? '#4a90e2' : 'white',
+              color: currentRating === option.value ? 'white' : '#333',
+              border: `2px solid ${currentRating === option.value ? '#4a90e2' : '#e0e0e0'}`,
+              borderRadius: '8px',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              fontSize: '14px',
             }}
           >
-            <span style={{ fontSize: "32px" }}>{option.emoji}</span>
+            <span style={{ fontSize: '32px' }}>{option.emoji}</span>
             <span style={{ fontWeight: 600 }}>{option.label}</span>
           </button>
         ))}
       </div>
-    );
-  };
+    )
+  }
 
   return (
     <Antfly url={url} table={tableName}>
@@ -646,7 +629,9 @@ export const CustomRenderer = () => {
       `}</style>
 
       <div className="feedback-demo">
-        <pre style={{ background: "#f5f5f5", padding: "16px", borderRadius: "8px" }}>{`const customRender = (currentRating, onRate) => {
+        <pre
+          style={{ background: '#f5f5f5', padding: '16px', borderRadius: '8px' }}
+        >{`const customRender = (currentRating, onRate) => {
   const options = [
     { emoji: "😞", label: "Poor", value: 0 },
     { emoji: "😐", label: "Fair", value: 1 },
@@ -684,5 +669,5 @@ export const CustomRenderer = () => {
         </RAGResults>
       </div>
     </Antfly>
-  );
-};
+  )
+}

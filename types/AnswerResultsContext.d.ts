@@ -1,8 +1,8 @@
-import { QueryHit, AnswerAgentResult } from '@antfly/sdk';
+import { AnswerAgentResult, QueryHit } from '@antfly/sdk';
 export interface AnswerResultsContextValue {
     query: string;
     classification: {
-        route_type: "question" | "search";
+        route_type: 'question' | 'search';
         improved_query: string;
         semantic_query: string;
         confidence: number;

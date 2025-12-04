@@ -1,29 +1,29 @@
-import React, { useState } from "react";
+import { useState } from 'react'
 import {
-  Antfly,
-  QueryBox,
-  Facet,
-  Results,
   ActiveFilters,
-  toUrlQueryString,
+  Antfly,
+  Facet,
   fromUrlQueryString,
-} from "../src";
-import { url, tableName } from "./utils";
+  QueryBox,
+  Results,
+  toUrlQueryString,
+} from '../src'
+import { tableName, url } from './utils'
 
 export default {
-  title: "Antfly",
+  title: 'Antfly',
   component: Antfly,
-};
+}
 
 export const BasicUsage = () => {
   return (
     <Antfly url={url} table={tableName}>
       <QueryBox id="main" />
-      <div style={{ display: "inline-block" }}>
-        <Facet id="author" fields={["AUTR"]} />
+      <div style={{ display: 'inline-block' }}>
+        <Facet id="author" fields={['AUTR']} />
       </div>
-      <div style={{ display: "inline-block" }}>
-        <Facet id="domn" fields={["DOMN"]} />
+      <div style={{ display: 'inline-block' }}>
+        <Facet id="domn" fields={['DOMN']} />
       </div>
       <Results
         id="result"
@@ -36,18 +36,18 @@ export const BasicUsage = () => {
         }
       />
     </Antfly>
-  );
-};
+  )
+}
 
 export const SemanticSearch = () => {
   return (
     <Antfly url={url} table={tableName}>
       <QueryBox id="main" />
-      <div style={{ display: "inline-block" }}>
-        <Facet id="author" fields={["AUTR"]} />
+      <div style={{ display: 'inline-block' }}>
+        <Facet id="author" fields={['AUTR']} />
       </div>
-      <div style={{ display: "inline-block" }}>
-        <Facet id="domn" fields={["DOMN"]} />
+      <div style={{ display: 'inline-block' }}>
+        <Facet id="domn" fields={['DOMN']} />
       </div>
       <Results
         id="result"
@@ -60,40 +60,40 @@ export const SemanticSearch = () => {
         }
       />
     </Antfly>
-  );
-};
+  )
+}
 
 export const WithUrlParams = () => {
-  const [queryString, setQueryString] = useState("");
+  const [queryString, setQueryString] = useState('')
 
-  const initialValues = fromUrlQueryString("main=%22de%22&resultPage=2");
+  const initialValues = fromUrlQueryString('main=%22de%22&resultPage=2')
   return (
     <Antfly
       url={url}
       table={tableName}
       onChange={(values) => {
-        setQueryString(toUrlQueryString(values));
+        setQueryString(toUrlQueryString(values))
       }}
     >
       <div>Params: {queryString}</div>
-      <QueryBox id="main" initialValue={initialValues.get("main") as string} />
+      <QueryBox id="main" initialValue={initialValues.get('main') as string} />
       <hr />
-      <Facet id="author" fields={["AUTR"]} />
+      <Facet id="author" fields={['AUTR']} />
       <ActiveFilters />
       <Results
         id="result"
-        initialPage={initialValues.get("resultPage") as number}
+        initialPage={initialValues.get('resultPage') as number}
         items={(data) =>
           data.map(({ _source, _id }) => <div key={_id}>{String(_source?.TICO)}</div>)
         }
       />
     </Antfly>
-  );
-};
+  )
+}
 
 export const Wikipedia = () => {
   return (
-    <Antfly url={"http://localhost:8080"} table="wikipedia">
+    <Antfly url={'http://localhost:8080'} table="wikipedia">
       <QueryBox id="main" />
       <ActiveFilters />
       <Results
@@ -109,16 +109,16 @@ export const Wikipedia = () => {
         }
       />
     </Antfly>
-  );
-};
+  )
+}
 
 export const MovieDatabase = () => {
   return (
     <Antfly
-      url={"https://localhost:8080"}
+      url={'https://localhost:8080'}
       table="movies"
       headers={{
-        Authorization: "Basic " + window.btoa("Qq38oEj7D:a23804f8-f0c4-4dea-9a55-67739275e588"),
+        Authorization: `Basic ${window.btoa('Qq38oEj7D:a23804f8-f0c4-4dea-9a55-67739275e588')}`,
       }}
     >
       <QueryBox id="main" />
@@ -130,12 +130,12 @@ export const MovieDatabase = () => {
               <img src={String(_source?.poster_path)} alt={String(_source?.original_title)} />
               <b>
                 {String(_source?.original_title)} - {String(_source?.tagline)}
-              </b>{" "}
+              </b>{' '}
               - score: {_score}
             </div>
           ))
         }
       />
     </Antfly>
-  );
-};
+  )
+}

@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 export interface QueryBoxProps {
     id: string;
-    mode?: "live" | "submit";
+    mode?: 'live' | 'submit';
     initialValue?: string;
     placeholder?: string;
     children?: ReactNode;

@@ -1,15 +1,15 @@
-import { useState, useCallback, useRef } from 'react';
-import type { QueryHit, AnswerAgentRequest } from '@antfly/sdk';
-import { streamAnswer } from '../utils';
+import type { AnswerAgentRequest, QueryHit } from '@antfly/sdk'
+import { useCallback, useRef, useState } from 'react'
+import { streamAnswer } from '../utils'
 
 /**
  * Classification data from Answer Agent
  */
 export interface QueryClassification {
-  route_type: 'question' | 'search';
-  improved_query: string;
-  semantic_query: string;
-  confidence: number;
+  route_type: 'question' | 'search'
+  improved_query: string
+  semantic_query: string
+  confidence: number
 }
 
 /**
@@ -53,15 +53,15 @@ export interface QueryClassification {
  * ```
  */
 export function useAnswerStream() {
-  const [answer, setAnswer] = useState<string>('');
-  const [reasoning, setReasoning] = useState<string>('');
-  const [classification, setClassification] = useState<QueryClassification | null>(null);
-  const [hits, setHits] = useState<QueryHit[]>([]);
-  const [followUpQuestions, setFollowUpQuestions] = useState<string[]>([]);
-  const [isStreaming, setIsStreaming] = useState<boolean>(false);
-  const [error, setError] = useState<Error | null>(null);
+  const [answer, setAnswer] = useState<string>('')
+  const [reasoning, setReasoning] = useState<string>('')
+  const [classification, setClassification] = useState<QueryClassification | null>(null)
+  const [hits, setHits] = useState<QueryHit[]>([])
+  const [followUpQuestions, setFollowUpQuestions] = useState<string[]>([])
+  const [isStreaming, setIsStreaming] = useState<boolean>(false)
+  const [error, setError] = useState<Error | null>(null)
 
-  const abortControllerRef = useRef<AbortController | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null)
 
   /**
    * Start streaming an answer
@@ -72,84 +72,84 @@ export function useAnswerStream() {
       request,
       headers = {},
     }: {
-      url: string;
-      request: AnswerAgentRequest;
-      headers?: Record<string, string>;
+      url: string
+      request: AnswerAgentRequest
+      headers?: Record<string, string>
     }) => {
       // Reset state
-      setAnswer('');
-      setReasoning('');
-      setClassification(null);
-      setHits([]);
-      setFollowUpQuestions([]);
-      setError(null);
-      setIsStreaming(true);
+      setAnswer('')
+      setReasoning('')
+      setClassification(null)
+      setHits([])
+      setFollowUpQuestions([])
+      setError(null)
+      setIsStreaming(true)
 
       // Abort any existing stream
       if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
+        abortControllerRef.current.abort()
       }
 
       try {
         const controller = await streamAnswer(url, request, headers, {
           onClassification: (data) => {
-            setClassification(data);
+            setClassification(data)
           },
           onHit: (hit) => {
-            setHits((prev) => [...prev, hit]);
+            setHits((prev) => [...prev, hit])
           },
           onReasoning: (chunk) => {
-            setReasoning((prev) => prev + chunk);
+            setReasoning((prev) => prev + chunk)
           },
           onAnswer: (chunk) => {
-            setAnswer((prev) => prev + chunk);
+            setAnswer((prev) => prev + chunk)
           },
           onFollowUpQuestion: (question) => {
-            setFollowUpQuestions((prev) => [...prev, question]);
+            setFollowUpQuestions((prev) => [...prev, question])
           },
           onComplete: () => {
-            setIsStreaming(false);
+            setIsStreaming(false)
           },
           onError: (err) => {
-            const errorObj = err instanceof Error ? err : new Error(String(err));
-            setError(errorObj);
-            setIsStreaming(false);
+            const errorObj = err instanceof Error ? err : new Error(String(err))
+            setError(errorObj)
+            setIsStreaming(false)
           },
-        });
+        })
 
-        abortControllerRef.current = controller;
+        abortControllerRef.current = controller
       } catch (err) {
-        const errorObj = err instanceof Error ? err : new Error(String(err));
-        setError(errorObj);
-        setIsStreaming(false);
+        const errorObj = err instanceof Error ? err : new Error(String(err))
+        setError(errorObj)
+        setIsStreaming(false)
       }
     },
-    []
-  );
+    [],
+  )
 
   /**
    * Stop the current stream
    */
   const stopStream = useCallback(() => {
     if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-      abortControllerRef.current = null;
+      abortControllerRef.current.abort()
+      abortControllerRef.current = null
     }
-    setIsStreaming(false);
-  }, []);
+    setIsStreaming(false)
+  }, [])
 
   /**
    * Reset all state
    */
   const reset = useCallback(() => {
-    stopStream();
-    setAnswer('');
-    setReasoning('');
-    setClassification(null);
-    setHits([]);
-    setFollowUpQuestions([]);
-    setError(null);
-  }, [stopStream]);
+    stopStream()
+    setAnswer('')
+    setReasoning('')
+    setClassification(null)
+    setHits([])
+    setFollowUpQuestions([])
+    setError(null)
+  }, [stopStream])
 
   return {
     answer,
@@ -162,5 +162,5 @@ export function useAnswerStream() {
     startStream,
     stopStream,
     reset,
-  };
+  }
 }

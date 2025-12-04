@@ -1,17 +1,25 @@
-import React from "react";
-import { Antfly, QueryBox, Results, RAGResults, AnswerResults, Autosuggest, Facet, GeneratorConfig } from "../src";
-import { url, tableName } from "./utils";
+import {
+  AnswerResults,
+  Antfly,
+  Autosuggest,
+  Facet,
+  type GeneratorConfig,
+  QueryBox,
+  RAGResults,
+  Results,
+} from '../src'
+import { tableName, url } from './utils'
 
 // Mock generator configuration
 const mockGenerator: GeneratorConfig = {
-  provider: "ollama",
-  model: "gemma3:4b",
-};
+  provider: 'ollama',
+  model: 'gemma3:4b',
+}
 
 export default {
-  title: "QueryBox",
+  title: 'QueryBox',
   component: QueryBox,
-};
+}
 
 export const LiveMode = () => {
   return (
@@ -28,7 +36,7 @@ export const LiveMode = () => {
       <Results
         id="results"
         searchBoxId="search"
-        fields={["AUTR", "TICO"]}
+        fields={['AUTR', 'TICO']}
         items={(data) =>
           data.map(({ _source: s, _id }) => (
             <div key={_id}>
@@ -39,8 +47,8 @@ export const LiveMode = () => {
         pagination={() => <></>}
       />
     </Antfly>
-  );
-};
+  )
+}
 
 export const SubmitMode = () => {
   return (
@@ -57,17 +65,13 @@ export const SubmitMode = () => {
       <Results
         id="results"
         searchBoxId="search"
-        fields={["AUTR"]}
-        items={(data) =>
-          data.map(({ _source: s, _id }) => (
-            <div key={_id}>{String(s?.TICO)}</div>
-          ))
-        }
+        fields={['AUTR']}
+        items={(data) => data.map(({ _source: s, _id }) => <div key={_id}>{String(s?.TICO)}</div>)}
         pagination={() => <></>}
       />
     </Antfly>
-  );
-};
+  )
+}
 
 export const WithAutosuggest = () => {
   return (
@@ -78,12 +82,12 @@ export const WithAutosuggest = () => {
 </QueryBox>
 <Results searchBoxId="search" fields={["AUTR"]} />`}</pre>
       <QueryBox id="search" mode="live">
-        <Autosuggest fields={["AUTR"]} limit={5} minChars={2} />
+        <Autosuggest fields={['AUTR']} limit={5} minChars={2} />
       </QueryBox>
       <Results
         id="results"
         searchBoxId="search"
-        fields={["AUTR"]}
+        fields={['AUTR']}
         items={(data) =>
           data.map(({ _source: s, _id }) => (
             <div key={_id}>
@@ -94,8 +98,8 @@ export const WithAutosuggest = () => {
         pagination={() => <></>}
       />
     </Antfly>
-  );
-};
+  )
+}
 
 export const WithFacets = () => {
   return (
@@ -104,13 +108,13 @@ export const WithFacets = () => {
       <pre>{`<QueryBox id="search" mode="live" />
 <Facet id="domain" fields={["DOMA"]} />
 <Results searchBoxId="search" fields={["AUTR", "TICO"]} />`}</pre>
-      <div style={{ display: "flex", gap: "20px" }}>
+      <div style={{ display: 'flex', gap: '20px' }}>
         <div style={{ flex: 1 }}>
           <QueryBox id="search" mode="live" />
           <Results
             id="results"
             searchBoxId="search"
-            fields={["AUTR", "TICO"]}
+            fields={['AUTR', 'TICO']}
             items={(data) =>
               data.map(({ _source: s, _id }) => (
                 <div key={_id}>
@@ -121,14 +125,14 @@ export const WithFacets = () => {
             pagination={() => <></>}
           />
         </div>
-        <div style={{ width: "200px" }}>
+        <div style={{ width: '200px' }}>
           <h3>Filter by Domain</h3>
-          <Facet id="domain" fields={["DOMA"]} />
+          <Facet id="domain" fields={['DOMA']} />
         </div>
       </div>
     </Antfly>
-  );
-};
+  )
+}
 
 export const RAGMode = () => {
   return (
@@ -146,12 +150,12 @@ export const RAGMode = () => {
         id="rag-results"
         searchBoxId="rag"
         summarizer={mockGenerator}
-        fields={["TICO", "AUTR"]}
+        fields={['TICO', 'AUTR']}
         showHits={true}
       />
     </Antfly>
-  );
-};
+  )
+}
 
 export const AnswerMode = () => {
   return (
@@ -172,5 +176,5 @@ export const AnswerMode = () => {
         showHits={true}
       />
     </Antfly>
-  );
-};
+  )
+}

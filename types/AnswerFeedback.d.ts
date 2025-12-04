@@ -1,5 +1,5 @@
+import { AnswerAgentResult, RAGResult } from '@antfly/sdk';
 import { ReactNode } from 'react';
-import { RAGResult, AnswerAgentResult } from '@antfly/sdk';
 export interface FeedbackResult {
     rating: number;
     scale: number;
@@ -50,7 +50,7 @@ export interface AnswerFeedbackProps {
         query: string;
         context?: {
             classification?: {
-                route_type: "question" | "search";
+                route_type: 'question' | 'search';
                 confidence: number;
             };
             reasoning?: string;

@@ -1,32 +1,32 @@
+import { Streamdown } from 'streamdown'
 import {
   Antfly,
+  Autosuggest,
+  AutosuggestFacets,
+  AutosuggestResults,
+  type GeneratorConfig,
+  getCitedDocumentIds,
   QueryBox,
   RAGResults,
   Results,
-  GeneratorConfig,
-  Autosuggest,
-  AutosuggestResults,
-  AutosuggestFacets,
-  replaceCitations,
   renderAsMarkdownLinks,
-  getCitedDocumentIds,
-} from "../src";
-import { url, tableName } from "./utils";
-import { Streamdown } from "streamdown";
+  replaceCitations,
+} from '../src'
+import { tableName, url } from './utils'
 
 export default {
-  title: "RAG (Retrieval-Augmented Generation)",
+  title: 'RAG (Retrieval-Augmented Generation)',
   component: RAGResults,
-};
+}
 
 // Mock summarizer configuration - replace with your actual config
 const mockSummarizer: GeneratorConfig = {
-  provider: "ollama",
-  model: "gemma3:4b",
+  provider: 'ollama',
+  model: 'gemma3:4b',
   // provider: "openai",
   // model: "gpt-4",
   // api_key: import.meta.env.VITE_OPENAI_API_KEY || "your-api-key-here",
-};
+}
 
 export const BasicRAG = () => {
   return (
@@ -42,12 +42,12 @@ export const BasicRAG = () => {
 
       <QueryBox id="question" placeholder="Ask a question..." />
 
-      <div style={{ marginTop: "20px" }}>
+      <div style={{ marginTop: '20px' }}>
         <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} />
       </div>
     </Antfly>
-  );
-};
+  )
+}
 
 export const WithSystemPrompt = () => {
   return (
@@ -64,7 +64,7 @@ export const WithSystemPrompt = () => {
 
       <QueryBox id="question" placeholder="Ask about literature..." />
 
-      <div style={{ marginTop: "20px" }}>
+      <div style={{ marginTop: '20px' }}>
         <RAGResults
           id="rag-answer"
           searchBoxId="question"
@@ -73,8 +73,8 @@ export const WithSystemPrompt = () => {
         />
       </div>
     </Antfly>
-  );
-};
+  )
+}
 
 export const WithCustomRendering = () => {
   return (
@@ -100,7 +100,7 @@ export const WithCustomRendering = () => {
 
       <QueryBox id="question" placeholder="Ask a question..." />
 
-      <div style={{ marginTop: "20px" }}>
+      <div style={{ marginTop: '20px' }}>
         <RAGResults
           id="rag-answer"
           searchBoxId="question"
@@ -108,17 +108,17 @@ export const WithCustomRendering = () => {
           renderSummary={(summary, isStreaming) => (
             <div
               style={{
-                padding: "20px",
-                background: "#f5f5f5",
-                borderRadius: "8px",
-                border: "2px solid #e0e0e0",
+                padding: '20px',
+                background: '#f5f5f5',
+                borderRadius: '8px',
+                border: '2px solid #e0e0e0',
               }}
             >
               <h3 style={{ marginTop: 0 }}>
-                AI Answer {isStreaming && <span style={{ color: "#4a90e2" }}>⏳</span>}
+                AI Answer {isStreaming && <span style={{ color: '#4a90e2' }}>⏳</span>}
               </h3>
-              <p style={{ lineHeight: 1.6 }}>{summary || "No answer yet..."}</p>
-              <div style={{ marginTop: "15px", fontSize: "14px", color: "#666" }}>
+              <p style={{ lineHeight: 1.6 }}>{summary || 'No answer yet...'}</p>
+              <div style={{ marginTop: '15px', fontSize: '14px', color: '#666' }}>
                 <em>Citations are inline in the text above (look for [doc_id ...])</em>
               </div>
             </div>
@@ -126,8 +126,8 @@ export const WithCustomRendering = () => {
         />
       </div>
     </Antfly>
-  );
-};
+  )
+}
 
 export const RAGWithSearchResults = () => {
   return (
@@ -151,18 +151,14 @@ export const RAGWithSearchResults = () => {
   items={(data) => data.map(hit => ...)}
 />`}</pre>
 
-      <QueryBox
-        id="question"
-        placeholder="Ask a question..."
-        buttonLabel="Search & Summarize"
-      />
+      <QueryBox id="question" placeholder="Ask a question..." buttonLabel="Search & Summarize" />
 
-      <div style={{ marginTop: "20px" }}>
+      <div style={{ marginTop: '20px' }}>
         <h2>AI Summary</h2>
         <RAGResults id="rag-answer" searchBoxId="question" summarizer={mockSummarizer} />
       </div>
 
-      <div style={{ marginTop: "40px" }}>
+      <div style={{ marginTop: '40px' }}>
         <h2>Search Results</h2>
         <Results
           id="search-results"
@@ -171,14 +167,14 @@ export const RAGWithSearchResults = () => {
               <div
                 key={_id}
                 style={{
-                  padding: "15px",
-                  borderBottom: "1px solid #e0e0e0",
-                  marginBottom: "10px",
+                  padding: '15px',
+                  borderBottom: '1px solid #e0e0e0',
+                  marginBottom: '10px',
                 }}
               >
-                <h4 style={{ margin: "0 0 8px 0" }}>{String(s?.TICO)}</h4>
-                <p style={{ margin: "0 0 5px 0", color: "#666" }}>{String(s?.AUTR)}</p>
-                <small style={{ color: "#999" }}>Score: {_score?.toFixed(2)}</small>
+                <h4 style={{ margin: '0 0 8px 0' }}>{String(s?.TICO)}</h4>
+                <p style={{ margin: '0 0 5px 0', color: '#666' }}>{String(s?.AUTR)}</p>
+                <small style={{ color: '#999' }}>Score: {_score?.toFixed(2)}</small>
               </div>
             ))
           }
@@ -186,19 +182,19 @@ export const RAGWithSearchResults = () => {
         />
       </div>
     </Antfly>
-  );
-};
+  )
+}
 
 export const StyledRAGExample = () => {
   // Helper function to parse summary text and convert [doc_id X] to clickable links
   return (
     <Antfly url={url} table={tableName}>
       <h1>Styled RAG Interface</h1>
-      <p style={{ marginBottom: "20px", fontSize: "16px", lineHeight: "1.6" }}>
-        This example demonstrates a fully-styled RAG interface using{" "}
+      <p style={{ marginBottom: '20px', fontSize: '16px', lineHeight: '1.6' }}>
+        This example demonstrates a fully-styled RAG interface using{' '}
         <a href="https://streamdown.ai/" target="_blank" rel="noopener noreferrer">
           Streamdown.ai
-        </a>{" "}
+        </a>{' '}
         for rich markdown rendering (code highlighting, math, GFM) with interactive citations that
         scroll to source documents.
       </p>
@@ -504,14 +500,14 @@ export const StyledRAGExample = () => {
         >
           <Autosuggest
             fields={[
-              "TICO",
-              "AUTR",
-              "TICO__2gram",
-              "TICO__keyword",
-              "AUTR__2gram",
-              "AUTR__keyword",
+              'TICO',
+              'AUTR',
+              'TICO__2gram',
+              'TICO__keyword',
+              'AUTR__2gram',
+              'AUTR__keyword',
             ]}
-            returnFields={["TICO", "AUTR", "DESC"]}
+            returnFields={['TICO', 'AUTR', 'DESC']}
             minChars={2}
             layout="horizontal"
           >
@@ -525,8 +521,8 @@ export const StyledRAGExample = () => {
               limit={5}
               renderItem={(hit) => (
                 <div className="rag-autosuggest-item">
-                  <strong>{String(hit._source?.TICO || "")}</strong>
-                  <small>{String(hit._source?.AUTR || "")}</small>
+                  <strong>{String(hit._source?.TICO || '')}</strong>
+                  <small>{String(hit._source?.AUTR || '')}</small>
                 </div>
               )}
             />
@@ -545,27 +541,27 @@ export const StyledRAGExample = () => {
               ? replaceCitations(summary, {
                   renderCitation: renderAsMarkdownLinks,
                 })
-              : "";
+              : ''
 
             // Handle click events on citation links to scroll instead of navigate
             const handleCitationClick = (e: React.MouseEvent<HTMLDivElement>) => {
-              const target = e.target as HTMLElement;
-              if (target.tagName === "A" && target.getAttribute("href")?.startsWith("#hit-")) {
-                e.preventDefault();
-                const id = target.getAttribute("href")?.substring(1);
+              const target = e.target as HTMLElement
+              if (target.tagName === 'A' && target.getAttribute('href')?.startsWith('#hit-')) {
+                e.preventDefault()
+                const id = target.getAttribute('href')?.substring(1)
                 if (id) {
-                  const element = document.getElementById(id);
+                  const element = document.getElementById(id)
                   if (element) {
-                    element.scrollIntoView({ behavior: "smooth", block: "start" });
-                    element.style.transition = "background 0.3s";
-                    element.style.background = "#f0f8ff";
+                    element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                    element.style.transition = 'background 0.3s'
+                    element.style.background = '#f0f8ff'
                     setTimeout(() => {
-                      element.style.background = "";
-                    }, 2000);
+                      element.style.background = ''
+                    }, 2000)
                   }
                 }
               }
-            };
+            }
 
             return (
               <div>
@@ -577,19 +573,29 @@ export const StyledRAGExample = () => {
                   )}
                   {summary && (
                     <div>
-                      <div className="rag-summary-text" onClick={handleCitationClick}>
+                      {/* biome-ignore lint/a11y/useSemanticElements: Container for rich markdown content with citation links */}
+                      <div
+                        role="button"
+                        tabIndex={0}
+                        className="rag-summary-text"
+                        onClick={handleCitationClick}
+                        onKeyDown={(e) =>
+                          e.key === 'Enter' &&
+                          handleCitationClick(e as unknown as React.MouseEvent<HTMLDivElement>)
+                        }
+                      >
                         <Streamdown isAnimating={isStreaming}>{summaryWithLinks}</Streamdown>
                       </div>
                       <div
                         style={{
-                          marginTop: "12px",
-                          fontSize: "14px",
-                          color: "#666",
-                          fontStyle: "italic",
+                          marginTop: '12px',
+                          fontSize: '14px',
+                          color: '#666',
+                          fontStyle: 'italic',
                         }}
                       >
                         💡 Tip: Click citation links (e.g., [19], [16]) to jump to source documents
-                        below (powered by{" "}
+                        below (powered by{' '}
                         <a href="https://streamdown.ai/" target="_blank" rel="noopener">
                           Streamdown.ai
                         </a>
@@ -599,49 +605,51 @@ export const StyledRAGExample = () => {
                   )}
                 </div>
 
-                {hits && hits.length > 0 && (() => {
-                  // Filter hits to only show cited documents
-                  const citedIds = getCitedDocumentIds(summary);
-                  const citedHits = hits.filter(hit => citedIds.includes(hit._id));
+                {hits &&
+                  hits.length > 0 &&
+                  (() => {
+                    // Filter hits to only show cited documents
+                    const citedIds = getCitedDocumentIds(summary)
+                    const citedHits = hits.filter((hit) => citedIds.includes(hit._id))
 
-                  return (
-                    <div className="rag-hits-section">
-                      <h2>🔍 Cited Documents ({citedHits.length})</h2>
-                      {citedHits.map((hit) => (
-                      <div key={hit._id} id={`hit-${hit._id}`} className="rag-hit">
-                        <div className="rag-hit-header">
-                          <h3 className="rag-hit-title">
-                            {String(hit._source?.TICO) || `Document ${hit._id}`}
-                          </h3>
-                          <span className="rag-hit-score">Score: {hit._score.toFixed(3)}</span>
-                        </div>
-                        <div className="rag-hit-content">
-                          {hit._source?.AUTR ? (
-                            <p>
-                              <strong>Author:</strong> {String(hit._source?.AUTR)}
-                            </p>
-                          ) : null}
-                          {hit._source?.DESC ? <p>{String(hit._source?.DESC)}</p> : null}
-                        </div>
+                    return (
+                      <div className="rag-hits-section">
+                        <h2>🔍 Cited Documents ({citedHits.length})</h2>
+                        {citedHits.map((hit) => (
+                          <div key={hit._id} id={`hit-${hit._id}`} className="rag-hit">
+                            <div className="rag-hit-header">
+                              <h3 className="rag-hit-title">
+                                {String(hit._source?.TICO) || `Document ${hit._id}`}
+                              </h3>
+                              <span className="rag-hit-score">Score: {hit._score.toFixed(3)}</span>
+                            </div>
+                            <div className="rag-hit-content">
+                              {hit._source?.AUTR ? (
+                                <p>
+                                  <strong>Author:</strong> {String(hit._source?.AUTR)}
+                                </p>
+                              ) : null}
+                              {hit._source?.DESC ? <p>{String(hit._source?.DESC)}</p> : null}
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                      ))}
-                    </div>
-                  );
-                })()}
+                    )
+                  })()}
               </div>
-            );
+            )
           }}
         />
       </div>
     </Antfly>
-  );
-};
+  )
+}
 
 export const ComposableAutosuggestWithFacets = () => {
   return (
     <Antfly url={url} table={tableName}>
       <h1>Composable Autosuggest with Facets</h1>
-      <p style={{ marginBottom: "20px", fontSize: "16px", lineHeight: "1.6" }}>
+      <p style={{ marginBottom: '20px', fontSize: '16px', lineHeight: '1.6' }}>
         This example demonstrates the new composable Autosuggest API that allows you to mix search
         results with faceted navigation. Users can see both matching documents and popular filter
         options as they type.
@@ -816,13 +824,13 @@ export const ComposableAutosuggestWithFacets = () => {
             placeholder="Start typing to see suggestions and facets..."
             buttonLabel="Search"
           >
-            <Autosuggest fields={["TICO__keyword", "AUTR__keyword"]} minChars={2}>
+            <Autosuggest fields={['TICO__keyword', 'AUTR__keyword']} minChars={2}>
               <AutosuggestResults
                 limit={5}
                 renderItem={(hit) => (
                   <div className="demo-result-item">
-                    <strong>{String(hit._source?.TICO || "")}</strong>
-                    <small>by {String(hit._source?.AUTR || "Unknown")}</small>
+                    <strong>{String(hit._source?.TICO || '')}</strong>
+                    <small>by {String(hit._source?.AUTR || 'Unknown')}</small>
                   </div>
                 )}
               />
@@ -836,11 +844,11 @@ export const ComposableAutosuggestWithFacets = () => {
           </QueryBox>
         </div>
 
-        <div style={{ marginTop: "40px" }}>
+        <div style={{ marginTop: '40px' }}>
           <h2>Key Features</h2>
-          <ul style={{ lineHeight: "1.8", fontSize: "16px" }}>
+          <ul style={{ lineHeight: '1.8', fontSize: '16px' }}>
             <li>
-              <strong>Composable API:</strong> Mix and match <code>AutosuggestResults</code> and{" "}
+              <strong>Composable API:</strong> Mix and match <code>AutosuggestResults</code> and{' '}
               <code>AutosuggestFacets</code> components
             </li>
             <li>
@@ -870,7 +878,7 @@ export const ComposableAutosuggestWithFacets = () => {
           </ul>
         </div>
 
-        <div style={{ marginTop: "40px" }}>
+        <div style={{ marginTop: '40px' }}>
           <h2>More Examples</h2>
           <h3>Multiple Facets</h3>
           <div className="code-example">
@@ -892,24 +900,24 @@ export const ComposableAutosuggestWithFacets = () => {
         </div>
       </div>
     </Antfly>
-  );
-};
+  )
+}
 
 export const MultipleLanguageModels = () => {
   const gpt4Summarizer: GeneratorConfig = {
-    provider: "openai",
-    model: "gpt-4",
+    provider: 'openai',
+    model: 'gpt-4',
     api_key:
-      (import.meta as { env?: Record<string, string> }).env?.VITE_OPENAI_API_KEY || "your-api-key",
-  };
+      (import.meta as { env?: Record<string, string> }).env?.VITE_OPENAI_API_KEY || 'your-api-key',
+  }
 
   const claudeSummarizer: GeneratorConfig = {
-    provider: "openai" as "openai" | "ollama", // anthropic not yet supported in type
-    model: "claude-3-sonnet-20240229",
+    provider: 'openai' as 'openai' | 'ollama', // anthropic not yet supported in type
+    model: 'claude-3-sonnet-20240229',
     api_key:
       (import.meta as { env?: Record<string, string> }).env?.VITE_ANTHROPIC_API_KEY ||
-      "your-api-key",
-  };
+      'your-api-key',
+  }
 
   return (
     <Antfly url={url} table={tableName}>
@@ -919,7 +927,7 @@ export const MultipleLanguageModels = () => {
       <QueryBox id="question" placeholder="Ask a question..." />
 
       <div
-        style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginTop: "20px" }}
+        style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginTop: '20px' }}
       >
         <div>
           <h3>GPT-4 Response</h3>
@@ -931,5 +939,5 @@ export const MultipleLanguageModels = () => {
         </div>
       </div>
     </Antfly>
-  );
-};
+  )
+}

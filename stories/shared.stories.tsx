@@ -1,21 +1,15 @@
-import React from "react";
-import { Antfly, QueryBox, Results, CustomWidget } from "../src";
-import type { SharedState } from "../src";
-import { url, tableName } from "./utils";
+import type { SharedState } from '../src'
+import { Antfly, CustomWidget, QueryBox, Results } from '../src'
+import { tableName, url } from './utils'
 
 export default {
-  title: "CustomWidget",
+  title: 'CustomWidget',
   component: CustomWidget,
-};
+}
 
 function MyComponent({ ctx }: { ctx?: SharedState }) {
-  let query;
-  if (ctx?.widgets.get("main")) {
-    query = ctx?.widgets.get("main")?.query;
-  } else {
-    query = "";
-  }
-  return <div>Main query : {JSON.stringify(query)}</div>;
+  const query = ctx?.widgets.get('main')?.query ?? ''
+  return <div>Main query : {JSON.stringify(query)}</div>
 }
 
 export const Active = () => {
@@ -31,5 +25,5 @@ export const Active = () => {
         pagination={() => <></>}
       />
     </Antfly>
-  );
-};
+  )
+}

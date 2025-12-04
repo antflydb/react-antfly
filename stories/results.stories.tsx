@@ -1,11 +1,11 @@
-import React, { useState, useMemo } from "react";
-import { Antfly, Results } from "../src";
-import { url, tableName } from "./utils";
+import { useMemo, useState } from 'react'
+import { Antfly, Results } from '../src'
+import { tableName, url } from './utils'
 
 export default {
-  title: "Results",
+  title: 'Results',
   component: Results,
-};
+}
 
 export const Vanilla = () => {
   return (
@@ -21,8 +21,8 @@ export const Vanilla = () => {
         }
       />
     </Antfly>
-  );
-};
+  )
+}
 
 export const WithCustomPagination = () => {
   return (
@@ -37,14 +37,14 @@ export const WithCustomPagination = () => {
           ))
         }
         pagination={(total, itemsPerPage, page) => (
-          <div style={{ color: "green" }}>
+          <div style={{ color: 'green' }}>
             Total : {total} - ItemsPerPage : {itemsPerPage} - Page: {page} CUSTOM!
           </div>
         )}
       />
     </Antfly>
-  );
-};
+  )
+}
 
 export const WithCustomStats = () => {
   return (
@@ -58,27 +58,27 @@ export const WithCustomStats = () => {
             </div>
           ))
         }
-        stats={(total) => <div style={{ color: "green" }}>{total} results CUSTOM!</div>}
+        stats={(total) => <div style={{ color: 'green' }}>{total} results CUSTOM!</div>}
       />
     </Antfly>
-  );
-};
+  )
+}
 
 export const SortableDmisDesc = () => {
-  const [sortKey, setSortKey] = useState("DMIS");
-  const [sortOrder, setSortOrder] = useState("desc");
+  const [sortKey, setSortKey] = useState('DMIS')
+  const [sortOrder, setSortOrder] = useState('desc')
 
   const sortQuery = useMemo(() => {
-    return { [sortKey]: sortOrder == "desc" };
-  }, [sortKey, sortOrder]);
+    return { [sortKey]: sortOrder === 'desc' }
+  }, [sortKey, sortOrder])
 
   return (
     <Antfly url={url} table={tableName}>
-      Sort by:{" "}
+      Sort by:{' '}
       <select onChange={(e) => setSortKey(e.target.value)} value={sortKey}>
-        {["AUTR", "DMIS", "DMAJ", "TICO"].map((e) => (
+        {['AUTR', 'DMIS', 'DMAJ', 'TICO'].map((e) => (
           <option key={e} value={e}>
-            {e.replace("__keyword", "")}
+            {e.replace('__keyword', '')}
           </option>
         ))}
       </select>
@@ -98,5 +98,5 @@ export const SortableDmisDesc = () => {
         }
       />
     </Antfly>
-  );
-};
+  )
+}

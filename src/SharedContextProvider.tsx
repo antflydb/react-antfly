@@ -1,10 +1,10 @@
-import React, { useReducer, ReactNode } from "react";
-import { SharedContext, SharedState, SharedAction } from "./SharedContext";
+import { type ReactNode, useReducer } from 'react'
+import { type SharedAction, SharedContext, type SharedState } from './SharedContext'
 
 export interface SharedContextProviderProps {
-  reducer: (state: SharedState, action: SharedAction) => SharedState;
-  initialState: SharedState;
-  children: ReactNode;
+  reducer: (state: SharedState, action: SharedAction) => SharedState
+  initialState: SharedState
+  children: ReactNode
 }
 
 export const SharedContextProvider = ({
@@ -16,6 +16,5 @@ export const SharedContextProvider = ({
     <SharedContext.Provider value={useReducer(reducer, initialState)}>
       {children}
     </SharedContext.Provider>
-  );
-};
-
+  )
+}

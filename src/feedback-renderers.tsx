@@ -1,19 +1,14 @@
-import React from "react";
-
 /**
  * Default renderer for thumbs up/down feedback (scale=1)
  * @param currentRating - The currently selected rating (0 or 1), or null if not rated
  * @param onRate - Callback to set the rating
  */
-export function renderThumbsUpDown(
-  currentRating: number | null,
-  onRate: (rating: number) => void,
-) {
+export function renderThumbsUpDown(currentRating: number | null, onRate: (rating: number) => void) {
   return (
     <div className="react-af-feedback-thumbs">
       <button
         type="button"
-        className={`react-af-feedback-thumb-down ${currentRating === 0 ? "active" : ""}`}
+        className={`react-af-feedback-thumb-down ${currentRating === 0 ? 'active' : ''}`}
         onClick={() => onRate(0)}
         aria-label="Thumbs down"
       >
@@ -21,14 +16,14 @@ export function renderThumbsUpDown(
       </button>
       <button
         type="button"
-        className={`react-af-feedback-thumb-up ${currentRating === 1 ? "active" : ""}`}
+        className={`react-af-feedback-thumb-up ${currentRating === 1 ? 'active' : ''}`}
         onClick={() => onRate(1)}
         aria-label="Thumbs up"
       >
         👍
       </button>
     </div>
-  );
+  )
 }
 
 /**
@@ -37,7 +32,7 @@ export function renderThumbsUpDown(
  * @param onRate - Callback to set the rating
  */
 export function renderStars(currentRating: number | null, onRate: (rating: number) => void) {
-  const stars = [0, 1, 2, 3, 4];
+  const stars = [0, 1, 2, 3, 4]
 
   return (
     <div className="react-af-feedback-stars">
@@ -45,15 +40,15 @@ export function renderStars(currentRating: number | null, onRate: (rating: numbe
         <button
           key={starValue}
           type="button"
-          className={`react-af-feedback-star ${currentRating !== null && starValue <= currentRating ? "active" : ""}`}
+          className={`react-af-feedback-star ${currentRating !== null && starValue <= currentRating ? 'active' : ''}`}
           onClick={() => onRate(starValue)}
-          aria-label={`${starValue + 1} star${starValue === 0 ? "" : "s"}`}
+          aria-label={`${starValue + 1} star${starValue === 0 ? '' : 's'}`}
         >
-          {currentRating !== null && starValue <= currentRating ? "⭐" : "☆"}
+          {currentRating !== null && starValue <= currentRating ? '⭐' : '☆'}
         </button>
       ))}
     </div>
-  );
+  )
 }
 
 /**
@@ -67,7 +62,7 @@ export function renderNumeric(
   onRate: (rating: number) => void,
   scale: number,
 ) {
-  const values = Array.from({ length: scale + 1 }, (_, i) => i);
+  const values = Array.from({ length: scale + 1 }, (_, i) => i)
 
   return (
     <div className="react-af-feedback-numeric">
@@ -75,7 +70,7 @@ export function renderNumeric(
         <button
           key={value}
           type="button"
-          className={`react-af-feedback-number ${currentRating === value ? "active" : ""}`}
+          className={`react-af-feedback-number ${currentRating === value ? 'active' : ''}`}
           onClick={() => onRate(value)}
           aria-label={`Rating ${value}`}
         >
@@ -83,5 +78,5 @@ export function renderNumeric(
         </button>
       ))}
     </div>
-  );
+  )
 }

@@ -1,25 +1,25 @@
-import React, { useState, useEffect, ReactNode } from "react";
-import { disjunctsFrom, toTermQueries } from "./utils";
-import { useSharedContext } from "./SharedContext";
-import { TermFacetResult } from "@antfly/sdk";
+import type { TermFacetResult } from '@antfly/sdk'
+import { type ReactNode, useEffect, useState } from 'react'
+import { useSharedContext } from './SharedContext'
+import { disjunctsFrom, toTermQueries } from './utils'
 
 export interface FacetProps {
-  fields: string[];
-  id: string;
-  initialValue?: string[];
-  seeMore?: string;
-  placeholder?: string;
-  showFilter?: boolean;
-  filterValueModifier?: (value: string) => string;
-  itemsPerBlock?: number;
-  table?: string; // Optional table override (Phase 1: single table only)
+  fields: string[]
+  id: string
+  initialValue?: string[]
+  seeMore?: string
+  placeholder?: string
+  showFilter?: boolean
+  filterValueModifier?: (value: string) => string
+  itemsPerBlock?: number
+  table?: string // Optional table override (Phase 1: single table only)
   items?: (
     data: TermFacetResult[],
     options: {
-      handleChange: (item: TermFacetResult, checked: boolean) => void;
-      isChecked: (item: TermFacetResult) => boolean;
+      handleChange: (item: TermFacetResult, checked: boolean) => void
+      isChecked: (item: TermFacetResult) => boolean
     },
-  ) => ReactNode;
+  ) => ReactNode
 }
 
 export default function Facet({
@@ -34,26 +34,27 @@ export default function Facet({
   table,
   items,
 }: FacetProps) {
-  const [{ widgets }, dispatch] = useSharedContext();
+  const [{ widgets }, dispatch] = useSharedContext()
   // Current filter (search inside facet value).
-  const [filterValue, setFilterValue] = useState("");
+  const [filterValue, setFilterValue] = useState('')
   // Number of items displayed in facet.
-  const [size, setSize] = useState(itemsPerBlock || 5);
+  const [size, setSize] = useState(itemsPerBlock || 5)
   // The actual selected items in facet.
-  const [value, setValue] = useState<string[]>(initialValue || []);
+  const [value, setValue] = useState<string[]>(initialValue || [])
   // Data from internal queries (Antfly queries are performed via Listener)
-  const widget = widgets.get(id);
-  const { result } = widget || {};
+  const widget = widgets.get(id)
+  const { result } = widget || {}
   // Facet component always expects a single array, not array of arrays
-  const rawFacetData = result?.facetData;
-  const data: TermFacetResult[] = (rawFacetData && Array.isArray(rawFacetData) && !Array.isArray(rawFacetData[0]))
-    ? rawFacetData as TermFacetResult[]
-    : [];
+  const rawFacetData = result?.facetData
+  const data: TermFacetResult[] =
+    rawFacetData && Array.isArray(rawFacetData) && !Array.isArray(rawFacetData[0])
+      ? (rawFacetData as TermFacetResult[])
+      : []
 
   // Update widgets properties on state change.
   useEffect(() => {
     dispatch({
-      type: "setWidget",
+      type: 'setWidget',
       key: id,
       needsQuery: true,
       needsConfiguration: true,
@@ -63,8 +64,8 @@ export default function Facet({
       value,
       table: table,
       configuration: { size, filterValue, fields, filterValueModifier },
-    });
-  }, [dispatch, id, size, filterValue, value, fields, filterValueModifier, table]);
+    })
+  }, [dispatch, id, size, filterValue, value, fields, filterValueModifier, table])
 
   // If widget value was updated elsewhere (ex: from active filters deletion)
   // We have to update and dispatch the component.
@@ -80,28 +81,28 @@ export default function Facet({
   // The new approach only syncs the local state when the widget's actual value
   // changes from external sources (like active filter removal), which is
   // what was intended.
-  const widgetValue = widgets.get(id)?.value;
+  const widgetValue = widgets.get(id)?.value
   useEffect(() => {
     if (widgetValue && Array.isArray(widgetValue) && widgetValue !== value) {
-      setValue(widgetValue);
+      setValue(widgetValue)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [widgetValue, id]); // Remove value from deps to prevent loops
+  }, [widgetValue, value]) // Remove value from deps to prevent loops
 
   // Destroy widget from context (remove from the list to unapply its effects)
-  useEffect(() => () => dispatch({ type: "deleteWidget", key: id }), [dispatch, id]);
+  useEffect(() => () => dispatch({ type: 'deleteWidget', key: id }), [dispatch, id])
 
   // On checkbox status change, add or remove current agg to selected
   function handleChange(item: TermFacetResult, checked: boolean) {
     const newValue = checked
       ? [...new Set([...value, item.term])]
-      : value.filter((f) => f !== item.term);
-    setValue(newValue);
+      : value.filter((f) => f !== item.term)
+    setValue(newValue)
   }
 
   // Is current item checked?
   function isChecked(item: TermFacetResult): boolean {
-    return value.includes(item.term);
+    return value.includes(item.term)
   }
 
   return (
@@ -109,10 +110,10 @@ export default function Facet({
       {showFilter ? (
         <input
           value={filterValue}
-          placeholder={placeholder || "filter…"}
+          placeholder={placeholder || 'filter…'}
           type="text"
           onChange={(e) => {
-            setFilterValue(e.target.value);
+            setFilterValue(e.target.value)
           }}
         />
       ) : null}
@@ -129,10 +130,10 @@ export default function Facet({
             </label>
           ))}
       {data.length === size ? (
-        <button onClick={() => setSize(size + (itemsPerBlock || 5))}>
-          {seeMore || "see more"}
+        <button type="button" onClick={() => setSize(size + (itemsPerBlock || 5))}>
+          {seeMore || 'see more'}
         </button>
       ) : null}
     </div>
-  );
+  )
 }

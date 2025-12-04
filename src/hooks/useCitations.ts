@@ -1,13 +1,13 @@
-import { useCallback } from 'react';
+import { useCallback } from 'react'
 import {
-  parseCitations,
-  replaceCitations,
-  renderAsMarkdownLinks,
-  renderAsSequentialLinks,
-  getCitedResourceIds,
   type Citation,
   type CitationRenderOptions,
-} from '../citations';
+  getCitedResourceIds,
+  parseCitations,
+  renderAsMarkdownLinks,
+  renderAsSequentialLinks,
+  replaceCitations,
+} from '../citations'
 
 /**
  * Hook for working with citations in RAG/Answer Agent responses.
@@ -43,8 +43,8 @@ export function useCitations() {
    * @returns Array of parsed citation objects
    */
   const parse = useCallback((text: string): Citation[] => {
-    return parseCitations(text);
-  }, []);
+    return parseCitations(text)
+  }, [])
 
   /**
    * Replace all citations in text using a custom render function.
@@ -53,12 +53,9 @@ export function useCitations() {
    * @param options - Options controlling how citations are rendered
    * @returns The text with citations replaced by rendered output
    */
-  const highlightCitations = useCallback(
-    (text: string, options: CitationRenderOptions): string => {
-      return replaceCitations(text, options);
-    },
-    []
-  );
+  const highlightCitations = useCallback((text: string, options: CitationRenderOptions): string => {
+    return replaceCitations(text, options)
+  }, [])
 
   /**
    * Extract all cited resource IDs from text in order of first appearance.
@@ -67,8 +64,8 @@ export function useCitations() {
    * @returns Array of unique resource IDs
    */
   const extractCitationUrls = useCallback((text: string): string[] => {
-    return getCitedResourceIds(text);
-  }, []);
+    return getCitedResourceIds(text)
+  }, [])
 
   /**
    * Render citations as markdown links using the actual resource IDs.
@@ -77,8 +74,8 @@ export function useCitations() {
    * @returns Comma-separated markdown links
    */
   const renderAsMarkdown = useCallback((ids: string[]): string => {
-    return renderAsMarkdownLinks(ids);
-  }, []);
+    return renderAsMarkdownLinks(ids)
+  }, [])
 
   /**
    * Render citations as markdown links with sequential numbering.
@@ -87,12 +84,9 @@ export function useCitations() {
    * @param allCitationIds - All unique citation IDs in order of first appearance
    * @returns Comma-separated markdown links with sequential numbers
    */
-  const renderAsSequential = useCallback(
-    (ids: string[], allCitationIds: string[]): string => {
-      return renderAsSequentialLinks(ids, allCitationIds);
-    },
-    []
-  );
+  const renderAsSequential = useCallback((ids: string[], allCitationIds: string[]): string => {
+    return renderAsSequentialLinks(ids, allCitationIds)
+  }, [])
 
   return {
     parseCitations: parse,
@@ -100,5 +94,5 @@ export function useCitations() {
     extractCitationUrls,
     renderAsMarkdown,
     renderAsSequential,
-  };
+  }
 }

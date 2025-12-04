@@ -1,64 +1,57 @@
-import React, {
-  useState,
-  useEffect,
-  useCallback,
-  useRef,
-  ReactNode,
-  useMemo,
-} from "react";
-import { useSharedContext } from "./SharedContext";
-import { streamAnswer, resolveTable } from "./utils";
-import {
-  GeneratorConfig,
+import type {
   AnswerAgentRequest,
-  QueryHit,
   AnswerAgentResult,
-  ClassificationTransformationResult,
   AnswerConfidence,
-} from "@antfly/sdk";
-import { AnswerResultsContext, AnswerResultsContextValue } from "./AnswerResultsContext";
+  ClassificationTransformationResult,
+  GeneratorConfig,
+  QueryHit,
+} from '@antfly/sdk'
+import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { AnswerResultsContext, type AnswerResultsContextValue } from './AnswerResultsContext'
+import { useSharedContext } from './SharedContext'
+import { resolveTable, streamAnswer } from './utils'
 
 export interface AnswerResultsProps {
-  id: string;
-  searchBoxId: string; // Links to the QueryBox that provides the search value
-  generator: GeneratorConfig;
-  systemPrompt?: string;
-  table?: string; // Optional table override - auto-inherits from QueryBox if not specified
-  filterQuery?: Record<string, unknown>; // Filter query to constrain search results
-  exclusionQuery?: Record<string, unknown>; // Exclusion query to exclude matches
-  fields?: string[];
-  semanticIndexes?: string[];
+  id: string
+  searchBoxId: string // Links to the QueryBox that provides the search value
+  generator: GeneratorConfig
+  systemPrompt?: string
+  table?: string // Optional table override - auto-inherits from QueryBox if not specified
+  filterQuery?: Record<string, unknown> // Filter query to constrain search results
+  exclusionQuery?: Record<string, unknown> // Exclusion query to exclude matches
+  fields?: string[]
+  semanticIndexes?: string[]
 
   // Visibility controls
-  showClassification?: boolean;
-  showReasoning?: boolean;
-  showFollowUpQuestions?: boolean;
-  showConfidence?: boolean;
-  showHits?: boolean;
+  showClassification?: boolean
+  showReasoning?: boolean
+  showFollowUpQuestions?: boolean
+  showConfidence?: boolean
+  showHits?: boolean
 
   // Custom renderers
-  renderLoading?: () => ReactNode;
-  renderEmpty?: () => ReactNode;
-  renderClassification?: (data: ClassificationTransformationResult) => ReactNode;
-  renderReasoning?: (reasoning: string, isStreaming: boolean) => ReactNode;
-  renderAnswer?: (answer: string, isStreaming: boolean, hits?: QueryHit[]) => ReactNode;
-  renderConfidence?: (confidence: AnswerConfidence) => ReactNode;
-  renderFollowUpQuestions?: (questions: string[]) => ReactNode;
-  renderHits?: (hits: QueryHit[]) => ReactNode;
+  renderLoading?: () => ReactNode
+  renderEmpty?: () => ReactNode
+  renderClassification?: (data: ClassificationTransformationResult) => ReactNode
+  renderReasoning?: (reasoning: string, isStreaming: boolean) => ReactNode
+  renderAnswer?: (answer: string, isStreaming: boolean, hits?: QueryHit[]) => ReactNode
+  renderConfidence?: (confidence: AnswerConfidence) => ReactNode
+  renderFollowUpQuestions?: (questions: string[]) => ReactNode
+  renderHits?: (hits: QueryHit[]) => ReactNode
 
   // Callbacks
-  onStreamStart?: () => void;
-  onStreamEnd?: () => void;
-  onError?: (error: string) => void;
+  onStreamStart?: () => void
+  onStreamEnd?: () => void
+  onError?: (error: string) => void
 
-  children?: ReactNode;
+  children?: ReactNode
 }
 
 export default function AnswerResults({
   id,
   searchBoxId,
   generator,
-  systemPrompt,
+  systemPrompt: _systemPrompt,
   table,
   filterQuery,
   exclusionQuery,
@@ -82,54 +75,56 @@ export default function AnswerResults({
   onError: onErrorCallback,
   children,
 }: AnswerResultsProps) {
-  const [{ widgets, url, table: defaultTable, headers }, dispatch] = useSharedContext();
+  const [{ widgets, url, table: defaultTable, headers }, dispatch] = useSharedContext()
 
   // Answer agent state
-  const [classification, setClassification] = useState<ClassificationTransformationResult | null>(null);
-  const [hits, setHits] = useState<QueryHit[]>([]);
-  const [reasoning, setReasoning] = useState("");
-  const [answer, setAnswer] = useState("");
-  const [confidence, setConfidence] = useState<AnswerConfidence | null>(null);
-  const [followUpQuestions, setFollowUpQuestions] = useState<string[]>([]);
-  const [isStreaming, setIsStreaming] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [classification, setClassification] = useState<ClassificationTransformationResult | null>(
+    null,
+  )
+  const [hits, setHits] = useState<QueryHit[]>([])
+  const [reasoning, setReasoning] = useState('')
+  const [answer, setAnswer] = useState('')
+  const [confidence, setConfidence] = useState<AnswerConfidence | null>(null)
+  const [followUpQuestions, setFollowUpQuestions] = useState<string[]>([])
+  const [isStreaming, setIsStreaming] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const abortControllerRef = useRef<AbortController | null>(null);
-  const previousSubmissionRef = useRef<number | undefined>(undefined);
+  const abortControllerRef = useRef<AbortController | null>(null)
+  const previousSubmissionRef = useRef<number | undefined>(undefined)
 
   // Watch for changes in the QueryBox widget
-  const searchBoxWidget = widgets.get(searchBoxId);
-  const currentQuery = searchBoxWidget?.value as string | undefined;
-  const submittedAt = searchBoxWidget?.submittedAt;
+  const searchBoxWidget = widgets.get(searchBoxId)
+  const currentQuery = searchBoxWidget?.value as string | undefined
+  const submittedAt = searchBoxWidget?.submittedAt
 
   // Trigger Answer Agent request when QueryBox is submitted (based on timestamp, not just query value)
   useEffect(() => {
     // Only trigger if we have a query and a submission timestamp
     if (!currentQuery || !submittedAt) {
-      return;
+      return
     }
 
     // Check if this is a new submission (different timestamp from previous)
     if (submittedAt === previousSubmissionRef.current) {
-      return;
+      return
     }
 
     // Validation check - don't proceed if URL is missing
     if (!url) {
-      console.error("AnswerResults: Missing API URL in context");
-      return;
+      console.error('AnswerResults: Missing API URL in context')
+      return
     }
 
     // Cancel any previous stream
     if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
+      abortControllerRef.current.abort()
     }
 
-    previousSubmissionRef.current = submittedAt;
+    previousSubmissionRef.current = submittedAt
 
     // Resolve table: prop > QueryBox widget > default
-    const widgetTable = table || searchBoxWidget?.table;
-    const resolvedTable = resolveTable(widgetTable, defaultTable);
+    const widgetTable = table || searchBoxWidget?.table
+    const resolvedTable = resolveTable(widgetTable, defaultTable)
 
     // Build the Answer Agent request with queries array (similar to RAG format)
     // QueryBox only provides the text value, AnswerResults owns the query configuration
@@ -148,96 +143,96 @@ export default function AnswerResults({
       ],
       generator: generator,
       with_streaming: true,
-    };
+    }
 
     // Start streaming
     const startStream = async () => {
       // Reset state at the start of the async operation
-      setClassification(null);
-      setHits([]);
-      setReasoning("");
-      setAnswer("");
-      setConfidence(null);
-      setFollowUpQuestions([]);
-      setError(null);
-      setIsStreaming(true);
+      setClassification(null)
+      setHits([])
+      setReasoning('')
+      setAnswer('')
+      setConfidence(null)
+      setFollowUpQuestions([])
+      setError(null)
+      setIsStreaming(true)
 
       if (onStreamStart) {
-        onStreamStart();
+        onStreamStart()
       }
 
       try {
         const controller = await streamAnswer(url, answerRequest, headers || {}, {
           onClassification: (data) => {
-            setClassification(data);
+            setClassification(data)
           },
           onReasoning: (chunk) => {
-            setReasoning((prev) => prev + chunk);
+            setReasoning((prev) => prev + chunk)
           },
           onHit: (hit) => {
-            setHits((prev) => [...prev, hit]);
+            setHits((prev) => [...prev, hit])
           },
           onAnswer: (chunk) => {
-            setAnswer((prev) => prev + chunk);
+            setAnswer((prev) => prev + chunk)
           },
           onConfidence: (data) => {
-            setConfidence(data);
+            setConfidence(data)
           },
           onFollowUpQuestion: (question) => {
-            setFollowUpQuestions((prev) => [...prev, question]);
+            setFollowUpQuestions((prev) => [...prev, question])
           },
           onComplete: () => {
-            setIsStreaming(false);
+            setIsStreaming(false)
             if (onStreamEnd) {
-              onStreamEnd();
+              onStreamEnd()
             }
           },
           onError: (err) => {
-            const message = err instanceof Error ? err.message : String(err);
-            setError(message);
-            setIsStreaming(false);
+            const message = err instanceof Error ? err.message : String(err)
+            setError(message)
+            setIsStreaming(false)
             if (onErrorCallback) {
-              onErrorCallback(message);
+              onErrorCallback(message)
             }
           },
           onAnswerAgentResult: (result) => {
             // Non-streaming response
-            setClassification(result.classification_transformation || null);
-            setAnswer(result.answer || "");
-            setFollowUpQuestions(result.followup_questions || []);
-            setHits(result.query_results?.[0]?.hits?.hits || []);
+            setClassification(result.classification_transformation || null)
+            setAnswer(result.answer || '')
+            setFollowUpQuestions(result.followup_questions || [])
+            setHits(result.query_results?.[0]?.hits?.hits || [])
             if (result.answer_confidence !== undefined && result.context_relevance !== undefined) {
               setConfidence({
                 answer_confidence: result.answer_confidence,
                 context_relevance: result.context_relevance,
-              });
+              })
             }
-            setIsStreaming(false);
+            setIsStreaming(false)
             if (onStreamEnd) {
-              onStreamEnd();
+              onStreamEnd()
             }
           },
-        });
+        })
 
-        abortControllerRef.current = controller;
+        abortControllerRef.current = controller
       } catch (err) {
-        const message = err instanceof Error ? err.message : "Unknown error";
-        setError(message);
-        setIsStreaming(false);
+        const message = err instanceof Error ? err.message : 'Unknown error'
+        setError(message)
+        setIsStreaming(false)
         if (onErrorCallback) {
-          onErrorCallback(message);
+          onErrorCallback(message)
         }
       }
-    };
+    }
 
-    startStream();
+    startStream()
 
     // Cleanup on unmount or when submission changes
     return () => {
       if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
+        abortControllerRef.current.abort()
       }
-    };
+    }
   }, [
     submittedAt,
     currentQuery,
@@ -247,22 +242,19 @@ export default function AnswerResults({
     defaultTable,
     headers,
     generator,
-    systemPrompt,
     fields,
     semanticIndexes,
     filterQuery,
     exclusionQuery,
-    showReasoning,
-    showFollowUpQuestions,
     onStreamStart,
     onStreamEnd,
     onErrorCallback,
-  ]);
+  ])
 
   // Register this component as a widget (for consistency with other components)
   useEffect(() => {
     dispatch({
-      type: "setWidget",
+      type: 'setWidget',
       key: id,
       needsQuery: false,
       needsConfiguration: false,
@@ -270,27 +262,29 @@ export default function AnswerResults({
       wantResults: false,
       table: table,
       value: answer,
-    });
-  }, [dispatch, id, table, answer]);
+    })
+  }, [dispatch, id, table, answer])
 
   // Cleanup on unmount
   useEffect(
     () => () => {
-      dispatch({ type: "deleteWidget", key: id });
+      dispatch({ type: 'deleteWidget', key: id })
       if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
+        abortControllerRef.current.abort()
       }
     },
     [dispatch, id],
-  );
+  )
 
   // Default renderers
   const defaultRenderClassification = useCallback(
     (data: ClassificationTransformationResult) => (
       <div className="react-af-answer-classification">
-        <strong>Classification:</strong> {data.route_type} (confidence: {(data.confidence * 100).toFixed(1)}%)
+        <strong>Classification:</strong> {data.route_type} (confidence:{' '}
+        {(data.confidence * 100).toFixed(1)}%)
         <div>
-          <strong>Strategy:</strong> {data.strategy}, <strong>Semantic Mode:</strong> {data.semantic_mode}
+          <strong>Strategy:</strong> {data.strategy}, <strong>Semantic Mode:</strong>{' '}
+          {data.semantic_mode}
         </div>
         <div>
           <strong>Improved Query:</strong> {data.improved_query}
@@ -306,7 +300,7 @@ export default function AnswerResults({
       </div>
     ),
     [],
-  );
+  )
 
   const defaultRenderReasoning = useCallback(
     (reasoningText: string, streaming: boolean) => (
@@ -319,7 +313,7 @@ export default function AnswerResults({
       </div>
     ),
     [],
-  );
+  )
 
   const defaultRenderAnswer = useCallback(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -330,7 +324,7 @@ export default function AnswerResults({
       </div>
     ),
     [],
-  );
+  )
 
   const defaultRenderConfidence = useCallback(
     (confidenceData: AnswerConfidence) => (
@@ -345,21 +339,21 @@ export default function AnswerResults({
       </div>
     ),
     [],
-  );
+  )
 
   const defaultRenderFollowUpQuestions = useCallback(
     (questions: string[]) => (
       <div className="react-af-answer-follow-up">
         <strong>Follow-up Questions:</strong>
         <ul>
-          {questions.map((q, idx) => (
-            <li key={idx}>{q}</li>
+          {questions.map((q) => (
+            <li key={q}>{q}</li>
           ))}
         </ul>
       </div>
     ),
     [],
-  );
+  )
 
   const defaultRenderHits = useCallback(
     (hitList: QueryHit[]) => (
@@ -376,7 +370,7 @@ export default function AnswerResults({
       </details>
     ),
     [],
-  );
+  )
 
   // Build context value for child components (e.g., AnswerFeedback)
   const contextValue = useMemo<AnswerResultsContextValue>(() => {
@@ -389,17 +383,17 @@ export default function AnswerResults({
             {
               hits: {
                 hits,
-                total: { value: hits.length, relation: "eq" },
+                total: { value: hits.length, relation: 'eq' },
               },
               took: 0,
               status: 200,
             },
           ],
         } as unknown as AnswerAgentResult)
-      : null;
+      : null
 
     return {
-      query: currentQuery || "",
+      query: currentQuery || '',
       classification,
       hits,
       reasoning,
@@ -407,57 +401,63 @@ export default function AnswerResults({
       followUpQuestions,
       isStreaming,
       result,
-    };
-  }, [
-    currentQuery,
-    classification,
-    hits,
-    reasoning,
-    answer,
-    followUpQuestions,
-    isStreaming,
-  ]);
+    }
+  }, [currentQuery, classification, hits, reasoning, answer, followUpQuestions, isStreaming])
 
   return (
     <AnswerResultsContext.Provider value={contextValue}>
       <div className="react-af-answer-results">
         {error && (
-          <div className="react-af-answer-error" style={{ color: "red" }}>
+          <div className="react-af-answer-error" style={{ color: 'red' }}>
             Error: {error}
           </div>
         )}
-        {!error && !answer && !reasoning && isStreaming && (
-          renderLoading ? renderLoading() : (
-            <div className="react-af-answer-loading">
-              Loading answer...
-            </div>
-          )
-        )}
-        {!error && !answer && !isStreaming && (
-          renderEmpty ? renderEmpty() : (
+        {!error &&
+          !answer &&
+          !reasoning &&
+          isStreaming &&
+          (renderLoading ? (
+            renderLoading()
+          ) : (
+            <div className="react-af-answer-loading">Loading answer...</div>
+          ))}
+        {!error &&
+          !answer &&
+          !isStreaming &&
+          (renderEmpty ? (
+            renderEmpty()
+          ) : (
             <div className="react-af-answer-empty">
               No results yet. Submit a question to get started.
             </div>
-          )
-        )}
-        {showClassification && classification && (
-          renderClassification ? renderClassification(classification) : defaultRenderClassification(classification)
-        )}
-        {showReasoning && reasoning && (
-          renderReasoning ? renderReasoning(reasoning, isStreaming) : defaultRenderReasoning(reasoning, isStreaming)
-        )}
-        {answer && (renderAnswer ? renderAnswer(answer, isStreaming, hits) : defaultRenderAnswer(answer, isStreaming, hits))}
-        {showConfidence && confidence && !isStreaming && (
-          renderConfidence ? renderConfidence(confidence) : defaultRenderConfidence(confidence)
-        )}
-        {showFollowUpQuestions && followUpQuestions.length > 0 && !isStreaming && (
-          renderFollowUpQuestions
+          ))}
+        {showClassification &&
+          classification &&
+          (renderClassification
+            ? renderClassification(classification)
+            : defaultRenderClassification(classification))}
+        {showReasoning &&
+          reasoning &&
+          (renderReasoning
+            ? renderReasoning(reasoning, isStreaming)
+            : defaultRenderReasoning(reasoning, isStreaming))}
+        {answer &&
+          (renderAnswer
+            ? renderAnswer(answer, isStreaming, hits)
+            : defaultRenderAnswer(answer, isStreaming, hits))}
+        {showConfidence &&
+          confidence &&
+          !isStreaming &&
+          (renderConfidence ? renderConfidence(confidence) : defaultRenderConfidence(confidence))}
+        {showFollowUpQuestions &&
+          followUpQuestions.length > 0 &&
+          !isStreaming &&
+          (renderFollowUpQuestions
             ? renderFollowUpQuestions(followUpQuestions)
-            : defaultRenderFollowUpQuestions(followUpQuestions)
-        )}
+            : defaultRenderFollowUpQuestions(followUpQuestions))}
         {showHits && hits.length > 0 && (renderHits ? renderHits(hits) : defaultRenderHits(hits))}
       </div>
       {children}
     </AnswerResultsContext.Provider>
-  );
+  )
 }

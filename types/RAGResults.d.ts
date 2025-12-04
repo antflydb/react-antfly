@@ -1,11 +1,11 @@
-import { default as React, ReactNode } from 'react';
 import { GeneratorConfig, QueryHit, RAGResult } from '@antfly/sdk';
+import { ReactNode } from 'react';
 export interface RAGResultsContextValue {
     query: string;
     result: RAGResult | null;
     isStreaming: boolean;
 }
-export declare const RAGResultsContext: React.Context<RAGResultsContextValue | null>;
+export declare const RAGResultsContext: import('react').Context<RAGResultsContextValue | null>;
 export declare function useRAGResultsContext(): RAGResultsContextValue;
 export interface RAGResultsProps {
     id: string;

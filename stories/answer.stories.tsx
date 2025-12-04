@@ -1,34 +1,34 @@
-import React from "react";
+import type React from 'react'
+import { Streamdown } from 'streamdown'
 import {
-  Antfly,
-  QueryBox,
-  AnswerResults,
-  GeneratorConfig,
   AnswerFeedback,
+  AnswerResults,
+  Antfly,
+  Autosuggest,
+  AutosuggestFacets,
+  AutosuggestResults,
+  type GeneratorConfig,
+  getCitedDocumentIds,
+  QueryBox,
+  renderAsMarkdownLinks,
   renderThumbsUpDown,
   replaceCitations,
-  renderAsMarkdownLinks,
-  getCitedDocumentIds,
-  Autosuggest,
-  AutosuggestResults,
-  AutosuggestFacets,
-} from "../src";
-import { url, tableName } from "./utils";
-import { Streamdown } from "streamdown";
+} from '../src'
+import { tableName, url } from './utils'
 
 export default {
-  title: "Answer Agent",
+  title: 'Answer Agent',
   component: AnswerResults,
-};
+}
 
 // Mock generator configuration - replace with your actual config
 const mockGenerator: GeneratorConfig = {
-  provider: "ollama",
-  model: "gemma3:4b",
+  provider: 'ollama',
+  model: 'gemma3:4b',
   // provider: "openai",
   // model: "gpt-4",
   // api_key: import.meta.env.VITE_OPENAI_API_KEY || "your-api-key-here",
-};
+}
 
 export const BasicAnswer = () => {
   return (
@@ -44,12 +44,12 @@ export const BasicAnswer = () => {
 
       <QueryBox id="question" placeholder="Ask a question..." />
 
-      <div style={{ marginTop: "20px" }}>
+      <div style={{ marginTop: '20px' }}>
         <AnswerResults id="answer" searchBoxId="question" generator={mockGenerator} />
       </div>
     </Antfly>
-  );
-};
+  )
+}
 
 export const WithAllInsights = () => {
   return (
@@ -70,7 +70,7 @@ export const WithAllInsights = () => {
 
       <QueryBox id="question" placeholder="Ask a question..." />
 
-      <div style={{ marginTop: "20px" }}>
+      <div style={{ marginTop: '20px' }}>
         <AnswerResults
           id="answer"
           searchBoxId="question"
@@ -81,8 +81,8 @@ export const WithAllInsights = () => {
         />
       </div>
     </Antfly>
-  );
-};
+  )
+}
 
 export const WithCustomRenderers = () => {
   return (
@@ -92,7 +92,7 @@ export const WithCustomRenderers = () => {
 
       <QueryBox id="question" placeholder="Ask a question..." />
 
-      <div style={{ marginTop: "20px" }}>
+      <div style={{ marginTop: '20px' }}>
         <AnswerResults
           id="answer"
           searchBoxId="question"
@@ -101,37 +101,65 @@ export const WithCustomRenderers = () => {
           showReasoning={true}
           showFollowUpQuestions={true}
           renderClassification={(data) => (
-            <div style={{ padding: "10px", background: "#e3f2fd", borderRadius: "4px", marginBottom: "10px" }}>
-              <strong>🎯 Query Type:</strong> {data.route_type}{" "}
-              <span style={{ color: "#666" }}>({(data.confidence * 100).toFixed(0)}% confident)</span>
-              <div style={{ marginTop: "8px", fontSize: "14px" }}>
-                <div><strong>Improved:</strong> {data.improved_query}</div>
-                <div><strong>Semantic:</strong> {data.semantic_query}</div>
+            <div
+              style={{
+                padding: '10px',
+                background: '#e3f2fd',
+                borderRadius: '4px',
+                marginBottom: '10px',
+              }}
+            >
+              <strong>🎯 Query Type:</strong> {data.route_type}{' '}
+              <span style={{ color: '#666' }}>
+                ({(data.confidence * 100).toFixed(0)}% confident)
+              </span>
+              <div style={{ marginTop: '8px', fontSize: '14px' }}>
+                <div>
+                  <strong>Improved:</strong> {data.improved_query}
+                </div>
+                <div>
+                  <strong>Semantic:</strong> {data.semantic_query}
+                </div>
               </div>
             </div>
           )}
           renderReasoning={(reasoning, isStreaming) => (
-            <details open style={{ padding: "10px", background: "#f3e5f5", borderRadius: "4px", marginBottom: "10px" }}>
-              <summary style={{ cursor: "pointer", fontWeight: "bold" }}>
-                🧠 Reasoning{isStreaming && " (streaming...)"}
+            <details
+              open
+              style={{
+                padding: '10px',
+                background: '#f3e5f5',
+                borderRadius: '4px',
+                marginBottom: '10px',
+              }}
+            >
+              <summary style={{ cursor: 'pointer', fontWeight: 'bold' }}>
+                🧠 Reasoning{isStreaming && ' (streaming...)'}
               </summary>
-              <p style={{ marginTop: "10px", fontSize: "14px", color: "#555" }}>{reasoning}</p>
+              <p style={{ marginTop: '10px', fontSize: '14px', color: '#555' }}>{reasoning}</p>
             </details>
           )}
           renderAnswer={(answer, isStreaming) => (
-            <div style={{ padding: "20px", background: "#e8f5e9", borderRadius: "8px", marginBottom: "10px" }}>
-              <h3 style={{ margin: "0 0 10px 0", color: "#2e7d32" }}>
-                💡 Answer{isStreaming && " (streaming...)"}
+            <div
+              style={{
+                padding: '20px',
+                background: '#e8f5e9',
+                borderRadius: '8px',
+                marginBottom: '10px',
+              }}
+            >
+              <h3 style={{ margin: '0 0 10px 0', color: '#2e7d32' }}>
+                💡 Answer{isStreaming && ' (streaming...)'}
               </h3>
-              <div style={{ fontSize: "16px", lineHeight: "1.6" }}>{answer}</div>
+              <div style={{ fontSize: '16px', lineHeight: '1.6' }}>{answer}</div>
             </div>
           )}
           renderFollowUpQuestions={(questions) => (
-            <div style={{ padding: "15px", background: "#fce4ec", borderRadius: "4px" }}>
+            <div style={{ padding: '15px', background: '#fce4ec', borderRadius: '4px' }}>
               <strong>❓ Suggested Follow-ups:</strong>
-              <ul style={{ marginTop: "10px", paddingLeft: "20px" }}>
-                {questions.map((q, i) => (
-                  <li key={i} style={{ marginBottom: "8px", cursor: "pointer", color: "#c2185b" }}>
+              <ul style={{ marginTop: '10px', paddingLeft: '20px' }}>
+                {questions.map((q) => (
+                  <li key={q} style={{ marginBottom: '8px', cursor: 'pointer', color: '#c2185b' }}>
                     {q}
                   </li>
                 ))}
@@ -141,8 +169,8 @@ export const WithCustomRenderers = () => {
         />
       </div>
     </Antfly>
-  );
-};
+  )
+}
 
 export const WithSystemPrompt = () => {
   return (
@@ -160,7 +188,7 @@ export const WithSystemPrompt = () => {
 
       <QueryBox id="question" placeholder="Ask about literature..." />
 
-      <div style={{ marginTop: "20px" }}>
+      <div style={{ marginTop: '20px' }}>
         <AnswerResults
           id="answer"
           searchBoxId="question"
@@ -170,25 +198,25 @@ export const WithSystemPrompt = () => {
         />
       </div>
     </Antfly>
-  );
-};
+  )
+}
 
 export const WithFeedback = () => {
   const handleFeedback = (data: {
-    feedback: { rating: number; scale: number; comment?: string };
-    result: unknown;
-    query: string;
+    feedback: { rating: number; scale: number; comment?: string }
+    result: unknown
+    query: string
     context?: {
-      classification?: { route_type: "question" | "search"; confidence: number };
-      keywords?: string[];
-      reasoning?: string;
-    };
+      classification?: { route_type: 'question' | 'search'; confidence: number }
+      keywords?: string[]
+      reasoning?: string
+    }
   }) => {
-    console.log("Feedback received:", data);
+    console.log('Feedback received:', data)
     alert(
-      `Feedback submitted!\nRating: ${data.feedback.rating}/${data.feedback.scale}\nQuery: ${data.query}\n${data.feedback.comment ? `Comment: ${data.feedback.comment}` : ""}`,
-    );
-  };
+      `Feedback submitted!\nRating: ${data.feedback.rating}/${data.feedback.scale}\nQuery: ${data.query}\n${data.feedback.comment ? `Comment: ${data.feedback.comment}` : ''}`,
+    )
+  }
 
   return (
     <Antfly url={url} table={tableName}>
@@ -197,9 +225,21 @@ export const WithFeedback = () => {
 
       <QueryBox id="question" placeholder="Ask a question..." />
 
-      <div style={{ marginTop: "20px" }}>
-        <AnswerResults id="answer" searchBoxId="question" generator={mockGenerator} showReasoning={true}>
-          <div style={{ marginTop: "20px", padding: "15px", background: "#f5f5f5", borderRadius: "8px" }}>
+      <div style={{ marginTop: '20px' }}>
+        <AnswerResults
+          id="answer"
+          searchBoxId="question"
+          generator={mockGenerator}
+          showReasoning={true}
+        >
+          <div
+            style={{
+              marginTop: '20px',
+              padding: '15px',
+              background: '#f5f5f5',
+              borderRadius: '8px',
+            }}
+          >
             <AnswerFeedback
               scale={1}
               renderRating={renderThumbsUpDown}
@@ -210,8 +250,8 @@ export const WithFeedback = () => {
         </AnswerResults>
       </div>
     </Antfly>
-  );
-};
+  )
+}
 
 export const WithHits = () => {
   return (
@@ -228,37 +268,42 @@ export const WithHits = () => {
 
       <QueryBox id="question" placeholder="Ask a question..." />
 
-      <div style={{ marginTop: "20px" }}>
-        <AnswerResults id="answer" searchBoxId="question" generator={mockGenerator} showHits={true} />
+      <div style={{ marginTop: '20px' }}>
+        <AnswerResults
+          id="answer"
+          searchBoxId="question"
+          generator={mockGenerator}
+          showHits={true}
+        />
       </div>
     </Antfly>
-  );
-};
+  )
+}
 
 export const StyledExample = () => {
   const handleFeedback = (data: {
-    feedback: { rating: number; scale: number; comment?: string };
-    result: unknown;
-    query: string;
+    feedback: { rating: number; scale: number; comment?: string }
+    result: unknown
+    query: string
     context?: {
-      classification?: { route_type: "question" | "search"; confidence: number };
-      reasoning?: string;
-    };
+      classification?: { route_type: 'question' | 'search'; confidence: number }
+      reasoning?: string
+    }
   }) => {
-    console.log("Feedback received:", data);
+    console.log('Feedback received:', data)
     alert(
-      `Thanks for your feedback!\n\nRating: ${data.feedback.rating === 1 ? "👍 Helpful" : "👎 Not Helpful"}\nQuery: ${data.query}\n${data.feedback.comment ? `Comment: ${data.feedback.comment}` : ""}`,
-    );
-  };
+      `Thanks for your feedback!\n\nRating: ${data.feedback.rating === 1 ? '👍 Helpful' : '👎 Not Helpful'}\nQuery: ${data.query}\n${data.feedback.comment ? `Comment: ${data.feedback.comment}` : ''}`,
+    )
+  }
 
   return (
     <Antfly url={url} table={tableName}>
       <h1>Styled Answer Agent</h1>
-      <p style={{ marginBottom: "20px", fontSize: "16px", lineHeight: "1.6" }}>
-        This example demonstrates a fully-styled Answer Agent interface using{" "}
+      <p style={{ marginBottom: '20px', fontSize: '16px', lineHeight: '1.6' }}>
+        This example demonstrates a fully-styled Answer Agent interface using{' '}
         <a href="https://streamdown.ai/" target="_blank" rel="noopener noreferrer">
           streamdown
-        </a>{" "}
+        </a>{' '}
         for rich markdown rendering with code highlighting, math support, and interactive citations.
       </p>
       <style>{`
@@ -629,14 +674,14 @@ export const StyledExample = () => {
         >
           <Autosuggest
             fields={[
-              "TICO",
-              "AUTR",
-              "TICO__2gram",
-              "TICO__keyword",
-              "AUTR__2gram",
-              "AUTR__keyword",
+              'TICO',
+              'AUTR',
+              'TICO__2gram',
+              'TICO__keyword',
+              'AUTR__2gram',
+              'AUTR__keyword',
             ]}
-            returnFields={["TICO", "AUTR", "DESC"]}
+            returnFields={['TICO', 'AUTR', 'DESC']}
             minChars={2}
             layout="horizontal"
           >
@@ -650,15 +695,15 @@ export const StyledExample = () => {
               limit={5}
               renderItem={(hit) => (
                 <div className="answer-autosuggest-item">
-                  <strong>{String(hit._source?.TICO || "")}</strong>
-                  <small>{String(hit._source?.AUTR || "")}</small>
+                  <strong>{String(hit._source?.TICO || '')}</strong>
+                  <small>{String(hit._source?.AUTR || '')}</small>
                 </div>
               )}
             />
           </Autosuggest>
         </QueryBox>
 
-        <div style={{ marginTop: "20px" }}>
+        <div style={{ marginTop: '20px' }}>
           <AnswerResults
             id="answer"
             searchBoxId="question"
@@ -669,13 +714,17 @@ export const StyledExample = () => {
             showHits={true}
             renderClassification={(data) => (
               <div className="answer-classification">
-                <strong>🎯 Classification:</strong> {data.route_type}{" "}
-                <span style={{ color: "#666" }}>
+                <strong>🎯 Classification:</strong> {data.route_type}{' '}
+                <span style={{ color: '#666' }}>
                   ({(data.confidence * 100).toFixed(0)}% confident)
                 </span>
-                <div style={{ marginTop: "8px", fontSize: "13px", color: "#666" }}>
-                  <div><strong>Query:</strong> {data.improved_query}</div>
-                  <div><strong>Semantic:</strong> {data.semantic_query}</div>
+                <div style={{ marginTop: '8px', fontSize: '13px', color: '#666' }}>
+                  <div>
+                    <strong>Query:</strong> {data.improved_query}
+                  </div>
+                  <div>
+                    <strong>Semantic:</strong> {data.semantic_query}
+                  </div>
                 </div>
               </div>
             )}
@@ -685,40 +734,47 @@ export const StyledExample = () => {
                 ? replaceCitations(reasoning, {
                     renderCitation: renderAsMarkdownLinks,
                   })
-                : "";
+                : ''
 
               // Handle click events on citation links
               const handleCitationClick = (e: React.MouseEvent<HTMLDivElement>) => {
-                const target = e.target as HTMLElement;
-                if (target.tagName === "A" && target.getAttribute("href")?.startsWith("#hit-")) {
-                  e.preventDefault();
-                  const id = target.getAttribute("href")?.substring(1);
+                const target = e.target as HTMLElement
+                if (target.tagName === 'A' && target.getAttribute('href')?.startsWith('#hit-')) {
+                  e.preventDefault()
+                  const id = target.getAttribute('href')?.substring(1)
                   if (id) {
-                    const element = document.getElementById(id);
+                    const element = document.getElementById(id)
                     if (element) {
-                      element.scrollIntoView({ behavior: "smooth", block: "start" });
-                      element.style.transition = "background 0.3s";
-                      element.style.background = "#f0f3ff";
+                      element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                      element.style.transition = 'background 0.3s'
+                      element.style.background = '#f0f3ff'
                       setTimeout(() => {
-                        element.style.background = "";
-                      }, 2000);
+                        element.style.background = ''
+                      }, 2000)
                     }
                   }
                 }
-              };
+              }
 
               return (
                 <div className="answer-reasoning">
                   <strong>🧠 Reasoning</strong>
-                  {isStreaming && <span style={{ color: "#764ba2" }}> (streaming...)</span>}
+                  {isStreaming && <span style={{ color: '#764ba2' }}> (streaming...)</span>}
+                  {/* biome-ignore lint/a11y/useSemanticElements: Container for rich markdown content with citation links */}
                   <div
-                    style={{ marginTop: "8px", fontSize: "14px", lineHeight: "1.6" }}
+                    role="button"
+                    tabIndex={0}
+                    style={{ marginTop: '8px', fontSize: '14px', lineHeight: '1.6' }}
                     onClick={handleCitationClick}
+                    onKeyDown={(e) =>
+                      e.key === 'Enter' &&
+                      handleCitationClick(e as unknown as React.MouseEvent<HTMLDivElement>)
+                    }
                   >
                     <Streamdown isAnimating={isStreaming}>{reasoningWithLinks}</Streamdown>
                   </div>
                 </div>
-              );
+              )
             }}
             renderAnswer={(answer, isStreaming, hits) => {
               // Convert [doc_id X] citations to markdown links
@@ -726,27 +782,27 @@ export const StyledExample = () => {
                 ? replaceCitations(answer, {
                     renderCitation: renderAsMarkdownLinks,
                   })
-                : "";
+                : ''
 
               // Handle click events on citation links
               const handleCitationClick = (e: React.MouseEvent<HTMLDivElement>) => {
-                const target = e.target as HTMLElement;
-                if (target.tagName === "A" && target.getAttribute("href")?.startsWith("#hit-")) {
-                  e.preventDefault();
-                  const id = target.getAttribute("href")?.substring(1);
+                const target = e.target as HTMLElement
+                if (target.tagName === 'A' && target.getAttribute('href')?.startsWith('#hit-')) {
+                  e.preventDefault()
+                  const id = target.getAttribute('href')?.substring(1)
                   if (id) {
-                    const element = document.getElementById(id);
+                    const element = document.getElementById(id)
                     if (element) {
-                      element.scrollIntoView({ behavior: "smooth", block: "start" });
-                      element.style.transition = "background 0.3s";
-                      element.style.background = "#f0f3ff";
+                      element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                      element.style.transition = 'background 0.3s'
+                      element.style.background = '#f0f3ff'
                       setTimeout(() => {
-                        element.style.background = "";
-                      }, 2000);
+                        element.style.background = ''
+                      }, 2000)
                     }
                   }
                 }
-              };
+              }
 
               return (
                 <div>
@@ -758,20 +814,30 @@ export const StyledExample = () => {
                     )}
                     {answer && (
                       <div>
-                        <div className="answer-text" onClick={handleCitationClick}>
+                        {/* biome-ignore lint/a11y/useSemanticElements: Container for rich markdown content with citation links */}
+                        <div
+                          role="button"
+                          tabIndex={0}
+                          className="answer-text"
+                          onClick={handleCitationClick}
+                          onKeyDown={(e) =>
+                            e.key === 'Enter' &&
+                            handleCitationClick(e as unknown as React.MouseEvent<HTMLDivElement>)
+                          }
+                        >
                           <Streamdown isAnimating={isStreaming}>{answerWithLinks}</Streamdown>
                         </div>
-                        {answerWithLinks.includes("[") && (
+                        {answerWithLinks.includes('[') && (
                           <div
                             style={{
-                              marginTop: "12px",
-                              fontSize: "14px",
-                              color: "#666",
-                              fontStyle: "italic",
+                              marginTop: '12px',
+                              fontSize: '14px',
+                              color: '#666',
+                              fontStyle: 'italic',
                             }}
                           >
                             💡 Tip: Click citation links (e.g., [19], [16]) to jump to source
-                            documents below (powered by{" "}
+                            documents below (powered by{' '}
                             <a href="https://streamdown.ai/" target="_blank" rel="noopener">
                               Streamdown.ai
                             </a>
@@ -782,83 +848,67 @@ export const StyledExample = () => {
                     )}
                   </div>
 
-                  {hits && hits.length > 0 && (() => {
-                    // Filter hits to only show cited documents
-                    const citedIds = getCitedDocumentIds(answer);
-                    const citedHits = citedIds.length > 0
-                      ? hits.filter(hit => citedIds.includes(hit._id))
-                      : hits;
+                  {hits &&
+                    hits.length > 0 &&
+                    (() => {
+                      // Filter hits to only show cited documents
+                      const citedIds = getCitedDocumentIds(answer)
+                      const citedHits =
+                        citedIds.length > 0
+                          ? hits.filter((hit) => citedIds.includes(hit._id))
+                          : hits
 
-                    return citedHits.length > 0 ? (
-                      <div className="answer-hits-section">
-                        <h2>
-                          🔍 {citedIds.length > 0 ? "Cited" : "Source"} Documents ({citedHits.length})
-                        </h2>
-                        {citedHits.map((hit) => (
-                          <div key={hit._id} id={`hit-${hit._id}`} className="answer-hit">
-                            <div className="answer-hit-header">
-                              <h3 className="answer-hit-title">
-                                {String(hit._source?.TICO) || `Document ${hit._id}`}
-                              </h3>
-                              <span className="answer-hit-score">
-                                Score: {hit._score.toFixed(3)}
-                              </span>
+                      return citedHits.length > 0 ? (
+                        <div className="answer-hits-section">
+                          <h2>
+                            🔍 {citedIds.length > 0 ? 'Cited' : 'Source'} Documents (
+                            {citedHits.length})
+                          </h2>
+                          {citedHits.map((hit) => (
+                            <div key={hit._id} id={`hit-${hit._id}`} className="answer-hit">
+                              <div className="answer-hit-header">
+                                <h3 className="answer-hit-title">
+                                  {String(hit._source?.TICO) || `Document ${hit._id}`}
+                                </h3>
+                                <span className="answer-hit-score">
+                                  Score: {hit._score.toFixed(3)}
+                                </span>
+                              </div>
+                              <div className="answer-hit-content">
+                                {hit._source?.AUTR ? (
+                                  <p>
+                                    <strong>Author:</strong> {String(hit._source?.AUTR)}
+                                  </p>
+                                ) : null}
+                                {hit._source?.DESC ? <p>{String(hit._source?.DESC)}</p> : null}
+                              </div>
                             </div>
-                            <div className="answer-hit-content">
-                              {hit._source?.AUTR ? (
-                                <p>
-                                  <strong>Author:</strong> {String(hit._source?.AUTR)}
-                                </p>
-                              ) : null}
-                              {hit._source?.DESC ? <p>{String(hit._source?.DESC)}</p> : null}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : null;
-                  })()}
+                          ))}
+                        </div>
+                      ) : null
+                    })()}
                 </div>
-              );
+              )
             }}
             renderFollowUpQuestions={(questions) => {
-              // Handle click events on citation links
-              const handleCitationClick = (e: React.MouseEvent<HTMLUListElement>) => {
-                const target = e.target as HTMLElement;
-                if (target.tagName === "A" && target.getAttribute("href")?.startsWith("#hit-")) {
-                  e.preventDefault();
-                  const id = target.getAttribute("href")?.substring(1);
-                  if (id) {
-                    const element = document.getElementById(id);
-                    if (element) {
-                      element.scrollIntoView({ behavior: "smooth", block: "start" });
-                      element.style.transition = "background 0.3s";
-                      element.style.background = "#f0f3ff";
-                      setTimeout(() => {
-                        element.style.background = "";
-                      }, 2000);
-                    }
-                  }
-                }
-              };
-
               return (
                 <div className="answer-followup">
                   <h3>❓ Suggested Follow-up Questions</h3>
-                  <ul onClick={handleCitationClick}>
-                    {questions.map((q, i) => {
+                  <ul>
+                    {questions.map((q) => {
                       // Convert [doc_id X] citations to markdown links
                       const questionWithLinks = replaceCitations(q, {
                         renderCitation: renderAsMarkdownLinks,
-                      });
+                      })
                       return (
-                        <li key={i}>
+                        <li key={q}>
                           <Streamdown>{questionWithLinks}</Streamdown>
                         </li>
-                      );
+                      )
                     })}
                   </ul>
                 </div>
-              );
+              )
             }}
             renderHits={(hits) => (
               <div className="answer-hits-section">
@@ -897,5 +947,5 @@ export const StyledExample = () => {
         </div>
       </div>
     </Antfly>
-  );
-};
+  )
+}

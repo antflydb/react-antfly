@@ -1,36 +1,36 @@
-import React, { useEffect, useState, ReactNode, useCallback } from "react";
-import { useSharedContext } from "./SharedContext";
-import Pagination from "./Pagination";
-import { QueryHit } from "@antfly/sdk";
-import { disjunctsFrom } from "./utils";
+import type { QueryHit } from '@antfly/sdk'
+import React, { type ReactNode, useCallback, useEffect, useState } from 'react'
+import Pagination from './Pagination'
+import { useSharedContext } from './SharedContext'
+import { disjunctsFrom } from './utils'
 
 export interface ResultsProps {
-  id: string;
-  searchBoxId?: string; // Links to the QueryBox that provides the search value (optional for backward compatibility)
+  id: string
+  searchBoxId?: string // Links to the QueryBox that provides the search value (optional for backward compatibility)
 
   // Query configuration (moved from SearchBox) - only used if searchBoxId is provided
-  fields?: string[];
-  customQuery?: (query?: string) => unknown;
-  semanticIndexes?: string[];
-  limit?: number;
+  fields?: string[]
+  customQuery?: (query?: string) => unknown
+  semanticIndexes?: string[]
+  limit?: number
 
   // Display configuration
-  itemsPerPage?: number;
-  initialPage?: number;
+  itemsPerPage?: number
+  initialPage?: number
   pagination?: (
     total: number,
     itemsPerPage: number,
     page: number,
     setPage: (page: number) => void,
-  ) => ReactNode;
-  stats?: (total: number) => ReactNode;
-  items: (data: QueryHit[]) => ReactNode;
+  ) => ReactNode
+  stats?: (total: number) => ReactNode
+  items: (data: QueryHit[]) => ReactNode
 
   // Optional overrides
-  sort?: unknown;
-  table?: string; // Optional table override (Phase 1: single table only)
-  filterQuery?: Record<string, unknown>; // Filter query to constrain search results
-  exclusionQuery?: Record<string, unknown>; // Exclusion query to exclude matches
+  sort?: unknown
+  table?: string // Optional table override (Phase 1: single table only)
+  filterQuery?: Record<string, unknown> // Filter query to constrain search results
+  exclusionQuery?: Record<string, unknown> // Exclusion query to exclude matches
 }
 
 export default function Results({
@@ -50,81 +50,80 @@ export default function Results({
   filterQuery,
   exclusionQuery,
 }: ResultsProps) {
-  const [{ widgets }, dispatch] = useSharedContext();
-  const [page, setPage] = useState(initialPage);
-  const [lastQueryHash, setLastQueryHash] = useState<string | null>(null);
-  const [isInitialized, setIsInitialized] = useState(false);
+  const [{ widgets }, dispatch] = useSharedContext()
+  const [page, setPage] = useState(initialPage)
+  const [lastQueryHash, setLastQueryHash] = useState<string | null>(null)
+  const [isInitialized, setIsInitialized] = useState(false)
 
-  const widget = widgets.get(id);
-  const data = widget && widget.result && widget.result.data ? widget.result.data : [];
-  const total =
-    widget && widget.result && widget.result.total
-      ? typeof widget.result.total === "object" &&
-        widget.result.total !== null &&
-        "value" in widget.result.total
-        ? (widget.result.total as { value: number }).value
-        : (widget.result.total as number)
-      : 0;
+  const widget = widgets.get(id)
+  const data = widget?.result?.data ? widget.result.data : []
+  const total = widget?.result?.total
+    ? typeof widget.result.total === 'object' &&
+      widget.result.total !== null &&
+      'value' in widget.result.total
+      ? (widget.result.total as { value: number }).value
+      : (widget.result.total as number)
+    : 0
 
   // Get the search value from the linked QueryBox (if searchBoxId is provided)
-  const searchBoxWidget = searchBoxId ? widgets.get(searchBoxId) : undefined;
-  const searchValue = (searchBoxWidget?.value as string) || "";
+  const searchBoxWidget = searchBoxId ? widgets.get(searchBoxId) : undefined
+  const searchValue = (searchBoxWidget?.value as string) || ''
 
   // Determine if semantic search is enabled
-  const isSemanticEnabled = !!(searchBoxId && semanticIndexes && semanticIndexes.length > 0);
+  const isSemanticEnabled = !!(searchBoxId && semanticIndexes && semanticIndexes.length > 0)
 
   // Build a query from the search value
   const queryFromValue = useCallback(
     (query: string): unknown => {
-      if (isSemanticEnabled) return query;
+      if (isSemanticEnabled) return query
       if (customQuery) {
-        return customQuery(query);
+        return customQuery(query)
       } else if (fields) {
-        const termQueries: Array<{ match: string; field: string }> = [];
+        const termQueries: Array<{ match: string; field: string }> = []
         fields.forEach((field) => {
-          termQueries.push({ match: query, field });
-        });
-        return query ? disjunctsFrom(termQueries) : { match_all: {} };
+          termQueries.push({ match: query, field })
+        })
+        return query ? disjunctsFrom(termQueries) : { match_all: {} }
       }
-      return { match_all: {} };
+      return { match_all: {} }
     },
     [isSemanticEnabled, customQuery, fields],
-  );
+  )
 
   // Create a hash of all search/filter widgets to detect query changes
-  const queryWidgets = Array.from(widgets.values()).filter((w) => w.needsQuery);
+  const queryWidgets = Array.from(widgets.values()).filter((w) => w.needsQuery)
   const queryHash = JSON.stringify(
     queryWidgets.map((w) => ({ id: w.id, value: w.value, query: w.query })),
-  );
+  )
 
   // Compute the desired page based on query changes
   const desiredPage = React.useMemo(() => {
     if (queryHash !== lastQueryHash) {
-      return !isInitialized ? initialPage : 1;
+      return !isInitialized ? initialPage : 1
     }
-    return page;
-  }, [queryHash, lastQueryHash, isInitialized, initialPage, page]);
+    return page
+  }, [queryHash, lastQueryHash, isInitialized, initialPage, page])
 
   // Update state after query hash changes
   useEffect(() => {
     if (queryHash !== lastQueryHash) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
-      setLastQueryHash(queryHash);
-      setIsInitialized(true);
+      setLastQueryHash(queryHash)
+      setIsInitialized(true)
       if (desiredPage !== page) {
-        setPage(desiredPage);
+        setPage(desiredPage)
       }
     }
-  }, [queryHash, lastQueryHash, desiredPage, page]);
+  }, [queryHash, lastQueryHash, desiredPage, page])
 
   // Update context with query and configuration
   useEffect(() => {
     // If searchBoxId is provided, Results contributes the search query
     // Otherwise, it just wants results (backward compatibility with old SearchBox)
-    const shouldContributeQuery = !!searchBoxId;
+    const shouldContributeQuery = !!searchBoxId
 
     dispatch({
-      type: "setWidget",
+      type: 'setWidget',
       key: id,
       needsQuery: shouldContributeQuery,
       needsConfiguration: true, // Results always has configuration (itemsPerPage, page, sort, fields)
@@ -155,7 +154,7 @@ export default function Results({
             }
           : { itemsPerPage, page, sort, fields },
       // Don't pass result here - it should only be set by the Listener after fetching
-    });
+    })
   }, [
     dispatch,
     id,
@@ -173,10 +172,10 @@ export default function Results({
     limit,
     customQuery,
     queryFromValue,
-  ]);
+  ])
 
   // Destroy widget from context (remove from the list to unapply its effects)
-  useEffect(() => () => dispatch({ type: "deleteWidget", key: id }), [dispatch, id]);
+  useEffect(() => () => dispatch({ type: 'deleteWidget', key: id }), [dispatch, id])
 
   const defaultPagination = () => (
     <Pagination
@@ -185,7 +184,7 @@ export default function Results({
       itemsPerPage={itemsPerPage}
       page={page}
     />
-  );
+  )
 
   return (
     <div className="react-af-results">
@@ -202,5 +201,5 @@ export default function Results({
       {!isSemanticEnabled &&
         (pagination ? pagination(total, itemsPerPage, page, setPage) : defaultPagination())}
     </div>
-  );
+  )
 }

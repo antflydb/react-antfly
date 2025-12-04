@@ -1,4 +1,4 @@
-import { QueryHit, ClassificationTransformationResult, AnswerConfidence, AntflyClient, QueryRequest, QueryResponses, RAGRequest, RAGResult, AnswerAgentRequest, AnswerAgentResult } from '@antfly/sdk';
+import { AnswerConfidence, ClassificationTransformationResult, QueryHit, AnswerAgentRequest, AnswerAgentResult, AntflyClient, QueryRequest, QueryResponses, RAGRequest, RAGResult } from '@antfly/sdk';
 export interface MultiqueryRequest {
     query: QueryRequest;
 }

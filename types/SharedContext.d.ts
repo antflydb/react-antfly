@@ -46,7 +46,7 @@ export interface SharedState {
     headers?: Record<string, string>;
 }
 export type SharedAction = {
-    type: "setWidget";
+    type: 'setWidget';
     key: string;
     needsQuery?: boolean;
     needsConfiguration?: boolean;
@@ -68,13 +68,13 @@ export type SharedAction = {
         size?: number;
     }>;
     isLoading?: boolean;
-    configuration?: Widget["configuration"];
-    result?: Widget["result"];
+    configuration?: Widget['configuration'];
+    result?: Widget['result'];
 } | {
-    type: "deleteWidget";
+    type: 'deleteWidget';
     key: string;
 } | {
-    type: "setListenerEffect";
+    type: 'setListenerEffect';
     value: (() => void) | null;
 };
 export type SharedContextType = [SharedState, Dispatch<SharedAction>] | null;

@@ -1,12 +1,11 @@
-import React from "react";
-import { Antfly, QueryBox, Results, ActiveFilters, Facet } from "../src";
-import { url, tableName } from "./utils";
-import "../src/style.css";
+import { ActiveFilters, Antfly, Facet, QueryBox, Results } from '../src'
+import { tableName, url } from './utils'
+import '../src/style.css'
 
 export default {
-  title: "ActiveFilters",
+  title: 'ActiveFilters',
   component: ActiveFilters,
-};
+}
 
 export const Active = () => {
   return (
@@ -15,8 +14,8 @@ export const Active = () => {
       <pre>{`<ActiveFilters />`}</pre>
       Active Filters:
       <ActiveFilters />
-      <QueryBox id="main" initialValue={"chemin"} />
-      <Facet id="autr" fields={["AUTR"]} initialValue={["auteur inconnu"]} />
+      <QueryBox id="main" initialValue={'chemin'} />
+      <Facet id="autr" fields={['AUTR']} initialValue={['auteur inconnu']} />
       <Results
         id="result"
         items={(data) =>
@@ -29,16 +28,16 @@ export const Active = () => {
         pagination={() => <></>}
       />
     </Antfly>
-  );
-};
+  )
+}
 
 export const ActiveFilterChangeComponentOrder = () => {
   return (
     <Antfly url={url} table={tableName}>
       <h1>Active filter (change component order)</h1>
-      <Facet id="autr" fields={["AUTR"]} />
+      <Facet id="autr" fields={['AUTR']} />
       Recherche:
-      <QueryBox id="main" initialValue={"chemin"} />
+      <QueryBox id="main" initialValue={'chemin'} />
       Filtres:
       <ActiveFilters />
       <Results
@@ -52,5 +51,5 @@ export const ActiveFilterChangeComponentOrder = () => {
         }
       />
     </Antfly>
-  );
-};
+  )
+}
