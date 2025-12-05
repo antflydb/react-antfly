@@ -15,6 +15,8 @@ export interface AnswerResultsContextValue {
   answer: string
   followUpQuestions: string[]
   isStreaming: boolean
+  /** True when generation was skipped (withoutGeneration=true) and only search results are shown */
+  isSearchOnly: boolean
   result: AnswerAgentResult | null
 }
 

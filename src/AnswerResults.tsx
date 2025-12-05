@@ -22,6 +22,14 @@ export interface AnswerResultsProps {
   fields?: string[]
   semanticIndexes?: string[]
 
+  /**
+   * When true, skip AI answer generation and return search results only.
+   * Useful for quota management, rate limiting, or when you just want search quality
+   * without LLM cost. The component will render hits without an answer.
+   * @default false
+   */
+  withoutGeneration?: boolean
+
   // Visibility controls
   showClassification?: boolean
   showReasoning?: boolean
@@ -38,11 +46,21 @@ export interface AnswerResultsProps {
   renderConfidence?: (confidence: AnswerConfidence) => ReactNode
   renderFollowUpQuestions?: (questions: string[]) => ReactNode
   renderHits?: (hits: QueryHit[]) => ReactNode
+  /**
+   * Custom renderer for when generation is skipped (withoutGeneration=true).
+   * Receives the search hits. If not provided, defaults to renderHits or the default hits renderer.
+   */
+  renderSearchOnly?: (hits: QueryHit[]) => ReactNode
 
   // Callbacks
   onStreamStart?: () => void
   onStreamEnd?: () => void
   onError?: (error: string) => void
+  /**
+   * Called when generation is skipped and only search results are returned.
+   * Useful for analytics or showing user notifications.
+   */
+  onSearchOnly?: (hits: QueryHit[]) => void
 
   children?: ReactNode
 }
@@ -57,6 +75,7 @@ export default function AnswerResults({
   exclusionQuery,
   fields,
   semanticIndexes,
+  withoutGeneration = false,
   showClassification = false,
   showReasoning = false,
   showFollowUpQuestions = true,
@@ -70,9 +89,11 @@ export default function AnswerResults({
   renderConfidence,
   renderFollowUpQuestions,
   renderHits,
+  renderSearchOnly,
   onStreamStart,
   onStreamEnd,
   onError: onErrorCallback,
+  onSearchOnly,
   children,
 }: AnswerResultsProps) {
   const [{ widgets, url, table: defaultTable, headers }, dispatch] = useSharedContext()
@@ -88,9 +109,11 @@ export default function AnswerResults({
   const [followUpQuestions, setFollowUpQuestions] = useState<string[]>([])
   const [isStreaming, setIsStreaming] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isSearchOnly, setIsSearchOnly] = useState(false)
 
   const abortControllerRef = useRef<AbortController | null>(null)
   const previousSubmissionRef = useRef<number | undefined>(undefined)
+  const collectedHitsRef = useRef<QueryHit[]>([])
 
   // Watch for changes in the QueryBox widget
   const searchBoxWidget = widgets.get(searchBoxId)
@@ -143,6 +166,7 @@ export default function AnswerResults({
       ],
       generator: generator,
       with_streaming: true,
+      without_generation: withoutGeneration,
     }
 
     // Start streaming
@@ -156,6 +180,8 @@ export default function AnswerResults({
       setFollowUpQuestions([])
       setError(null)
       setIsStreaming(true)
+      setIsSearchOnly(withoutGeneration)
+      collectedHitsRef.current = []
 
       if (onStreamStart) {
         onStreamStart()
@@ -170,6 +196,7 @@ export default function AnswerResults({
             setReasoning((prev) => prev + chunk)
           },
           onHit: (hit) => {
+            collectedHitsRef.current = [...collectedHitsRef.current, hit]
             setHits((prev) => [...prev, hit])
           },
           onAnswer: (chunk) => {
@@ -183,6 +210,9 @@ export default function AnswerResults({
           },
           onComplete: () => {
             setIsStreaming(false)
+            if (withoutGeneration && onSearchOnly) {
+              onSearchOnly(collectedHitsRef.current)
+            }
             if (onStreamEnd) {
               onStreamEnd()
             }
@@ -246,9 +276,11 @@ export default function AnswerResults({
     semanticIndexes,
     filterQuery,
     exclusionQuery,
+    withoutGeneration,
     onStreamStart,
     onStreamEnd,
     onErrorCallback,
+    onSearchOnly,
   ])
 
   // Register this component as a widget (for consistency with other components)
@@ -400,9 +432,22 @@ export default function AnswerResults({
       answer,
       followUpQuestions,
       isStreaming,
+      isSearchOnly,
       result,
     }
-  }, [currentQuery, classification, hits, reasoning, answer, followUpQuestions, isStreaming])
+  }, [
+    currentQuery,
+    classification,
+    hits,
+    reasoning,
+    answer,
+    followUpQuestions,
+    isStreaming,
+    isSearchOnly,
+  ])
+
+  // Determine if we have content to show (answer in normal mode, hits in search-only mode)
+  const hasContent = isSearchOnly ? hits.length > 0 : !!answer
 
   return (
     <AnswerResultsContext.Provider value={contextValue}>
@@ -413,16 +458,17 @@ export default function AnswerResults({
           </div>
         )}
         {!error &&
-          !answer &&
-          !reasoning &&
+          !hasContent &&
           isStreaming &&
           (renderLoading ? (
             renderLoading()
           ) : (
-            <div className="react-af-answer-loading">Loading answer...</div>
+            <div className="react-af-answer-loading">
+              {isSearchOnly ? 'Loading results...' : 'Loading answer...'}
+            </div>
           ))}
         {!error &&
-          !answer &&
+          !hasContent &&
           !isStreaming &&
           (renderEmpty ? (
             renderEmpty()
@@ -431,31 +477,49 @@ export default function AnswerResults({
               No results yet. Submit a question to get started.
             </div>
           ))}
-        {showClassification &&
-          classification &&
-          (renderClassification
-            ? renderClassification(classification)
-            : defaultRenderClassification(classification))}
-        {showReasoning &&
-          reasoning &&
-          (renderReasoning
-            ? renderReasoning(reasoning, isStreaming)
-            : defaultRenderReasoning(reasoning, isStreaming))}
-        {answer &&
-          (renderAnswer
-            ? renderAnswer(answer, isStreaming, hits)
-            : defaultRenderAnswer(answer, isStreaming, hits))}
-        {showConfidence &&
-          confidence &&
+        {/* Search-only mode: render hits without answer */}
+        {isSearchOnly &&
           !isStreaming &&
-          (renderConfidence ? renderConfidence(confidence) : defaultRenderConfidence(confidence))}
-        {showFollowUpQuestions &&
-          followUpQuestions.length > 0 &&
-          !isStreaming &&
-          (renderFollowUpQuestions
-            ? renderFollowUpQuestions(followUpQuestions)
-            : defaultRenderFollowUpQuestions(followUpQuestions))}
-        {showHits && hits.length > 0 && (renderHits ? renderHits(hits) : defaultRenderHits(hits))}
+          hits.length > 0 &&
+          (renderSearchOnly
+            ? renderSearchOnly(hits)
+            : renderHits
+              ? renderHits(hits)
+              : defaultRenderHits(hits))}
+        {/* Normal mode with answer generation */}
+        {!isSearchOnly && (
+          <>
+            {showClassification &&
+              classification &&
+              (renderClassification
+                ? renderClassification(classification)
+                : defaultRenderClassification(classification))}
+            {showReasoning &&
+              reasoning &&
+              (renderReasoning
+                ? renderReasoning(reasoning, isStreaming)
+                : defaultRenderReasoning(reasoning, isStreaming))}
+            {answer &&
+              (renderAnswer
+                ? renderAnswer(answer, isStreaming, hits)
+                : defaultRenderAnswer(answer, isStreaming, hits))}
+            {showConfidence &&
+              confidence &&
+              !isStreaming &&
+              (renderConfidence
+                ? renderConfidence(confidence)
+                : defaultRenderConfidence(confidence))}
+            {showFollowUpQuestions &&
+              followUpQuestions.length > 0 &&
+              !isStreaming &&
+              (renderFollowUpQuestions
+                ? renderFollowUpQuestions(followUpQuestions)
+                : defaultRenderFollowUpQuestions(followUpQuestions))}
+            {showHits &&
+              hits.length > 0 &&
+              (renderHits ? renderHits(hits) : defaultRenderHits(hits))}
+          </>
+        )}
       </div>
       {children}
     </AnswerResultsContext.Provider>

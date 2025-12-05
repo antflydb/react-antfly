@@ -280,6 +280,73 @@ export const WithHits = () => {
   )
 }
 
+export const SearchOnlyMode = () => {
+  const handleSearchOnly = (hits: { _id: string; _score: number; _source: unknown }[]) => {
+    console.log('Search-only results:', hits.length, 'hits')
+  }
+
+  return (
+    <Antfly url={url} table={tableName}>
+      <h1>Search-Only Mode (No AI Generation)</h1>
+      <p>
+        Skip AI answer generation and return only search results. Useful for quota management, rate
+        limiting, or when you want search quality without LLM cost.
+      </p>
+      <pre>{`<QueryBox id="question" />
+<AnswerResults
+  id="answer"
+  searchBoxId="question"
+  generator={mockGenerator}
+  withoutGeneration={true}
+  onSearchOnly={(hits) => console.log('Got', hits.length, 'results')}
+/>`}</pre>
+
+      <QueryBox id="question" placeholder="Search for something..." buttonLabel="Search" />
+
+      <div style={{ marginTop: '20px' }}>
+        <AnswerResults
+          id="answer"
+          searchBoxId="question"
+          generator={mockGenerator}
+          withoutGeneration={true}
+          onSearchOnly={handleSearchOnly}
+          renderSearchOnly={(hits) => (
+            <div style={{ padding: '20px', background: '#f5f5f5', borderRadius: '8px' }}>
+              <h3 style={{ margin: '0 0 16px 0' }}>Search Results ({hits.length})</h3>
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                {hits.map((hit) => (
+                  <li
+                    key={hit._id}
+                    style={{
+                      padding: '12px',
+                      marginBottom: '8px',
+                      background: 'white',
+                      borderRadius: '4px',
+                      boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                    }}
+                  >
+                    <strong>
+                      {String((hit._source as Record<string, unknown>)?.TICO || hit._id)}
+                    </strong>
+                    <div style={{ fontSize: '14px', color: '#666' }}>
+                      Score: {hit._score.toFixed(3)}
+                    </div>
+                    {(hit._source as Record<string, unknown>)?.AUTR && (
+                      <div style={{ fontSize: '14px', color: '#888', marginTop: '4px' }}>
+                        Author: {String((hit._source as Record<string, unknown>)?.AUTR)}
+                      </div>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        />
+      </div>
+    </Antfly>
+  )
+}
+
 export const StyledExample = () => {
   const handleFeedback = (data: {
     feedback: { rating: number; scale: number; comment?: string }
