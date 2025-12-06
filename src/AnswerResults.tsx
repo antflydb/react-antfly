@@ -415,8 +415,18 @@ export default function AnswerResults({
       followUpQuestions,
       isStreaming,
       result,
+      confidence,
     }
-  }, [currentQuery, classification, hits, reasoning, answer, followUpQuestions, isStreaming])
+  }, [
+    currentQuery,
+    classification,
+    hits,
+    reasoning,
+    answer,
+    followUpQuestions,
+    isStreaming,
+    confidence,
+  ])
 
   return (
     <AnswerResultsContext.Provider value={contextValue}>
