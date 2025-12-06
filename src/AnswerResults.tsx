@@ -143,6 +143,17 @@ export default function AnswerResults({
       ],
       generator: generator,
       with_streaming: true,
+      steps: {
+        classification: {
+          with_reasoning: showReasoning,
+        },
+        followup: {
+          enabled: showFollowUpQuestions,
+        },
+        confidence: {
+          enabled: showConfidence,
+        },
+      },
     }
 
     // Start streaming
@@ -246,6 +257,9 @@ export default function AnswerResults({
     semanticIndexes,
     filterQuery,
     exclusionQuery,
+    showReasoning,
+    showFollowUpQuestions,
+    showConfidence,
     onStreamStart,
     onStreamEnd,
     onErrorCallback,

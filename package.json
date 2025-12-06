@@ -11,7 +11,7 @@
       "types": "./types/index.d.ts",
       "import": "./dist/main.js"
     },
-    "./styles.css": "./dist/components.css"
+    "./styles": "./dist/components.css"
   },
   "scripts": {
     "test": "vitest run",
