@@ -125,7 +125,6 @@ export default function Autosuggest({
 
   // Item registration for keyboard navigation
   const itemsRef = useRef<Map<string, number>>(new Map())
-  const nextIndexRef = useRef(0)
 
   // Scan children to collect facet configurations
   const facetConfigs = useMemo(() => {
@@ -309,7 +308,8 @@ export default function Autosuggest({
   // Item registration callbacks for child components
   const registerItem = useCallback((itemId: string): number => {
     if (!itemsRef.current.has(itemId)) {
-      const index = nextIndexRef.current++
+      // Use current size as index to ensure contiguous indices starting from 0
+      const index = itemsRef.current.size
       itemsRef.current.set(itemId, index)
       return index
     }
@@ -318,6 +318,11 @@ export default function Autosuggest({
 
   const unregisterItem = useCallback((itemId: string) => {
     itemsRef.current.delete(itemId)
+    // Reindex remaining items to maintain contiguous indices
+    let index = 0
+    itemsRef.current.forEach((_, key) => {
+      itemsRef.current.set(key, index++)
+    })
   }, [])
 
   // Handle selection (for child components)
@@ -341,23 +346,27 @@ export default function Autosuggest({
     [onSuggestionSelect, suggestions, children],
   )
 
-  // Total number of navigable items (for composable mode)
-  const totalItems = useMemo(() => {
+  // Compute total navigable items directly from data
+  const navigableItemCount = useMemo(() => {
     if (!children) return suggestions.length
-    return nextIndexRef.current
-  }, [children, suggestions.length])
+    // Count suggestions plus all facet terms
+    let count = suggestions.length
+    facetData.forEach((terms) => {
+      count += terms.length
+    })
+    return count
+  }, [children, suggestions.length, facetData])
 
   // Handle keyboard navigation
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (!isOpen) return
-      const maxItems = children ? totalItems : suggestions.length
-      if (maxItems === 0) return
+      if (navigableItemCount === 0) return
 
       switch (e.key) {
         case 'ArrowDown':
           e.preventDefault()
-          setSelectedIndex((prev) => (prev < maxItems - 1 ? prev + 1 : prev))
+          setSelectedIndex((prev) => (prev < navigableItemCount - 1 ? prev + 1 : prev))
           break
         case 'ArrowUp':
           e.preventDefault()
@@ -365,7 +374,7 @@ export default function Autosuggest({
           break
         case 'Enter':
           e.preventDefault()
-          if (selectedIndex >= 0 && selectedIndex < maxItems) {
+          if (selectedIndex >= 0 && selectedIndex < navigableItemCount) {
             if (!children) {
               // Legacy mode
               justSelectedRef.current = true
@@ -382,7 +391,7 @@ export default function Autosuggest({
           break
       }
     },
-    [isOpen, suggestions, selectedIndex, onSuggestionSelect, children, totalItems],
+    [isOpen, suggestions, selectedIndex, onSuggestionSelect, children, navigableItemCount],
   )
 
   // Attach keyboard event listener
@@ -460,14 +469,6 @@ export default function Autosuggest({
       fields,
     ],
   )
-
-  // Reset item indices when isOpen changes
-  useEffect(() => {
-    if (isOpen) {
-      nextIndexRef.current = 0
-      itemsRef.current.clear()
-    }
-  }, [isOpen])
 
   // If using children (composable mode)
   if (children) {

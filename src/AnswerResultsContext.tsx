@@ -1,9 +1,10 @@
-import type { AnswerAgentResult, QueryHit } from '@antfly/sdk'
+import type { AnswerAgentResult, AnswerConfidence, QueryHit } from '@antfly/sdk'
 import { createContext, useContext } from 'react'
 
 // Context for sharing Answer Agent data with child components (e.g., AnswerFeedback)
 export interface AnswerResultsContextValue {
   query: string
+  agentKnowledge?: string
   classification: {
     route_type: 'question' | 'search'
     improved_query: string
@@ -18,6 +19,7 @@ export interface AnswerResultsContextValue {
   /** True when generation was skipped (withoutGeneration=true) and only search results are shown */
   isSearchOnly: boolean
   result: AnswerAgentResult | null
+  confidence: AnswerConfidence | null
 }
 
 export const AnswerResultsContext = createContext<AnswerResultsContextValue | null>(null)

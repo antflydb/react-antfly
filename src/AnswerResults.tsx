@@ -15,7 +15,7 @@ export interface AnswerResultsProps {
   id: string
   searchBoxId: string // Links to the QueryBox that provides the search value
   generator: GeneratorConfig
-  systemPrompt?: string
+  agentKnowledge?: string // Additional context for the answer agent
   table?: string // Optional table override - auto-inherits from QueryBox if not specified
   filterQuery?: Record<string, unknown> // Filter query to constrain search results
   exclusionQuery?: Record<string, unknown> // Exclusion query to exclude matches
@@ -69,7 +69,7 @@ export default function AnswerResults({
   id,
   searchBoxId,
   generator,
-  systemPrompt: _systemPrompt,
+  agentKnowledge,
   table,
   filterQuery,
   exclusionQuery,
@@ -165,8 +165,20 @@ export default function AnswerResults({
         },
       ],
       generator: generator,
+      agent_knowledge: agentKnowledge,
       with_streaming: true,
       without_generation: withoutGeneration,
+      steps: {
+        classification: {
+          with_reasoning: showReasoning,
+        },
+        followup: {
+          enabled: showFollowUpQuestions,
+        },
+        confidence: {
+          enabled: showConfidence,
+        },
+      },
     }
 
     // Start streaming
@@ -272,11 +284,15 @@ export default function AnswerResults({
     defaultTable,
     headers,
     generator,
+    agentKnowledge,
     fields,
     semanticIndexes,
     filterQuery,
     exclusionQuery,
     withoutGeneration,
+    showReasoning,
+    showFollowUpQuestions,
+    showConfidence,
     onStreamStart,
     onStreamEnd,
     onErrorCallback,
@@ -426,6 +442,7 @@ export default function AnswerResults({
 
     return {
       query: currentQuery || '',
+      agentKnowledge,
       classification,
       hits,
       reasoning,
@@ -434,9 +451,11 @@ export default function AnswerResults({
       isStreaming,
       isSearchOnly,
       result,
+      confidence,
     }
   }, [
     currentQuery,
+    agentKnowledge,
     classification,
     hits,
     reasoning,
@@ -444,6 +463,7 @@ export default function AnswerResults({
     followUpQuestions,
     isStreaming,
     isSearchOnly,
+    confidence,
   ])
 
   // Determine if we have content to show (answer in normal mode, hits in search-only mode)

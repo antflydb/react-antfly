@@ -1,3 +1,4 @@
+import type { QueryHit } from '@antfly/sdk'
 import type React from 'react'
 import { Streamdown } from 'streamdown'
 import {
@@ -172,17 +173,17 @@ export const WithCustomRenderers = () => {
   )
 }
 
-export const WithSystemPrompt = () => {
+export const WithAgentKnowledge = () => {
   return (
     <Antfly url={url} table={tableName}>
-      <h1>Answer Agent with Custom System Prompt</h1>
-      <p>Guide the AI's behavior with a custom system prompt.</p>
+      <h1>Answer Agent with Agent Knowledge</h1>
+      <p>Guide the AI's behavior with custom agent knowledge context.</p>
       <pre>{`<QueryBox id="question" />
 <AnswerResults
   id="answer"
   searchBoxId="question"
   generator={mockGenerator}
-  systemPrompt="You are a literary expert. Provide concise, scholarly answers with historical context."
+  agentKnowledge="You are a literary expert. Provide concise, scholarly answers with historical context."
   showReasoning={true}
 />`}</pre>
 
@@ -193,7 +194,7 @@ export const WithSystemPrompt = () => {
           id="answer"
           searchBoxId="question"
           generator={mockGenerator}
-          systemPrompt="You are a literary expert. Provide concise, scholarly answers with historical context."
+          agentKnowledge="You are a literary expert. Provide concise, scholarly answers with historical context."
           showReasoning={true}
         />
       </div>
@@ -281,7 +282,7 @@ export const WithHits = () => {
 }
 
 export const SearchOnlyMode = () => {
-  const handleSearchOnly = (hits: { _id: string; _score: number; _source: unknown }[]) => {
+  const handleSearchOnly = (hits: QueryHit[]) => {
     console.log('Search-only results:', hits.length, 'hits')
   }
 
@@ -325,17 +326,15 @@ export const SearchOnlyMode = () => {
                       boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
                     }}
                   >
-                    <strong>
-                      {String((hit._source as Record<string, unknown>)?.TICO || hit._id)}
-                    </strong>
+                    <strong>{String(hit._source?.TICO || hit._id)}</strong>
                     <div style={{ fontSize: '14px', color: '#666' }}>
                       Score: {hit._score.toFixed(3)}
                     </div>
-                    {(hit._source as Record<string, unknown>)?.AUTR && (
+                    {hit._source?.AUTR ? (
                       <div style={{ fontSize: '14px', color: '#888', marginTop: '4px' }}>
-                        Author: {String((hit._source as Record<string, unknown>)?.AUTR)}
+                        Author: {String(hit._source.AUTR)}
                       </div>
-                    )}
+                    ) : null}
                   </li>
                 ))}
               </ul>

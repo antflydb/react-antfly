@@ -1,4 +1,4 @@
-import { AnswerAgentResult, QueryHit } from '@antfly/sdk';
+import { AnswerAgentResult, AnswerConfidence, QueryHit } from '@antfly/sdk';
 export interface AnswerResultsContextValue {
     query: string;
     classification: {
@@ -13,6 +13,7 @@ export interface AnswerResultsContextValue {
     followUpQuestions: string[];
     isStreaming: boolean;
     result: AnswerAgentResult | null;
+    confidence: AnswerConfidence | null;
 }
 export declare const AnswerResultsContext: import('react').Context<AnswerResultsContextValue | null>;
 export declare function useAnswerResultsContext(): AnswerResultsContextValue;
