@@ -172,17 +172,17 @@ export const WithCustomRenderers = () => {
   )
 }
 
-export const WithSystemPrompt = () => {
+export const WithAgentKnowledge = () => {
   return (
     <Antfly url={url} table={tableName}>
-      <h1>Answer Agent with Custom System Prompt</h1>
-      <p>Guide the AI's behavior with a custom system prompt.</p>
+      <h1>Answer Agent with Agent Knowledge</h1>
+      <p>Guide the AI's behavior with custom agent knowledge context.</p>
       <pre>{`<QueryBox id="question" />
 <AnswerResults
   id="answer"
   searchBoxId="question"
   generator={mockGenerator}
-  systemPrompt="You are a literary expert. Provide concise, scholarly answers with historical context."
+  agentKnowledge="You are a literary expert. Provide concise, scholarly answers with historical context."
   showReasoning={true}
 />`}</pre>
 
@@ -193,7 +193,7 @@ export const WithSystemPrompt = () => {
           id="answer"
           searchBoxId="question"
           generator={mockGenerator}
-          systemPrompt="You are a literary expert. Provide concise, scholarly answers with historical context."
+          agentKnowledge="You are a literary expert. Provide concise, scholarly answers with historical context."
           showReasoning={true}
         />
       </div>

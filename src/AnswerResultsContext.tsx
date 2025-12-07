@@ -4,6 +4,7 @@ import { createContext, useContext } from 'react'
 // Context for sharing Answer Agent data with child components (e.g., AnswerFeedback)
 export interface AnswerResultsContextValue {
   query: string
+  agentKnowledge?: string
   classification: {
     route_type: 'question' | 'search'
     improved_query: string

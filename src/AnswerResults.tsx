@@ -15,7 +15,7 @@ export interface AnswerResultsProps {
   id: string
   searchBoxId: string // Links to the QueryBox that provides the search value
   generator: GeneratorConfig
-  systemPrompt?: string
+  agentKnowledge?: string // Additional context for the answer agent
   table?: string // Optional table override - auto-inherits from QueryBox if not specified
   filterQuery?: Record<string, unknown> // Filter query to constrain search results
   exclusionQuery?: Record<string, unknown> // Exclusion query to exclude matches
@@ -51,7 +51,7 @@ export default function AnswerResults({
   id,
   searchBoxId,
   generator,
-  systemPrompt: _systemPrompt,
+  agentKnowledge,
   table,
   filterQuery,
   exclusionQuery,
@@ -142,6 +142,7 @@ export default function AnswerResults({
         },
       ],
       generator: generator,
+      agent_knowledge: agentKnowledge,
       with_streaming: true,
       steps: {
         classification: {
@@ -253,6 +254,7 @@ export default function AnswerResults({
     defaultTable,
     headers,
     generator,
+    agentKnowledge,
     fields,
     semanticIndexes,
     filterQuery,
@@ -408,6 +410,7 @@ export default function AnswerResults({
 
     return {
       query: currentQuery || '',
+      agentKnowledge,
       classification,
       hits,
       reasoning,
@@ -419,6 +422,7 @@ export default function AnswerResults({
     }
   }, [
     currentQuery,
+    agentKnowledge,
     classification,
     hits,
     reasoning,

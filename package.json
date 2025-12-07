@@ -35,7 +35,9 @@
     "url": "https://github.com/antflydb/react-antfly/issues"
   },
   "homepage": "https://github.com/antflydb/react-antfly#readme",
-  "browserslist": [">0.03%"],
+  "browserslist": [
+    ">0.03%"
+  ],
   "devDependencies": {
     "@babel/core": "^7.28.5",
     "@babel/preset-env": "^7.28.5",
