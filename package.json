@@ -1,6 +1,6 @@
 {
   "name": "@antfly/components",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "type": "module",
   "description": "React components for Antfly search",
   "main": "dist/main.js",
@@ -35,9 +35,7 @@
     "url": "https://github.com/antflydb/react-antfly/issues"
   },
   "homepage": "https://github.com/antflydb/react-antfly#readme",
-  "browserslist": [
-    ">0.03%"
-  ],
+  "browserslist": [">0.03%"],
   "devDependencies": {
     "@babel/core": "^7.28.5",
     "@babel/preset-env": "^7.28.5",
