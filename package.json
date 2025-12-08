@@ -1,6 +1,6 @@
 {
   "name": "@antfly/components",
-  "version": "0.0.3",
+  "version": "0.0.5",
   "type": "module",
   "description": "React components for Antfly search",
   "main": "dist/main.js",
@@ -48,7 +48,7 @@
     "@storybook/react-vite": "^10.1.4",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
-    "@types/node": "^24.10.1",
+    "@types/node": "^24.10.2",
     "@types/qs": "^6.14.0",
     "@types/react": "^19.2.7",
     "@types/react-autosuggest": "^10.1.11",
@@ -74,7 +74,7 @@
     "react-dom": "^16.0 || ^17.0 || ^18.0 || ^19.0"
   },
   "dependencies": {
-    "@antfly/sdk": "github:antflydb/antfly-ts",
+    "@antfly/sdk": "0.0.7",
     "@babel/runtime": "^7.28.4",
     "@vitejs/plugin-react": "^5.1.2",
     "qs": "^6.14.0",
