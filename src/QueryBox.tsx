@@ -1,6 +1,31 @@
 import type { QueryHit } from '@antfly/sdk'
-import React, { type ReactNode, useCallback, useEffect, useRef, useState } from 'react'
+import React, { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSharedContext } from './SharedContext'
+
+/**
+ * Props passed to custom input components via renderInput.
+ * Custom inputs must call onChange when value changes and onSubmit for form submission.
+ */
+export interface CustomInputProps {
+  /** Current input value */
+  value: string
+  /** Called when the input value changes */
+  onChange: (value: string) => void
+  /** Called to submit the current value */
+  onSubmit: (value: string) => void
+  /** Keyboard event handler - custom input should forward keyboard events */
+  onKeyDown: (event: React.KeyboardEvent) => void
+  /** Whether the autosuggest dropdown is open */
+  isSuggestOpen: boolean
+  /** Close the autosuggest dropdown */
+  onSuggestClose: () => void
+  /** Placeholder text */
+  placeholder?: string
+  /** Whether the input is disabled */
+  disabled?: boolean
+  /** ID for the input element */
+  id?: string
+}
 
 export interface QueryBoxProps {
   id: string
@@ -12,6 +37,13 @@ export interface QueryBoxProps {
   onSubmit?: (value: string) => void
   onInputChange?: (value: string) => void
   onEscape?: (clearInput: () => void) => boolean // Return true to prevent default clear behavior
+  /**
+   * Custom input renderer. When provided, replaces the default <input> element.
+   * The custom component receives props for value management, submission, and keyboard handling.
+   * Note: When renderInput is provided, QueryBox does not wrap content in a <form> element,
+   * as custom inputs like PromptInput may have their own form handling.
+   */
+  renderInput?: (props: CustomInputProps) => React.ReactNode
 }
 
 export default function QueryBox({
@@ -24,6 +56,7 @@ export default function QueryBox({
   onSubmit,
   onInputChange,
   onEscape,
+  renderInput,
 }: QueryBoxProps) {
   const [{ widgets }, dispatch] = useSharedContext()
   const [value, setValue] = useState(initialValue || '')
@@ -146,10 +179,11 @@ export default function QueryBox({
     }
   }, [onInputChange])
 
-  // Handle keyboard events
+  // Handle keyboard events (supports both input and textarea elements for custom inputs)
   const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === 'Enter' && mode === 'submit') {
+    (e: React.KeyboardEvent) => {
+      // For custom inputs like PromptInput, Shift+Enter is used for newlines
+      if (e.key === 'Enter' && !e.shiftKey && mode === 'submit') {
         e.preventDefault()
 
         // Close autosuggest dropdown on submit
@@ -262,6 +296,64 @@ export default function QueryBox({
   // Cleanup on unmount
   useEffect(() => () => dispatch({ type: 'deleteWidget', key: id }), [dispatch, id])
 
+  // Handler for custom input onChange
+  const handleCustomInputChange = useCallback(
+    (newValue: string) => {
+      setValue(newValue)
+
+      if (onInputChange) {
+        onInputChange(newValue)
+      }
+
+      if (mode === 'live') {
+        updateWidget(newValue)
+      }
+
+      if (newValue.trim()) {
+        setIsSuggestOpen(true)
+      }
+    },
+    [mode, updateWidget, onInputChange],
+  )
+
+  // Handler for custom input onSubmit
+  const handleCustomInputSubmit = useCallback(
+    (submittedValue: string) => {
+      setIsSuggestOpen(false)
+
+      if (onSubmit) {
+        onSubmit(submittedValue)
+      }
+
+      updateWidget(submittedValue, true)
+    },
+    [onSubmit, updateWidget],
+  )
+
+  // Build props for custom input
+  const customInputProps: CustomInputProps = useMemo(
+    () => ({
+      value,
+      onChange: handleCustomInputChange,
+      onSubmit: handleCustomInputSubmit,
+      onKeyDown: handleKeyDown,
+      isSuggestOpen,
+      onSuggestClose: () => setIsSuggestOpen(false),
+      placeholder: placeholder || (mode === 'submit' ? 'Ask a question...' : 'search…'),
+      id: `${id}-input`,
+    }),
+    [
+      value,
+      handleCustomInputChange,
+      handleCustomInputSubmit,
+      handleKeyDown,
+      isSuggestOpen,
+      placeholder,
+      mode,
+      id,
+    ],
+  )
+
   const inputElement = (
     <input
       type="text"
@@ -283,11 +375,15 @@ export default function QueryBox({
     </button>
   )
 
+  // Render either custom input or default input element
+  const renderedInput = renderInput ? renderInput(customInputProps) : inputElement
+
   const content = (
     <>
-      {inputElement}
-      {clearButton}
-      {mode === 'submit' && (
+      {renderedInput}
+      {/* Only show clear button and submit button for default input */}
+      {!renderInput && clearButton}
+      {!renderInput && mode === 'submit' && (
         <button type="submit" className="react-af-querybox-submit" disabled={!value.trim()}>
           {buttonLabel}
         </button>
@@ -315,9 +411,13 @@ export default function QueryBox({
     </>
   )
 
+  // When renderInput is provided, skip the form wrapper as custom inputs (like PromptInput)
+  // may have their own form handling
+  const shouldWrapInForm = mode === 'submit' && !renderInput
+
   return (
     <div className="react-af-querybox" ref={containerRef}>
-      {mode === 'submit' ? <form onSubmit={handleSubmit}>{content}</form> : content}
+      {shouldWrapInForm ? <form onSubmit={handleSubmit}>{content}</form> : content}
     </div>
   )
 }
