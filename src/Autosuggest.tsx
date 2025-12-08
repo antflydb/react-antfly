@@ -43,6 +43,7 @@ export interface AutosuggestProps {
   returnFields?: string[]
   limit?: number
   minChars?: number
+  debounceMs?: number // Debounce delay for query triggering (default: 300ms, 0 to disable)
   renderSuggestion?: (hit: QueryHit) => ReactNode
   customQuery?: (value?: string, fields?: string[]) => unknown
   semanticIndexes?: string[]
@@ -97,6 +98,7 @@ export default function Autosuggest({
   returnFields,
   limit = 10,
   minChars = 2,
+  debounceMs = 300,
   renderSuggestion,
   customQuery,
   semanticIndexes,
@@ -121,6 +123,7 @@ export default function Autosuggest({
   const suggestionsRef = useRef<HTMLUListElement | HTMLDivElement>(null)
   const justSelectedRef = useRef(false)
   const prevSearchValueRef = useRef(searchValue)
+  const debounceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const id = `autosuggest-${useId()}`
 
   // Item registration for keyboard navigation
@@ -169,7 +172,7 @@ export default function Autosuggest({
   const isOpen =
     isOpenProp !== undefined ? isOpenProp : isOpenOverride !== null ? isOpenOverride : shouldShow
 
-  // Update widget configuration when searchValue changes
+  // Update widget configuration when searchValue changes (with debouncing)
   useEffect(() => {
     // Reset override and selection when search value changes
     if (prevSearchValueRef.current !== searchValue) {
@@ -184,112 +187,141 @@ export default function Autosuggest({
       justSelectedRef.current = false
     }
 
+    // Clear any pending debounced query
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current)
+      debounceTimeoutRef.current = null
+    }
+
     const shouldShowNow = searchValue.length >= minChars
-    if (shouldShowNow) {
-      // Determine if this autosuggest can actually query
-      // It needs either: semantic indexes, custom query, or non-empty fields
-      const canQuery =
-        isSemanticEnabled ||
-        customQuery !== undefined ||
-        (Array.isArray(fields) && fields.length > 0)
 
-      // Build the base query
-      let baseQuery: unknown = null
-      if (isSemanticEnabled) {
-        baseQuery = customQuery ? customQuery() : null
-      } else if (customQuery) {
-        baseQuery = customQuery(searchValue, fields)
-      } else if (Array.isArray(fields) && fields.length > 0) {
-        baseQuery = disjunctsFrom(
-          fields.map((field) => {
-            // TODO (ajr) Do we want match_phrase or make a match_phrase_prefix?
-            // if (field.includes(" ")) return {};
-            if (field.endsWith('__keyword')) return { prefix: searchValue, field }
-            if (field.endsWith('__2gram')) return { match: searchValue, field }
-            return { match: searchValue, field }
-          }),
-        )
+    // Function to dispatch the query
+    const dispatchQuery = () => {
+      if (shouldShowNow) {
+        // Determine if this autosuggest can actually query
+        // It needs either: semantic indexes, custom query, or non-empty fields
+        const canQuery =
+          isSemanticEnabled ||
+          customQuery !== undefined ||
+          (Array.isArray(fields) && fields.length > 0)
+
+        // Build the base query
+        let baseQuery: unknown = null
+        if (isSemanticEnabled) {
+          baseQuery = customQuery ? customQuery() : null
+        } else if (customQuery) {
+          baseQuery = customQuery(searchValue, fields)
+        } else if (Array.isArray(fields) && fields.length > 0) {
+          baseQuery = disjunctsFrom(
+            fields.map((field) => {
+              // TODO (ajr) Do we want match_phrase or make a match_phrase_prefix?
+              // if (field.includes(" ")) return {};
+              if (field.endsWith('__keyword')) return { prefix: searchValue, field }
+              if (field.endsWith('__2gram')) return { match: searchValue, field }
+              return { match: searchValue, field }
+            }),
+          )
+        }
+
+        // Wrap with filterQuery if provided (for non-semantic queries)
+        const finalQuery =
+          !isSemanticEnabled && baseQuery && filterQuery
+            ? conjunctsFrom(
+                new Map([
+                  ['filter', filterQuery],
+                  ['query', baseQuery],
+                ]),
+              )
+            : baseQuery
+
+        // Build facet options if facet children are present
+        const facetOptions =
+          facetConfigs.length > 0
+            ? facetConfigs.map((config) => ({
+                field: config.field,
+                size: config.size,
+              }))
+            : undefined
+
+        // Register widget to fetch its own query results
+        dispatch({
+          type: 'setWidget',
+          key: id,
+          needsQuery: canQuery,
+          needsConfiguration: canQuery,
+          isFacet: false,
+          rootQuery: true,
+          isAutosuggest: true,
+          isSemantic: isSemanticEnabled,
+          wantResults: canQuery,
+          wantFacets: facetConfigs.length > 0,
+          query: finalQuery,
+          semanticQuery: isSemanticEnabled ? searchValue : undefined,
+          table: table,
+          filterQuery: filterQuery,
+          exclusionQuery: exclusionQuery,
+          facetOptions: facetOptions,
+          configuration: canQuery
+            ? isSemanticEnabled
+              ? {
+                  indexes: Array.isArray(semanticIndexes) ? semanticIndexes : [],
+                  limit,
+                  itemsPerPage: limit,
+                  page: 1,
+                  fields: effectiveReturnFields,
+                }
+              : {
+                  fields: effectiveReturnFields,
+                  size: limit,
+                  itemsPerPage: limit,
+                  page: 1,
+                }
+            : undefined,
+          // Don't clear result to prevent flashing - keep previous results visible while loading
+          // result: undefined,
+          isLoading: true, // Mark as loading to keep component mounted
+        })
+      } else {
+        // Clear suggestions when search value is too short
+        dispatch({
+          type: 'setWidget',
+          key: id,
+          needsQuery: false,
+          needsConfiguration: false,
+          isFacet: false,
+          rootQuery: true,
+          isAutosuggest: true,
+          isSemantic: isSemanticEnabled,
+          wantResults: false,
+          table: table,
+          result: { data: [], total: 0 },
+        })
       }
+    }
 
-      // Wrap with filterQuery if provided (for non-semantic queries)
-      const finalQuery =
-        !isSemanticEnabled && baseQuery && filterQuery
-          ? conjunctsFrom(
-              new Map([
-                ['filter', filterQuery],
-                ['query', baseQuery],
-              ]),
-            )
-          : baseQuery
-
-      // Build facet options if facet children are present
-      const facetOptions =
-        facetConfigs.length > 0
-          ? facetConfigs.map((config) => ({
-              field: config.field,
-              size: config.size,
-            }))
-          : undefined
-
-      // Register widget to fetch its own query results
-      dispatch({
-        type: 'setWidget',
-        key: id,
-        needsQuery: canQuery,
-        needsConfiguration: canQuery,
-        isFacet: false,
-        rootQuery: true,
-        isAutosuggest: true,
-        isSemantic: isSemanticEnabled,
-        wantResults: canQuery,
-        wantFacets: facetConfigs.length > 0,
-        query: finalQuery,
-        semanticQuery: isSemanticEnabled ? searchValue : undefined,
-        table: table,
-        filterQuery: filterQuery,
-        exclusionQuery: exclusionQuery,
-        facetOptions: facetOptions,
-        configuration: canQuery
-          ? isSemanticEnabled
-            ? {
-                indexes: Array.isArray(semanticIndexes) ? semanticIndexes : [],
-                limit,
-                itemsPerPage: limit,
-                page: 1,
-                fields: effectiveReturnFields,
-              }
-            : {
-                fields: effectiveReturnFields,
-                size: limit,
-                itemsPerPage: limit,
-                page: 1,
-              }
-          : undefined,
-        // Don't clear result to prevent flashing - keep previous results visible while loading
-        // result: undefined,
-        isLoading: true, // Mark as loading to keep component mounted
-      })
+    // Apply debouncing if enabled, otherwise dispatch immediately
+    if (debounceMs > 0 && shouldShowNow) {
+      debounceTimeoutRef.current = setTimeout(dispatchQuery, debounceMs)
     } else {
-      // Clear suggestions when search value is too short
-      dispatch({
-        type: 'setWidget',
-        key: id,
-        needsQuery: false,
-        needsConfiguration: false,
-        isFacet: false,
-        rootQuery: true,
-        isAutosuggest: true,
-        isSemantic: isSemanticEnabled,
-        wantResults: false,
-        table: table,
-        result: { data: [], total: 0 },
-      })
+      // Dispatch immediately when:
+      // - debouncing is disabled (debounceMs === 0)
+      // - search value is below minChars (need to clear suggestions immediately)
+      dispatchQuery()
+    }
+
+    // Cleanup timeout on effect re-run
+    return () => {
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current)
+        debounceTimeoutRef.current = null
+      }
     }
   }, [
     searchValue,
     fields,
     limit,
     minChars,
+    debounceMs,
     customQuery,
     dispatch,
     id,

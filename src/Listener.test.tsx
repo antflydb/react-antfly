@@ -371,6 +371,7 @@ describe('Listener', () => {
               fields={[]}
               limit={10}
               minChars={2}
+              debounceMs={0}
             />
           </QueryBox>
           <Results

@@ -17,6 +17,7 @@ export interface AutosuggestProps {
     returnFields?: string[];
     limit?: number;
     minChars?: number;
+    debounceMs?: number;
     renderSuggestion?: (hit: QueryHit) => ReactNode;
     customQuery?: (value?: string, fields?: string[]) => unknown;
     semanticIndexes?: string[];
@@ -61,7 +62,7 @@ export interface AutosuggestFacetsProps {
     footer?: ReactNode;
     emptyMessage?: ReactNode;
 }
-export default function Autosuggest({ fields, returnFields, limit, minChars, renderSuggestion, customQuery, semanticIndexes, table, filterQuery, exclusionQuery, searchValue, onSuggestionSelect, containerRef, isOpen: isOpenProp, children, layout, className, dropdownClassName, }: AutosuggestProps): import("react/jsx-runtime").JSX.Element | null;
+export default function Autosuggest({ fields, returnFields, limit, minChars, debounceMs, renderSuggestion, customQuery, semanticIndexes, table, filterQuery, exclusionQuery, searchValue, onSuggestionSelect, containerRef, isOpen: isOpenProp, children, layout, className, dropdownClassName, }: AutosuggestProps): import("react/jsx-runtime").JSX.Element | null;
 export declare function AutosuggestResults({ limit, renderItem, onSelect: onSelectProp, filter, className, itemClassName, selectedItemClassName, header, footer, emptyMessage, }: AutosuggestResultsProps): import("react/jsx-runtime").JSX.Element | null;
 export declare function AutosuggestFacets({ field, size, label, order, renderItem, renderSection, onSelect: onSelectProp, clickable, filter, className, itemClassName, sectionClassName, header, footer, emptyMessage, }: AutosuggestFacetsProps): import("react/jsx-runtime").JSX.Element | null;
 export {};
