@@ -42,7 +42,7 @@ export interface AnswerFeedbackProps {
      * @param data.feedback - The user's feedback (rating, scale, optional comment)
      * @param data.result - The result (RAG or Answer Agent)
      * @param data.query - The original query string
-     * @param data.context - Additional context from Answer Agent (classification, reasoning) if available
+     * @param data.context - Additional context from Answer Agent (classification, reasoning, agentKnowledge) if available
      */
     onFeedback: (data: {
         feedback: FeedbackResult;
@@ -54,6 +54,7 @@ export interface AnswerFeedbackProps {
                 confidence: number;
             };
             reasoning?: string;
+            agentKnowledge?: string;
         };
     }) => void;
     /**

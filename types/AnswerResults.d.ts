@@ -4,7 +4,7 @@ export interface AnswerResultsProps {
     id: string;
     searchBoxId: string;
     generator: GeneratorConfig;
-    systemPrompt?: string;
+    agentKnowledge?: string;
     table?: string;
     filterQuery?: Record<string, unknown>;
     exclusionQuery?: Record<string, unknown>;
@@ -28,5 +28,5 @@ export interface AnswerResultsProps {
     onError?: (error: string) => void;
     children?: ReactNode;
 }
-export default function AnswerResults({ id, searchBoxId, generator, systemPrompt: _systemPrompt, table, filterQuery, exclusionQuery, fields, semanticIndexes, showClassification, showReasoning, showFollowUpQuestions, showConfidence, showHits, renderLoading, renderEmpty, renderClassification, renderReasoning, renderAnswer, renderConfidence, renderFollowUpQuestions, renderHits, onStreamStart, onStreamEnd, onError: onErrorCallback, children, }: AnswerResultsProps): import("react/jsx-runtime").JSX.Element;
+export default function AnswerResults({ id, searchBoxId, generator, agentKnowledge, table, filterQuery, exclusionQuery, fields, semanticIndexes, showClassification, showReasoning, showFollowUpQuestions, showConfidence, showHits, renderLoading, renderEmpty, renderClassification, renderReasoning, renderAnswer, renderConfidence, renderFollowUpQuestions, renderHits, onStreamStart, onStreamEnd, onError: onErrorCallback, children, }: AnswerResultsProps): import("react/jsx-runtime").JSX.Element;
 //# sourceMappingURL=AnswerResults.d.ts.map
