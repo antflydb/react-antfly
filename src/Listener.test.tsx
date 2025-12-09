@@ -696,4 +696,211 @@ describe('Listener', () => {
       msearchSpy.mockRestore()
     })
   })
+
+  describe('match_phrase query support', () => {
+    it('should NOT include match_phrase queries for single term searches', async () => {
+      vi.restoreAllMocks()
+      const utils = await import('./utils')
+      const msearchSpy = vi.spyOn(utils, 'multiquery').mockResolvedValue({
+        responses: [
+          {
+            status: 200,
+            took: 10,
+            hits: { hits: [], total: 0 },
+          },
+        ],
+      })
+
+      const { container } = render(
+        <TestWrapper>
+          <QueryBox id="search" mode="live" />
+          <Results
+            id="results"
+            searchBoxId="search"
+            fields={['title', 'description']}
+            items={(data) => <div>Results: {data.length}</div>}
+          />
+        </TestWrapper>,
+      )
+
+      const input = container.querySelector('input') as HTMLInputElement
+      await userEvent.type(input, 'test')
+
+      // Wait for the query with the actual search term to be sent
+      await waitFor(() => {
+        const calls = msearchSpy.mock.calls
+        const hasSearchQuery = calls.some((call) => {
+          const queries = call[1] as Array<{ query: Record<string, unknown> }>
+          const fts = queries?.[0]?.query?.full_text_search as Record<string, unknown>
+          return fts && !('match_all' in fts)
+        })
+        expect(hasSearchQuery).toBe(true)
+      })
+
+      // Find the query with actual search terms (not match_all)
+      const callWithSearch = msearchSpy.mock.calls.find((call) => {
+        const queries = call[1] as Array<{ query: Record<string, unknown> }>
+        const fts = queries?.[0]?.query?.full_text_search as Record<string, unknown>
+        return fts && !('match_all' in fts)
+      })
+      const queries = callWithSearch?.[1] as Array<{ query: Record<string, unknown> }>
+      const fullTextSearch = queries[0].query.full_text_search as Record<string, unknown>
+
+      // Should have disjuncts with only match queries (no match_phrase)
+      if (fullTextSearch.disjuncts) {
+        const disjuncts = fullTextSearch.disjuncts as Array<Record<string, unknown>>
+        const hasMatchPhrase = disjuncts.some((q: Record<string, unknown>) => 'match_phrase' in q)
+        expect(hasMatchPhrase).toBe(false)
+      }
+
+      msearchSpy.mockRestore()
+    })
+
+    it('should include match_phrase queries for multi-term searches', async () => {
+      vi.restoreAllMocks()
+      const utils = await import('./utils')
+      const msearchSpy = vi.spyOn(utils, 'multiquery').mockResolvedValue({
+        responses: [
+          {
+            status: 200,
+            took: 10,
+            hits: { hits: [], total: 0 },
+          },
+        ],
+      })
+
+      const { container } = render(
+        <TestWrapper>
+          <QueryBox id="search" mode="live" />
+          <Results
+            id="results"
+            searchBoxId="search"
+            fields={['title', 'description']}
+            items={(data) => <div>Results: {data.length}</div>}
+          />
+        </TestWrapper>,
+      )
+
+      const input = container.querySelector('input') as HTMLInputElement
+      await userEvent.type(input, 'hello world')
+
+      // Wait for the query with the multi-term search and match_phrase to be sent
+      await waitFor(() => {
+        const calls = msearchSpy.mock.calls
+        const hasMatchPhraseQuery = calls.some((call) => {
+          const queries = call[1] as Array<{ query: Record<string, unknown> }>
+          const fts = queries?.[0]?.query?.full_text_search as Record<string, unknown>
+          if (fts?.disjuncts) {
+            const disjuncts = fts.disjuncts as Array<Record<string, unknown>>
+            return disjuncts.some((q) => 'match_phrase' in q)
+          }
+          return false
+        })
+        expect(hasMatchPhraseQuery).toBe(true)
+      })
+
+      // Find the query with match_phrase
+      const callWithMatchPhrase = msearchSpy.mock.calls.find((call) => {
+        const queries = call[1] as Array<{ query: Record<string, unknown> }>
+        const fts = queries?.[0]?.query?.full_text_search as Record<string, unknown>
+        if (fts?.disjuncts) {
+          const disjuncts = fts.disjuncts as Array<Record<string, unknown>>
+          return disjuncts.some((q) => 'match_phrase' in q)
+        }
+        return false
+      })
+      const queries = callWithMatchPhrase?.[1] as Array<{ query: Record<string, unknown> }>
+      const fullTextSearch = queries[0].query.full_text_search as Record<string, unknown>
+
+      // Should have disjuncts with both match and match_phrase queries
+      expect(fullTextSearch.disjuncts).toBeDefined()
+      const disjuncts = fullTextSearch.disjuncts as Array<Record<string, unknown>>
+      const matchQueries = disjuncts.filter((q: Record<string, unknown>) => 'match' in q)
+      const matchPhraseQueries = disjuncts.filter(
+        (q: Record<string, unknown>) => 'match_phrase' in q,
+      )
+
+      // Should have 2 match queries (one per field)
+      expect(matchQueries.length).toBe(2)
+      // Should have 2 match_phrase queries (one per field)
+      expect(matchPhraseQueries.length).toBe(2)
+
+      // Verify match_phrase queries have correct structure
+      expect(matchPhraseQueries[0]).toEqual({ match_phrase: 'hello world', field: 'title' })
+      expect(matchPhraseQueries[1]).toEqual({
+        match_phrase: 'hello world',
+        field: 'description',
+      })
+
+      msearchSpy.mockRestore()
+    })
+
+    it('should include match_phrase queries for queries with leading/trailing spaces', async () => {
+      vi.restoreAllMocks()
+      const utils = await import('./utils')
+      const msearchSpy = vi.spyOn(utils, 'multiquery').mockResolvedValue({
+        responses: [
+          {
+            status: 200,
+            took: 10,
+            hits: { hits: [], total: 0 },
+          },
+        ],
+      })
+
+      const { container } = render(
+        <TestWrapper>
+          <QueryBox id="search" mode="live" />
+          <Results
+            id="results"
+            searchBoxId="search"
+            fields={['title']}
+            items={(data) => <div>Results: {data.length}</div>}
+          />
+        </TestWrapper>,
+      )
+
+      const input = container.querySelector('input') as HTMLInputElement
+      // Type a query with multiple terms (spaces between words matter)
+      await userEvent.type(input, 'foo bar')
+
+      // Wait for the query with match_phrase to be sent
+      await waitFor(() => {
+        const calls = msearchSpy.mock.calls
+        const hasMatchPhraseQuery = calls.some((call) => {
+          const queries = call[1] as Array<{ query: Record<string, unknown> }>
+          const fts = queries?.[0]?.query?.full_text_search as Record<string, unknown>
+          if (fts?.disjuncts) {
+            const disjuncts = fts.disjuncts as Array<Record<string, unknown>>
+            return disjuncts.some((q) => 'match_phrase' in q)
+          }
+          return false
+        })
+        expect(hasMatchPhraseQuery).toBe(true)
+      })
+
+      // Find the query with match_phrase
+      const callWithMatchPhrase = msearchSpy.mock.calls.find((call) => {
+        const queries = call[1] as Array<{ query: Record<string, unknown> }>
+        const fts = queries?.[0]?.query?.full_text_search as Record<string, unknown>
+        if (fts?.disjuncts) {
+          const disjuncts = fts.disjuncts as Array<Record<string, unknown>>
+          return disjuncts.some((q) => 'match_phrase' in q)
+        }
+        return false
+      })
+      const queries = callWithMatchPhrase?.[1] as Array<{ query: Record<string, unknown> }>
+      const fullTextSearch = queries[0].query.full_text_search as Record<string, unknown>
+
+      // Should have disjuncts with match_phrase
+      expect(fullTextSearch.disjuncts).toBeDefined()
+      const disjuncts = fullTextSearch.disjuncts as Array<Record<string, unknown>>
+      const matchPhraseQueries = disjuncts.filter(
+        (q: Record<string, unknown>) => 'match_phrase' in q,
+      )
+      expect(matchPhraseQueries.length).toBe(1)
+
+      msearchSpy.mockRestore()
+    })
+  })
 })

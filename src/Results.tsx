@@ -79,10 +79,18 @@ export default function Results({
       if (customQuery) {
         return customQuery(query)
       } else if (fields) {
-        const termQueries: Array<{ match: string; field: string }> = []
+        const termQueries: Array<Record<string, unknown>> = []
         fields.forEach((field) => {
           termQueries.push({ match: query, field })
         })
+        // Add match_phrase queries when there are multiple terms
+        // This boosts results where the exact phrase appears in order
+        const hasMultipleTerms = query.trim().includes(' ')
+        if (hasMultipleTerms) {
+          fields.forEach((field) => {
+            termQueries.push({ match_phrase: query, field })
+          })
+        }
         return query ? disjunctsFrom(termQueries) : { match_all: {} }
       }
       return { match_all: {} }
