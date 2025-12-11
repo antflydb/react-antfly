@@ -36,11 +36,31 @@ export interface AnswerFeedbackProps {
   renderRating?: (currentRating: number | null, onRate: (rating: number) => void) => ReactNode
 
   /**
-   * Whether to enable optional text comments.
-   * When true, a comment field will appear after the user selects a rating.
-   * @default true
+   * Custom render function for the comment input.
+   * If not provided, a default textarea is rendered.
+   *
+   * @param comment - Current comment value
+   * @param setComment - Callback to update the comment value
+   * @returns ReactNode to render the comment input
    */
-  enableComments?: boolean
+  renderComment?: (comment: string, setComment: (value: string) => void) => ReactNode
+
+  /**
+   * Custom render function for the submit button.
+   * If not provided, a default button is rendered.
+   *
+   * @param onSubmit - Callback to submit the feedback
+   * @returns ReactNode to render the submit button
+   */
+  renderSubmit?: (onSubmit: () => void) => ReactNode
+
+  /**
+   * Custom render function for the submitted state.
+   * If not provided, a default thank you message is rendered.
+   *
+   * @returns ReactNode to render after submission
+   */
+  renderSubmitted?: () => ReactNode
 
   /**
    * Callback invoked when the user submits feedback.
@@ -61,41 +81,15 @@ export interface AnswerFeedbackProps {
       agentKnowledge?: string
     }
   }) => void
-
-  /**
-   * Placeholder text for the optional comment field
-   * @default "Add a comment (optional)"
-   */
-  commentPlaceholder?: string
-
-  /**
-   * Label for the submit button
-   * @default "Submit Feedback"
-   */
-  submitLabel?: string
-
-  /**
-   * Message to show after feedback is submitted
-   * @default "Thank you for your feedback!"
-   */
-  thankYouMessage?: string
-
-  /**
-   * Optional heading to show before feedback is submitted
-   * If not provided, no heading is shown
-   */
-  heading?: string
 }
 
 export default function AnswerFeedback({
   scale,
   renderRating,
-  enableComments = true,
+  renderComment,
+  renderSubmit,
+  renderSubmitted,
   onFeedback,
-  commentPlaceholder = 'Add a comment (optional)',
-  submitLabel = 'Submit Feedback',
-  thankYouMessage = 'Thank you for your feedback!',
-  heading,
 }: AnswerFeedbackProps) {
   // Try to use Answer context first, fall back to RAG context
   const answerContext = useContext(AnswerResultsContext)
@@ -139,11 +133,11 @@ export default function AnswerFeedback({
         return
       }
       setRating(value)
-      if (enableComments) {
+      if (renderComment) {
         setShowCommentField(true)
       }
     },
-    [scale, enableComments],
+    [scale, renderComment],
   )
 
   // Handle feedback submission
@@ -190,7 +184,10 @@ export default function AnswerFeedback({
 
   // Show thank you message after submission
   if (submitted) {
-    return <h4 className="react-af-answer-feedback-submitted">{thankYouMessage}</h4>
+    if (renderSubmitted) {
+      return <>{renderSubmitted()}</>
+    }
+    return <h4 className="react-af-answer-feedback-submitted">Thank you for your feedback!</h4>
   }
 
   // Don't show feedback if there's no result yet
@@ -221,33 +218,26 @@ export default function AnswerFeedback({
 
   return (
     <div className="react-af-answer-feedback">
-      {/* Optional heading */}
-      {heading && <h4 className="react-af-feedback-heading">{heading}</h4>}
-
       {/* Rating UI */}
       <div className="react-af-feedback-rating">
         {renderRating ? renderRating(rating, handleRate) : null}
       </div>
 
       {/* Optional comment field (shown after rating) */}
-      {enableComments && showCommentField && (
-        <div className="react-af-feedback-comment">
-          <textarea
-            className="react-af-feedback-comment-input"
-            placeholder={commentPlaceholder}
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
-            rows={3}
-          />
-        </div>
+      {renderComment && showCommentField && (
+        <div className="react-af-feedback-comment">{renderComment(comment, setComment)}</div>
       )}
 
       {/* Submit button (shown after rating) */}
       {rating !== null && (
         <div className="react-af-feedback-actions">
-          <button type="button" className="react-af-feedback-submit" onClick={handleSubmit}>
-            {submitLabel}
-          </button>
+          {renderSubmit ? (
+            renderSubmit(handleSubmit)
+          ) : (
+            <button type="button" className="react-af-feedback-submit" onClick={handleSubmit}>
+              Submit Feedback
+            </button>
+          )}
         </div>
       )}
     </div>

@@ -30,11 +30,29 @@ export interface AnswerFeedbackProps {
      */
     renderRating?: (currentRating: number | null, onRate: (rating: number) => void) => ReactNode;
     /**
-     * Whether to enable optional text comments.
-     * When true, a comment field will appear after the user selects a rating.
-     * @default true
+     * Custom render function for the comment input.
+     * If not provided, a default textarea is rendered.
+     *
+     * @param comment - Current comment value
+     * @param setComment - Callback to update the comment value
+     * @returns ReactNode to render the comment input
      */
-    enableComments?: boolean;
+    renderComment?: (comment: string, setComment: (value: string) => void) => ReactNode;
+    /**
+     * Custom render function for the submit button.
+     * If not provided, a default button is rendered.
+     *
+     * @param onSubmit - Callback to submit the feedback
+     * @returns ReactNode to render the submit button
+     */
+    renderSubmit?: (onSubmit: () => void) => ReactNode;
+    /**
+     * Custom render function for the submitted state.
+     * If not provided, a default thank you message is rendered.
+     *
+     * @returns ReactNode to render after submission
+     */
+    renderSubmitted?: () => ReactNode;
     /**
      * Callback invoked when the user submits feedback.
      * Provides the feedback result along with the complete context (RAG or Answer Agent).
@@ -57,26 +75,6 @@ export interface AnswerFeedbackProps {
             agentKnowledge?: string;
         };
     }) => void;
-    /**
-     * Placeholder text for the optional comment field
-     * @default "Add a comment (optional)"
-     */
-    commentPlaceholder?: string;
-    /**
-     * Label for the submit button
-     * @default "Submit Feedback"
-     */
-    submitLabel?: string;
-    /**
-     * Message to show after feedback is submitted
-     * @default "Thank you for your feedback!"
-     */
-    thankYouMessage?: string;
-    /**
-     * Optional heading to show before feedback is submitted
-     * If not provided, no heading is shown
-     */
-    heading?: string;
 }
-export default function AnswerFeedback({ scale, renderRating, enableComments, onFeedback, commentPlaceholder, submitLabel, thankYouMessage, heading, }: AnswerFeedbackProps): import("react/jsx-runtime").JSX.Element | null;
+export default function AnswerFeedback({ scale, renderRating, renderComment, renderSubmit, renderSubmitted, onFeedback, }: AnswerFeedbackProps): import("react/jsx-runtime").JSX.Element | null;
 //# sourceMappingURL=AnswerFeedback.d.ts.map

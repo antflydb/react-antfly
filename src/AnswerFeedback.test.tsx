@@ -156,12 +156,7 @@ describe('AnswerFeedback', () => {
       const onFeedback = vi.fn()
       const { container } = render(
         <MockRAGResultsProvider>
-          <AnswerFeedback
-            scale={1}
-            renderRating={renderThumbsUpDown}
-            enableComments={false}
-            onFeedback={onFeedback}
-          />
+          <AnswerFeedback scale={1} renderRating={renderThumbsUpDown} onFeedback={onFeedback} />
         </MockRAGResultsProvider>,
       )
 
@@ -182,12 +177,7 @@ describe('AnswerFeedback', () => {
       const onFeedback = vi.fn()
       const { container } = render(
         <MockRAGResultsProvider query="What is AI?">
-          <AnswerFeedback
-            scale={1}
-            renderRating={renderThumbsUpDown}
-            enableComments={false}
-            onFeedback={onFeedback}
-          />
+          <AnswerFeedback scale={1} renderRating={renderThumbsUpDown} onFeedback={onFeedback} />
         </MockRAGResultsProvider>,
       )
 
@@ -221,12 +211,7 @@ describe('AnswerFeedback', () => {
       const onFeedback = vi.fn()
       const { container } = render(
         <MockRAGResultsProvider>
-          <AnswerFeedback
-            scale={1}
-            renderRating={renderThumbsUpDown}
-            enableComments={false}
-            onFeedback={onFeedback}
-          />
+          <AnswerFeedback scale={1} renderRating={renderThumbsUpDown} onFeedback={onFeedback} />
         </MockRAGResultsProvider>,
       )
 
@@ -249,14 +234,20 @@ describe('AnswerFeedback', () => {
   })
 
   describe('comments', () => {
-    it('should show comment field when enabled', async () => {
+    it('should show comment field when renderComment is provided', async () => {
       const onFeedback = vi.fn()
       const { container } = render(
         <MockRAGResultsProvider>
           <AnswerFeedback
             scale={1}
             renderRating={renderThumbsUpDown}
-            enableComments={true}
+            renderComment={(comment, setComment) => (
+              <textarea
+                className="react-af-feedback-comment-input"
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+              />
+            )}
             onFeedback={onFeedback}
           />
         </MockRAGResultsProvider>,
@@ -272,16 +263,11 @@ describe('AnswerFeedback', () => {
       })
     })
 
-    it('should not show comment field when disabled', async () => {
+    it('should not show comment field when renderComment is not provided', async () => {
       const onFeedback = vi.fn()
       const { container } = render(
         <MockRAGResultsProvider>
-          <AnswerFeedback
-            scale={1}
-            renderRating={renderThumbsUpDown}
-            enableComments={false}
-            onFeedback={onFeedback}
-          />
+          <AnswerFeedback scale={1} renderRating={renderThumbsUpDown} onFeedback={onFeedback} />
         </MockRAGResultsProvider>,
       )
 
@@ -303,7 +289,13 @@ describe('AnswerFeedback', () => {
           <AnswerFeedback
             scale={1}
             renderRating={renderThumbsUpDown}
-            enableComments={true}
+            renderComment={(comment, setComment) => (
+              <textarea
+                className="react-af-feedback-comment-input"
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+              />
+            )}
             onFeedback={onFeedback}
           />
         </MockRAGResultsProvider>,
@@ -342,15 +334,22 @@ describe('AnswerFeedback', () => {
     })
   })
 
-  describe('custom labels', () => {
-    it('should use custom placeholder', async () => {
+  describe('custom render props', () => {
+    it('should use custom renderComment with placeholder', async () => {
       const onFeedback = vi.fn()
       const { container } = render(
         <MockRAGResultsProvider>
           <AnswerFeedback
             scale={1}
             renderRating={renderThumbsUpDown}
-            commentPlaceholder="Tell us more..."
+            renderComment={(comment, setComment) => (
+              <textarea
+                className="react-af-feedback-comment-input"
+                placeholder="Tell us more..."
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+              />
+            )}
             onFeedback={onFeedback}
           />
         </MockRAGResultsProvider>,
@@ -370,15 +369,18 @@ describe('AnswerFeedback', () => {
       expect(commentField.placeholder).toBe('Tell us more...')
     })
 
-    it('should use custom submit label', async () => {
+    it('should use custom renderSubmit', async () => {
       const onFeedback = vi.fn()
       const { container } = render(
         <MockRAGResultsProvider>
           <AnswerFeedback
             scale={1}
             renderRating={renderThumbsUpDown}
-            submitLabel="Send Feedback"
-            enableComments={false}
+            renderSubmit={(onSubmit) => (
+              <button type="button" className="custom-submit" onClick={onSubmit}>
+                Send Feedback
+              </button>
+            )}
             onFeedback={onFeedback}
           />
         </MockRAGResultsProvider>,
@@ -388,7 +390,7 @@ describe('AnswerFeedback', () => {
       await userEvent.click(thumbsUp)
 
       const submitButton = await waitFor(() => {
-        const btn = container.querySelector('.react-af-feedback-submit') as HTMLButtonElement
+        const btn = container.querySelector('.custom-submit') as HTMLButtonElement
         expect(btn).toBeTruthy()
         return btn
       })

@@ -488,12 +488,7 @@ export const WithoutComments = () => {
         <QueryBox id="question" placeholder="Ask a question..." />
 
         <RAGResults id="answer" searchBoxId="question" summarizer={mockSummarizer}>
-          <AnswerFeedback
-            scale={4}
-            renderRating={renderStars}
-            enableComments={false}
-            onFeedback={handleFeedback}
-          />
+          <AnswerFeedback scale={4} renderRating={renderStars} onFeedback={handleFeedback} />
         </RAGResults>
       </div>
     </Antfly>
@@ -663,8 +658,19 @@ export const CustomRenderer = () => {
             scale={4}
             renderRating={customRender}
             onFeedback={handleFeedback}
-            commentPlaceholder="Tell us more about your experience..."
-            submitLabel="Send Feedback"
+            renderComment={(comment, setComment) => (
+              <textarea
+                className="react-af-feedback-comment-input"
+                placeholder="Tell us more about your experience..."
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+              />
+            )}
+            renderSubmit={(onSubmit) => (
+              <button type="button" className="react-af-feedback-submit" onClick={onSubmit}>
+                Send Feedback
+              </button>
+            )}
           />
         </RAGResults>
       </div>

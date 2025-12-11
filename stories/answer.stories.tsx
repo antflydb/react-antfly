@@ -244,7 +244,6 @@ export const WithFeedback = () => {
               scale={1}
               renderRating={renderThumbsUpDown}
               onFeedback={handleFeedback}
-              heading="Was this answer helpful?"
             />
           </div>
         </AnswerResults>
@@ -938,10 +937,19 @@ export const StyledExample = () => {
               scale={1}
               renderRating={renderThumbsUpDown}
               onFeedback={handleFeedback}
-              enableComments={true}
-              commentPlaceholder="Tell us what you think..."
-              submitLabel="Submit Feedback"
-              heading="Was this answer helpful?"
+              renderComment={(comment, setComment) => (
+                <textarea
+                  className="react-af-feedback-comment-input"
+                  placeholder="Tell us what you think..."
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                />
+              )}
+              renderSubmit={(onSubmit) => (
+                <button type="button" className="react-af-feedback-submit" onClick={onSubmit}>
+                  Submit Feedback
+                </button>
+              )}
             />
           </AnswerResults>
         </div>
