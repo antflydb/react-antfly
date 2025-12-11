@@ -4,7 +4,11 @@ import AnswerFeedback from './AnswerFeedback'
 import AnswerResults from './AnswerResults'
 import { useAnswerResultsContext } from './AnswerResultsContext'
 import Antfly from './Antfly'
-import Autosuggest, { AutosuggestFacets, AutosuggestResults } from './Autosuggest'
+import Autosuggest, {
+  AutosuggestFacets,
+  AutosuggestResults,
+  useAutosuggestContext,
+} from './Autosuggest'
 import CustomWidget from './CustomWidget'
 import {
   getCitedDocumentIds,
@@ -48,6 +52,7 @@ export {
   Autosuggest,
   AutosuggestResults,
   AutosuggestFacets,
+  useAutosuggestContext,
   RAGResults,
   useRAGResultsContext,
   AnswerResults,
@@ -87,6 +92,7 @@ export type { AnswerResultsContextValue } from './AnswerResultsContext'
 // Export types for users of the library
 export type { AntflyProps } from './Antfly'
 export type {
+  AutosuggestContextValue,
   AutosuggestFacetsProps,
   AutosuggestProps,
   AutosuggestResultsProps,

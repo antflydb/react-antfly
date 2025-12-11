@@ -1,6 +1,6 @@
 import { QueryHit, TermFacetResult } from '@antfly/sdk';
 import { default as React, ReactNode } from 'react';
-interface AutosuggestContextValue {
+export interface AutosuggestContextValue {
     query: string;
     results: QueryHit[];
     facetData: Map<string, TermFacetResult[]>;
@@ -65,5 +65,4 @@ export interface AutosuggestFacetsProps {
 export default function Autosuggest({ fields, returnFields, limit, minChars, debounceMs, renderSuggestion, customQuery, semanticIndexes, table, filterQuery, exclusionQuery, searchValue, onSuggestionSelect, containerRef, isOpen: isOpenProp, children, layout, className, dropdownClassName, }: AutosuggestProps): import("react/jsx-runtime").JSX.Element | null;
 export declare function AutosuggestResults({ limit, renderItem, onSelect: onSelectProp, filter, className, itemClassName, selectedItemClassName, header, footer, emptyMessage, }: AutosuggestResultsProps): import("react/jsx-runtime").JSX.Element | null;
 export declare function AutosuggestFacets({ field, size, label, order, renderItem, renderSection, onSelect: onSelectProp, clickable, filter, className, itemClassName, sectionClassName, header, footer, emptyMessage, }: AutosuggestFacetsProps): import("react/jsx-runtime").JSX.Element | null;
-export {};
 //# sourceMappingURL=Autosuggest.d.ts.map

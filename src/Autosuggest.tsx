@@ -15,7 +15,7 @@ import { useSharedContext } from './SharedContext'
 import { conjunctsFrom, disjunctsFrom } from './utils'
 
 // Context for sharing state between Autosuggest parent and children
-interface AutosuggestContextValue {
+export interface AutosuggestContextValue {
   query: string
   results: QueryHit[]
   facetData: Map<string, TermFacetResult[]>
